@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--该字符串id名称必须固定，用于下拉刷新控件寻找id-->
+    <string name="swipe_pull_to_refresh">下拉刷新</string>
+    <string name="swipe_release_to_refresh">松开刷新</string>
+    <string name="swipe_refreshing">正在刷新</string>
+    <string name="swipe_pull_to_load">上拉加载</string>
+    <string name="swipe_release_to_load">松开加载</string>
+    <string name="swipe_loading">正在加载</string>
+    <string name="swipe_no_more_data">已经加载完成</string>
+    <!--end-->
+
+</resources>

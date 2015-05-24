@@ -1,0 +1,16 @@
+1.重构Swipe上拉下拉刷新控件,res_bak保存需要的layout,string,其中资源的id必须固定
+2.Http.getBitmap方法修改在下载完全成功之后才返回bitmap，否则都是null
+3.SimplePagerAdapter支持动态删除
+4.添加 TabController 代替 TabManager
+5.添加TabSelectorView 滑动选择器
+6.增加SwipeLayout
+7.增加ProgressCircular
+8.增加修改SwipeRefresh*，主动滑动先滑动到顶部
+9.增加Animator*基础控件
+10.增加NanoHttpd 简易web服务框架
+------------------------- 历史重要log
+20150429;dnwang;
+新增org.pinwheel.agility.util.ex包，提供Android基础方法支持(其中EncryUtil部分函数需要apache-codec.jar支持);
+
+20150508;dnwang;
+新增控件:BouncyEditText(Hini值滑动到右端);AntoFit**(自适应大小放缩视图)
