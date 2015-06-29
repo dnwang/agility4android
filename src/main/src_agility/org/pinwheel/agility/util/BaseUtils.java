@@ -185,7 +185,12 @@ public final class BaseUtils {
         }
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setDataAndType(Uri.parse("file://" + apk.toString()), "application/vnd.android.package-archive");
-        c.startActivity(i);
+        if (c instanceof Activity) {
+            c.startActivity(i);
+        } else {
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            c.startActivity(i);
+        }
     }
 
     /**

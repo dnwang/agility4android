@@ -14,3 +14,10 @@
 
 20150508;dnwang;
 新增控件:BouncyEditText(Hini值滑动到右端);AntoFit**(自适应大小放缩视图)
+
+20150603;dnwang;
+RequestManager Request 增加 Body
+
+20150629;dnwang;
+修复RequestManager,添加Header报错
+新增org.pinwheel.agility.field.FieldUtils,对反射支持

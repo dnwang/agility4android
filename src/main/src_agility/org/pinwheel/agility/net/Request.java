@@ -12,6 +12,7 @@ public final class Request {
     private String mBaseUrl;
     private Map<String, String> mParams;
     private Map<String, String> mHeaders;
+    private byte[] postBody;
 
     private int numOfRetries, timeOut;
     private boolean isKeepSingle;
@@ -27,11 +28,15 @@ public final class Request {
         isKeepSingle = false;
     }
 
-    public Map<String, String> getParams() {
+    Map<String, String> getParams() {
         return mParams;
     }
 
-    public Map<String, String> getHeaders() {
+    byte[] getBody() {
+        return postBody;
+    }
+
+    Map<String, String> getHeaders() {
         return mHeaders;
     }
 
@@ -65,11 +70,26 @@ public final class Request {
         return url.toString().replace("?&", "?");
     }
 
+    public void setBody(byte[] body) {
+        this.postBody = body;
+    }
+
     public Request addParam(String key, Object value) {
         if (TextUtils.isEmpty(key) || value == null) {
             return this;
         }
         mParams.put(key, value.toString());
+        return this;
+    }
+
+    public Request addParam(Map<String, String> values) {
+        if (values == null || values.isEmpty()) {
+            return this;
+        }
+        Set<Map.Entry<String, String>> entrySet = values.entrySet();
+        for (Map.Entry<String, String> entry : entrySet) {
+            addParam(entry.getKey(), entry.getValue());
+        }
         return this;
     }
 

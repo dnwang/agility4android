@@ -159,6 +159,9 @@ public final class RequestManager {
         @Override
         protected Response<T> parseNetworkResponse(NetworkResponse response) {
             try {
+                if (mListener != null && mListener instanceof OnHandleResponseAdapter) {
+                    ((OnHandleResponseAdapter) mListener).onHandleResponse(response);
+                }
                 mParser.parse(response.data);
                 return Response.success(mParser.getResult(), HttpHeaderParser.parseCacheHeaders(response));
             } catch (Exception e) {
@@ -187,35 +190,46 @@ public final class RequestManager {
         }
 
         @Override
-        protected Map<String, String> getParams() throws AuthFailureError {
-            Map<String, String> params = mAdapter.getParams();
-            if (params != null && !params.isEmpty()) {
-                Map<String, String> superParams = super.getParams();
-                if (superParams != null) {
-                    superParams.putAll(params);
-                    return superParams;
-                } else {
-                    return params;
-                }
+        public byte[] getBody() throws AuthFailureError {
+            if (mAdapter.getBody() != null) {
+                return mAdapter.getBody();
             } else {
-                return super.getParams();
+                return super.getBody();
             }
         }
 
         @Override
+        protected Map<String, String> getParams() throws AuthFailureError {
+            return mAdapter.getParams();
+//            Map<String, String> params = mAdapter.getParams();
+//            if (params != null && !params.isEmpty()) {
+//                Map<String, String> superParams = super.getParams();
+//                if (superParams != null) {
+//                    superParams.putAll(params);
+//                    return superParams;
+//                } else {
+//                    return params;
+//                }
+//            } else {
+//                return super.getParams();
+//            }
+        }
+
+        @Override
         public Map<String, String> getHeaders() throws AuthFailureError {
-            Map<String, String> headers = mAdapter.getHeaders();
-            if (headers != null && !headers.isEmpty()) {
-                Map<String, String> superHeaders = super.getHeaders();
-                if (superHeaders != null) {
-                    superHeaders.putAll(headers);
-                    return superHeaders;
-                } else {
-                    return headers;
-                }
-            } else {
-                return super.getHeaders();
-            }
+            return mAdapter.getHeaders();
+//            Map<String, String> headers = mAdapter.getHeaders();
+//            if (headers != null && !headers.isEmpty()) {
+//                Map<String, String> superHeaders = super.getHeaders();
+//                if (superHeaders != null) {
+//                    superHeaders.putAll(headers);
+//                    return superHeaders;
+//                } else {
+//                    return headers;
+//                }
+//            } else {
+//                return super.getHeaders();
+//            }
         }
 
         @Override
@@ -240,19 +254,32 @@ public final class RequestManager {
 
         @Override
         @Deprecated
-        public void onError(Exception e) {
+        public final void onError(Exception e) {
             this.onError(e, tag);
         }
 
         @Override
         @Deprecated
-        public void onSuccess(T obj) {
+        public final void onSuccess(T obj) {
             this.onSuccess(obj, tag);
         }
 
         public abstract void onError(Exception e, Object tag);
 
         public abstract void onSuccess(T obj, Object tag);
+
+    }
+
+    public static abstract class OnHandleResponseAdapter<T> implements OnRequestListener<T> {
+        @Override
+        public void onError(Exception e) {
+        }
+
+        @Override
+        public void onSuccess(T obj) {
+        }
+
+        public abstract void onHandleResponse(NetworkResponse response);
 
     }
 
