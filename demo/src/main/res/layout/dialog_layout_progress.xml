@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content">
+
+    <LinearLayout
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="12dp"
+            android:layout_width="160dp"
+            android:layout_height="140dp">
+
+        <org.pinwheel.agility.view.ProgressCircular
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@android:color/holo_blue_dark"/>
+
+        <TextView
+                android:id="@+id/sweet_message"
+                android:padding="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:textColor="@android:color/darker_gray"
+                android:textStyle="bold"
+                android:text="TIPS"
+                android:textSize="@dimen/txt_size_4"/>
+
+    </LinearLayout>
+</FrameLayout>

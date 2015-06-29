@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="org.pinwheel.demo4agility">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <application
+            android:label="@string/app_name"
+            android:icon="@drawable/ic_launcher">
+        <activity
+                android:name=".activity.LauncherActivity"
+                android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+                android:label="下载文件,图片;缓存,缩略图"
+                android:name="org.pinwheel.demo4agility.activity.DownLoadActivity"/>
+        <activity
+                android:label="回弹List"
+                android:name="org.pinwheel.demo4agility.activity.OverListActivity"/>
+        <activity
+                android:label="回弹Grid"
+                android:name="org.pinwheel.demo4agility.activity.OverGridActivity"/>
+        <activity
+                android:label="回弹Scroll"
+                android:name="org.pinwheel.demo4agility.activity.OverScrollActivity"/>
+        <activity
+                android:label="下拉刷新"
+                android:name="org.pinwheel.demo4agility.activity.RefreshListActivity"/>
+        <activity
+                android:label="TabController嵌套"
+                android:name="org.pinwheel.demo4agility.activity.TabActivity"/>
+        <activity
+                android:label="请求RequestManager"
+                android:name="org.pinwheel.demo4agility.activity.RequestActivity"/>
+        <activity
+                android:label="SweetDialog"
+                android:name="org.pinwheel.demo4agility.activity.DialogActivity"/>
+        <activity
+                android:label="带Header的Grid"
+                android:name="org.pinwheel.demo4agility.activity.HeaderGridViewActivity"/>
+        <activity
+                android:label="自定义点击区域响应"
+                android:name="org.pinwheel.demo4agility.activity.CustomViewActivity"/>
+        <activity
+                android:label="EventBus总线解偶"
+                android:name="org.pinwheel.demo4agility.activity.EventBusActivity"/>
+        <activity
+                android:label="ECMobile server API Test"
+                android:name=".activity.ServerAPITestActivity"/>
+        <activity
+                android:label="LiteUtils Http + Common + ORM"
+                android:name=".activity.LiteSuitActivity"/>
+        <activity
+                android:label="ScrollView 嵌套 ListView"
+                android:name=".activity.InternalListActivity"/>
+        <activity
+                android:label="分页视图 ＋ 分页器"
+                android:name=".activity.IndicatorActivity"/>
+        <activity
+                android:label="弹性Edit ＋ 放缩Text"
+                android:configChanges="orientation|keyboard"
+                android:name=".activity.BouncyEditAndTextActivity"/>
+        <activity
+                android:label="反射 + 注入"
+                android:name=".activity.FieldActivity"/>
+        <activity
+                android:label="测试"
+                android:name=".activity.Json2ClassActivity"/>
+    </application>
+</manifest>

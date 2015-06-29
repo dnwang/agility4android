@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.SlidingPaneLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/sliding"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+    <FrameLayout
+            android:layout_width="140dp"
+            android:layout_height="fill_parent"
+            android:background="@color/holo_gray_dark"
+            android:layout_gravity="right">
+
+        <org.pinwheel.agility.view.SweetScrollView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:scrollbars="none">
+
+            <FrameLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content">
+
+                <org.pinwheel.agility.view.TabSelectorView
+                        android:id="@+id/selector"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"/>
+
+                <LinearLayout
+                        android:id="@+id/item_group"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="500dp"
+                        android:orientation="vertical"/>
+            </FrameLayout>
+
+        </org.pinwheel.agility.view.SweetScrollView>
+    </FrameLayout>
+
+    <RelativeLayout
+            android:id="@+id/content"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="@android:color/white">
+
+        <!-- content -->
+        <org.pinwheel.agility.view.ViewPagerNoScrollable
+                android:id="@+id/pager"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"/>
+
+    </RelativeLayout>
+
+</android.support.v4.widget.SlidingPaneLayout>
