@@ -1,0 +1,12 @@
+.gradle/
+.idea/
+build/
+gradle/
+android_agility_framework.iml
+gradlew
+gradlew.bat
+local.properties
+agility/build/
+agility/agility.iml
+demo/build/
+demo/demo.iml

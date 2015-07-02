@@ -11,7 +11,11 @@ import java.util.Map;
  *
  * @author dnwang
  */
-public class FieldUtils {
+public final class FieldUtils {
+
+    private FieldUtils() {
+
+    }
 
     public static Map<String, String> obj2Map(Object obj) {
         Map<String, String> values = new HashMap<String, String>();
