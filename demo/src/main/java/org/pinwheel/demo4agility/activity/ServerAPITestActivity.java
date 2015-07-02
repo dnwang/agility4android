@@ -94,7 +94,7 @@ public class ServerAPITestActivity extends AbsTestActivity {
         params.name = "wdnonly";
         params.password = "1990219";
         request.addParam("json", new Gson().toJson(params));
-        logout(request.getUrlByMethod(com.android.volley.Request.Method.POST) + ": " + request.getParams().toString());
+        logout(request.getUrlByMethod(com.android.volley.Request.Method.POST));
         RequestManager.doPost(
                 request,
                 new GsonParser(Response.class),

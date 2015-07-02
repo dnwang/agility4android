@@ -1,8 +1,11 @@
 package org.pinwheel.demo4agility.activity;
 
 import android.view.View;
-
-import org.pinwheel.demo4agility.field.Ignore;
+import org.pinwheel.agility.field.FieldUtils;
+import org.pinwheel.agility.field.Ignore;
+import org.pinwheel.agility.net.Request;
+import org.pinwheel.agility.net.RequestManager;
+import org.pinwheel.demo4agility.field.DemoEntity;
 import org.pinwheel.demo4agility.field.InjectStruct;
 
 import java.lang.annotation.Annotation;
@@ -10,6 +13,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.util.Map;
 
 /**
  * Copyright (C), 2015 <br>
@@ -46,6 +50,16 @@ public class FieldActivity extends AbsTestActivity {
         logout("┌ " + reflex_obj.getClass().getSimpleName() + " {");
         reflexValue("│\t", reflex_obj);
         logout("└ }");
+
+
+        // add method test 201506029
+        Map<String, String> values = FieldUtils.obj2Map(new DemoEntity());
+        logout(values);
+        RequestManager.init(this);
+        RequestManager.debug = true;
+        Request api = new Request("http://www.baidu.com");
+        api.addParam(values);
+        RequestManager.doGet(api, null);
     }
 
     private void reflexValue(String space, Object obj) {

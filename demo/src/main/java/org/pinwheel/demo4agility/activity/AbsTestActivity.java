@@ -9,11 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
+import android.widget.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -46,6 +42,10 @@ public abstract class AbsTestActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                try {
+                    Thread.sleep(500l);
+                } catch (InterruptedException e) {
+                }
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {

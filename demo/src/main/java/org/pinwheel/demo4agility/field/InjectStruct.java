@@ -1,6 +1,7 @@
 package org.pinwheel.demo4agility.field;
 
 import android.util.Log;
+import org.pinwheel.agility.field.Ignore;
 
 /**
  * Copyright (C), 2015 <br>
