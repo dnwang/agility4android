@@ -6,7 +6,7 @@ android {
     defaultConfig {
         minSdkVersion 14
         versionCode 40
-        versionName '3.2.0'
+        versionName '3.2.1'
     }
     buildTypes {
         release {

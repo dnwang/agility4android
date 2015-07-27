@@ -8,7 +8,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
-import org.pinwheel.agility.util.BitmapHelper;
+import org.pinwheel.agility.util.BitmapUtils;
 import org.pinwheel.agility.view.controller.TabController;
 
 import java.util.ArrayList;
@@ -193,7 +193,7 @@ class TabSelectorView_bak extends View implements TabController.ISelectable {
 
 //            canvas.drawColor(Color.RED);
 
-            Bitmap tempBitmap = BitmapHelper.setScale(selector, tempRect.right - tempRect.left, tempRect.bottom - tempRect.top);
+            Bitmap tempBitmap = BitmapUtils.setScale(selector, tempRect.right - tempRect.left, tempRect.bottom - tempRect.top);
 
 //            int width = tempRect.right - tempRect.left;
 //            int height = tempRect.bottom - tempRect.top;

@@ -21,3 +21,6 @@ RequestManager Request 增加 Body
 20150629;dnwang;
 修复RequestManager,添加Header报错
 新增org.pinwheel.agility.field.FieldUtils,对反射支持
+
+20150727;dnwang;
+修改BitmapHelper为BitmapUtils，增加更多图片处理函数

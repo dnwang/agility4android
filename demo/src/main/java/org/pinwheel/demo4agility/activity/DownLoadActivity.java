@@ -17,7 +17,7 @@ import org.pinwheel.agility.net.RequestManager;
 import org.pinwheel.agility.net.parser.BitmapParser;
 import org.pinwheel.agility.net.parser.FileParser;
 import org.pinwheel.agility.util.BaseUtils;
-import org.pinwheel.agility.util.BitmapHelper;
+import org.pinwheel.agility.util.BitmapUtils;
 import org.pinwheel.agility.util.BitmapLoader;
 import org.pinwheel.demo4agility.R;
 import org.pinwheel.demo4agility.multithread.MultiThreadDownloader;
@@ -95,7 +95,7 @@ public class DownLoadActivity extends Activity {
      */
     private void testDownLoadBitmap(String url) {
         final String bitmap_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/temp.jpg";
-//        Bitmap thumbnail = BitmapHelper.getBitmapThumbnail(bitmap_path, 200, 150);
+//        Bitmap thumbnail = BitmapUtils.getBitmapThumbnail(bitmap_path, 200, 150);
 //        findViewById(R.id.btn).setBackgroundDrawable(new BitmapDrawable(thumbnail));
         BitmapLoader.getInstance().setThumbnailFromNative(
                 (ImageView) findViewById(R.id.image),
@@ -128,10 +128,10 @@ public class DownLoadActivity extends Activity {
             @Override
             public void onSuccess(Bitmap obj) {
                 progress.dismiss();
-//                Bitmap temp = BitmapHelper.getBitmapThumbnail(obj, 30, 30);
-//                Bitmap temp = BitmapHelper.setScale(obj, 300, 300);
-//                Bitmap temp = BitmapHelper.setGrayscale(obj);
-                Bitmap temp = BitmapHelper.setAlpha(obj, 8);
+//                Bitmap temp = BitmapUtils.getBitmapThumbnail(obj, 30, 30);
+//                Bitmap temp = BitmapUtils.setScale(obj, 300, 300);
+//                Bitmap temp = BitmapUtils.setGrayscale(obj);
+                Bitmap temp = BitmapUtils.setAlpha(obj, 8);
 
                 findViewById(R.id.btn_requestmanager_download).setBackgroundDrawable(new BitmapDrawable(temp));
             }

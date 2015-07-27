@@ -109,7 +109,7 @@ public final class BitmapLoader {
         new Thread() {
             @Override
             public void run() {
-                final Bitmap thumbnail = BitmapHelper.getBitmapThumbnail(img_path, width, height);
+                final Bitmap thumbnail = BitmapUtils.getBitmapThumbnail(img_path, width, height);
                 imageView.post(new Runnable() {
                     @Override
                     public void run() {
