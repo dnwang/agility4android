@@ -9,7 +9,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Adapter;
-import android.widget.ListView;
+import android.widget.GridView;
 
 import java.util.ArrayList;
 
@@ -22,7 +22,7 @@ import java.util.ArrayList;
  * @date 2014/9/29 21:27
  * @description
  */
-public class SweetListView extends ListView implements Swipeable, GestureDetector.OnGestureListener {
+public class SweetHeaderGridView extends HeaderGridView implements Swipeable, GestureDetector.OnGestureListener {
 
     private boolean inSwipe;// 是否正在滑动中
     private int current_state;// 当前状态
@@ -32,17 +32,17 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
 
     private GestureDetector gestureDetector;
 
-    public SweetListView(Context context) {
+    public SweetHeaderGridView(Context context) {
         super(context);
         this.init(context);
     }
 
-    public SweetListView(Context context, AttributeSet attrs) {
+    public SweetHeaderGridView(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.init(context);
     }
 
-    public SweetListView(Context context, AttributeSet attrs, int defStyle) {
+    public SweetHeaderGridView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         this.init(context);
     }
@@ -77,7 +77,6 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (isHandled && isNeedSendCancel) {
-                    // 避免在move里 连续发送cancel
                     isNeedSendCancel = false;
                     final long now = SystemClock.uptimeMillis();
                     event = MotionEvent.obtain(now, now, MotionEvent.ACTION_CANCEL, event.getX(), event.getY(), 0);
@@ -95,7 +94,6 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
                 }
                 break;
         }
-        // 一次非move之后，清除标记
         isNeedSendCancel = true;
         boolean superHandle = false;
         try {
@@ -113,7 +111,6 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
 
     @Override
     public void onShowPress(MotionEvent e) {
-
     }
 
     @Override
@@ -161,7 +158,6 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 //        Log.e("--> onFling", "velocityY:" + velocityY);
-        // - 向上，+向下
         return false;
     }
 
@@ -180,7 +176,6 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
             setStandard(t, b);
         }
 
-        // 重至偏移位置!,onLayout会将view重至道初始位置
         this.offsetTopAndBottom(offsetY);
     }
 
@@ -248,6 +243,7 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
 //        current_state = STATE_HOLD;
     }
 
+
     private int last_top;
 
     /**
@@ -279,9 +275,8 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
         // 通知滑动
         if (mOnSwipeListeners != null) {
             // 返回与起始位置的实时距离
-            // 返回-dy,与reset中方向保持一致
-            for (OnSwipeListener listeners : mOnSwipeListeners) {
-                listeners.onSwipe(this, standard_top - getTop(), -dy, false);
+            for (OnSwipeListener listener : mOnSwipeListeners) {
+                listener.onSwipe(this, standard_top - getTop(), -dy, false);
             }
         }
 
@@ -359,7 +354,7 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
             if (mOnSwipeListeners != null) {
                 // 始终返回与起始位置的实时距离（无视目前的目标距离）
                 for (OnSwipeListener listener : mOnSwipeListeners) {
-                    listener.onSwipe(SweetListView.this, standard_top - getTop(), dy, true);
+                    listener.onSwipe(SweetHeaderGridView.this, standard_top - getTop(), dy, true);
                 }
             }
 
@@ -396,34 +391,29 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
 
             if (isScrollToTop && top_hold_dy != 0) {
                 int dy = standard_top - getTop();
-//                int offset = -AUTO_SCROLL_SPEED;
 
                 //下拉的距离都是负数
                 if (dy == -top_hold_dy) {
                     onHold();
                     return;
                 } else {
-//                    doSwipeDown(offset);
                     doSwipeDown(-AUTO_SCROLL_SPEED);
                     postDelayed(mAutoScroll, DELAY);
                 }
             }
             if (!isScrollToTop && bottom_hold_dy != 0) {
                 int dy = standard_top - getTop();
-//                int offset = AUTO_SCROLL_SPEED;
 
                 if (dy == bottom_hold_dy) {
                     onHold();
                     return;
                 } else {
-//                    doSwipeUp(offset);
                     doSwipeUp(AUTO_SCROLL_SPEED);
                     postDelayed(mAutoScroll, DELAY);
                 }
             }
         }
     }
-
 
     private boolean isAtBottom() {
         if (current_state == STATE_DOWN) {
@@ -443,7 +433,8 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
             final int index = Math.min(childIndex, childCount - 1);
             final View lastVisibleChild = getChildAt(index);
             if (lastVisibleChild != null) {
-                return lastVisibleChild.getBottom() <= standard_bottom - getPaddingBottom(); //padding
+                int bot = lastVisibleChild.getBottom();
+                return lastVisibleChild.getBottom() <= standard_bottom - getPaddingBottom();
             }
         }
         return false;
@@ -459,7 +450,7 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
             return true;
         }
         int firstPos = getFirstVisiblePosition();
-        if (firstPos == 0 && getChildAt(firstPos).getTop() >= getPaddingTop()) {//padding
+        if (firstPos == 0 && getChildAt(firstPos).getTop() >= getPaddingTop()) {
             return true;
         }
         return false;
@@ -547,7 +538,7 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
                 removeCallbacks(mAutoScroll);
             }
             removeCallbacks(resetSwipe);
-            postDelayed(resetSwipe, 0);
+            post(resetSwipe);
             if (args != null && args.length == 1 && args[0].equals("noCallBack")) {
                 // 不回调
             } else {
@@ -599,4 +590,5 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
     public boolean isOverHold() {
         return isNotOverHoldTarget(standard_top - getTop());
     }
+
 }

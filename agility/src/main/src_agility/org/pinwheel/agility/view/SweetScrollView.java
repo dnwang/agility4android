@@ -128,12 +128,12 @@ public class SweetScrollView extends ScrollView implements Swipeable, GestureDet
             removeCallbacks(mAutoScroll);
         }
 
-        if (isAtTop() && distanceY < 0) {
+        if (isAtTop() && distanceY < 0 && (Math.abs(distanceX) < Math.abs(distanceY))) {
             // 可以下拉 并且 向下手势 = 拖动1
             doSwipeDown((int) distanceY);
             return true;
         }
-        if (isAtBottom() && distanceY > 0) {
+        if (isAtBottom() && distanceY > 0 && (Math.abs(distanceX) < Math.abs(distanceY))) {
             // 可以上拉 并且 向上手势 = 拖动2
             doSwipeUp((int) distanceY);
             return true;
@@ -462,10 +462,11 @@ public class SweetScrollView extends ScrollView implements Swipeable, GestureDet
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (mOnSwipeListeners != null) {
-            mOnSwipeListeners.clear();
-            mOnSwipeListeners = null;
-        }
+        // 这里如果清楚，在viewpager的切换时，会触发detach，导致引用失效
+//        if (mOnSwipeListeners != null) {
+//            mOnSwipeListeners.clear();
+//            mOnSwipeListeners = null;
+//        }
     }
 
     // 保持引用,如果在自动滑动的时候,发生主动拖动,要取消自动

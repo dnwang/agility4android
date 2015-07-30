@@ -24,3 +24,5 @@ RequestManager Request 增加 Body
 
 20150727;dnwang;
 修改BitmapHelper为BitmapUtils，增加更多图片处理函数
+20150728;dnwang;
+SweetList系列顶部横向事件处理,viewpager切换导致监听失效
