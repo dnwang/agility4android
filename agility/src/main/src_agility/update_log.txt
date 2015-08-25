@@ -28,3 +28,5 @@ RequestManager Request 增加 Body
 SweetList系列顶部横向事件处理,viewpager切换导致监听失效
 20150730;dnwang;
 添加Sweetcoverflow
+20150826;dnwang;
+添加新控件SweetCycleGallery,循环滑动，支持嵌套事件

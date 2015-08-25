@@ -6,8 +6,8 @@ android {
     defaultConfig {
         applicationId "org.pinwheel.demo"
         minSdkVersion 14
-        versionCode 1
-        versionName "1.0"
+        versionCode 41
+        versionName "3.3.3"
     }
     buildTypes {
         release {

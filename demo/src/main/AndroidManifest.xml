@@ -1,77 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.pinwheel.demo4agility">
+    package="org.pinwheel.demo4agility">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-            android:label="@string/app_name"
-            android:icon="@drawable/ic_launcher">
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name">
         <activity
-                android:name=".activity.LauncherActivity"
-                android:label="@string/app_name">
+            android:name=".activity.LauncherActivity"
+            android:label="@string/app_name">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity
-                android:label="下载文件,图片;缓存,缩略图"
-                android:name="org.pinwheel.demo4agility.activity.DownLoadActivity"/>
+            android:name="org.pinwheel.demo4agility.activity.DownLoadActivity"
+            android:label="下载文件,图片;缓存,缩略图" />
         <activity
-                android:label="回弹List"
-                android:name="org.pinwheel.demo4agility.activity.OverListActivity"/>
+            android:name="org.pinwheel.demo4agility.activity.OverListActivity"
+            android:label="回弹List" />
         <activity
-                android:label="回弹Grid"
-                android:name="org.pinwheel.demo4agility.activity.OverGridActivity"/>
+            android:name="org.pinwheel.demo4agility.activity.OverGridActivity"
+            android:label="回弹Grid" />
         <activity
-                android:label="回弹Scroll"
-                android:name="org.pinwheel.demo4agility.activity.OverScrollActivity"/>
+            android:name="org.pinwheel.demo4agility.activity.OverScrollActivity"
+            android:label="回弹Scroll" />
         <activity
-                android:label="下拉刷新"
-                android:name="org.pinwheel.demo4agility.activity.RefreshListActivity"/>
+            android:name="org.pinwheel.demo4agility.activity.RefreshListActivity"
+            android:label="下拉刷新" />
         <activity
-                android:label="TabController嵌套"
-                android:name="org.pinwheel.demo4agility.activity.TabActivity"/>
+            android:name="org.pinwheel.demo4agility.activity.TabActivity"
+            android:label="TabController嵌套" />
         <activity
-                android:label="请求RequestManager"
-                android:name="org.pinwheel.demo4agility.activity.RequestActivity"/>
+            android:name="org.pinwheel.demo4agility.activity.RequestActivity"
+            android:label="请求RequestManager" />
         <activity
-                android:label="SweetDialog"
-                android:name="org.pinwheel.demo4agility.activity.DialogActivity"/>
+            android:name="org.pinwheel.demo4agility.activity.DialogActivity"
+            android:label="SweetDialog" />
         <activity
-                android:label="带Header的Grid"
-                android:name="org.pinwheel.demo4agility.activity.HeaderGridViewActivity"/>
+            android:name="org.pinwheel.demo4agility.activity.HeaderGridViewActivity"
+            android:label="带Header的Grid" />
         <activity
-                android:label="自定义点击区域响应"
-                android:name="org.pinwheel.demo4agility.activity.CustomViewActivity"/>
+            android:name="org.pinwheel.demo4agility.activity.CustomViewActivity"
+            android:label="自定义点击区域响应" />
         <activity
-                android:label="EventBus总线解偶"
-                android:name="org.pinwheel.demo4agility.activity.EventBusActivity"/>
+            android:name="org.pinwheel.demo4agility.activity.EventBusActivity"
+            android:label="EventBus总线解偶" />
         <activity
-                android:label="ECMobile server API Test"
-                android:name=".activity.ServerAPITestActivity"/>
+            android:name=".activity.ServerAPITestActivity"
+            android:label="ECMobile server API Test" />
         <activity
-                android:label="LiteUtils Http + Common + ORM"
-                android:name=".activity.LiteSuitActivity"/>
+            android:name=".activity.LiteSuitActivity"
+            android:label="LiteUtils Http + Common + ORM" />
         <activity
-                android:label="ScrollView 嵌套 ListView"
-                android:name=".activity.InternalListActivity"/>
+            android:name=".activity.InternalListActivity"
+            android:label="ScrollView 嵌套 ListView" />
         <activity
-                android:label="分页视图 ＋ 分页器"
-                android:name=".activity.IndicatorActivity"/>
+            android:name=".activity.IndicatorActivity"
+            android:label="分页视图 ＋ 分页器" />
         <activity
-                android:label="弹性Edit ＋ 放缩Text"
-                android:configChanges="orientation|keyboard"
-                android:name=".activity.BouncyEditAndTextActivity"/>
+            android:name=".activity.BouncyEditAndTextActivity"
+            android:configChanges="orientation|keyboard"
+            android:label="弹性Edit ＋ 放缩Text" />
         <activity
-                android:label="反射 + 注入"
-                android:name=".activity.FieldActivity"/>
+            android:name=".activity.FieldActivity"
+            android:label="反射 + 注入" />
         <activity
-                android:label="测试"
-                android:name=".activity.Json2ClassActivity"/>
+            android:name=".activity.CycleGalleryActivity"
+            android:label="循环Gallery＋支持嵌套事件(ListView,ScrollView...)" />
+        <activity
+            android:name=".activity.Json2ClassActivity"
+            android:label="测试" />
     </application>
 </manifest>
