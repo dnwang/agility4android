@@ -1,16 +1,11 @@
 package org.pinwheel.demo4agility.activity;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.widget.*;
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.view.SweetCycleGallery;
 
@@ -67,17 +62,37 @@ public class CycleGalleryActivity extends AbsTestActivity {
 
     @Override
     protected void onInitInCreate() {
-        adapter.addAll(Arrays.asList(
-                android.R.color.holo_red_dark,
-                android.R.color.holo_orange_dark,
-                android.R.color.holo_blue_dark,
-                android.R.color.holo_green_dark,
-                android.R.color.darker_gray
-        ));
+//        adapter.addAll(Arrays.asList(
+//                android.R.color.holo_red_dark,
+//                android.R.color.holo_orange_dark,
+//                android.R.color.holo_blue_dark,
+//                android.R.color.holo_green_dark,
+//                android.R.color.darker_gray
+//        ));
     }
 
     @Override
     protected View getContentView() {
+//        new Handler(getMainLooper()).postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                gallery.setAdapter(adapter);
+//            }
+//        }, 3000l);
+        new Handler(getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                adapter.addAll(Arrays.asList(
+                        android.R.color.holo_red_dark,
+                        android.R.color.holo_orange_dark,
+                        android.R.color.holo_blue_dark,
+                        android.R.color.holo_green_dark,
+                        android.R.color.darker_gray
+                ));
+                adapter.notifyDataSetChanged();
+            }
+        }, 3000l);
+
         FrameLayout container = new FrameLayout(this);
 
         gallery = new SweetCycleGallery(this);

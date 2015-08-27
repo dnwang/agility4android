@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.database.DataSetObserver;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.SystemClock;
@@ -11,6 +12,7 @@ import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
@@ -24,6 +26,7 @@ import android.widget.FrameLayout;
  * @author dnwang
  */
 public class SweetCycleGallery extends FrameLayout {
+    private static final String TAG = SweetCycleGallery.class.getSimpleName();
 
     public static final int HORIZONTAL = 0;
     public static final int VERTICAL = 1;
@@ -37,6 +40,7 @@ public class SweetCycleGallery extends FrameLayout {
 
     private int viewIndex;
 
+    private AdapterDataSetObserver dataSetObserver;
     private ViewDragHelper dragHelper;
     private boolean isMoving = false;
     private boolean isSmoothing = false;
@@ -164,21 +168,46 @@ public class SweetCycleGallery extends FrameLayout {
     }
 
     public void setAdapter(BaseAdapter cycleAdapter) {
-        adapter = cycleAdapter;
-        for (int i = 0; i < views.length; i++) {
-            views[i] = adapter.getView(cycleIndex(i), null, this);// !! convertView = null
-            if (views[i].getParent() == null) {
-                addView(views[i]);
-            }
+        if (cycleAdapter == null) {
+            return;
         }
-        viewIndex = getMiddleIndex();
+        adapter = cycleAdapter;
+        if (dataSetObserver != null) {
+            adapter.unregisterDataSetObserver(dataSetObserver);
+        }
+        dataSetObserver = new AdapterDataSetObserver();
+        adapter.registerDataSetObserver(dataSetObserver);
+        requestLayout();
+        isNeedResetViews = true;
     }
+
+    @Override
+    public void requestLayout() {
+        super.requestLayout();
+    }
+
+    private boolean isNeedResetViews = false;
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
+        if (adapter == null || adapter.getCount() == 0) {
+            return;
+        }
+        if (isNeedResetViews) {
+            for (int i = 0; i < views.length; i++) {
+                views[i] = adapter.getView(cycleIndex(i), views[i], this);// !! convertView = null
+                ViewParent parent = views[i].getParent();
+                if (parent == null) {
+                    addView(views[i]);
+                } else if (parent != SweetCycleGallery.this) {
+                    throw new IllegalStateException(views[i] + " already have a parent !");
+                }
+            }
+            viewIndex = getMiddleIndex();
+            isNeedResetViews = false;
+        }
         snapShot.set(getPaddingLeft(), getPaddingTop(), getWidth() - getPaddingRight(), getHeight() - getPaddingBottom());
-
         if (orientation == HORIZONTAL) {
             alignHorizontal(snapShot);
         } else if (orientation == VERTICAL) {
@@ -262,11 +291,16 @@ public class SweetCycleGallery extends FrameLayout {
             return;
         }
         View middleView = views[getMiddleIndex()];
-        rect.set(middleView.getLeft(), middleView.getTop(), middleView.getRight(), middleView.getBottom());
+        if (middleView != null) {
+            rect.set(middleView.getLeft(), middleView.getTop(), middleView.getRight(), middleView.getBottom());
+        }
     }
 
     @Deprecated
     private void moveAll(int dx, int dy) {
+        if (adapter == null || adapter.getCount() == 0) {
+            return;
+        }
         isMoving = true;
         for (int i = 0; i < views.length; i++) {
             views[i].setLeft(views[i].getLeft() + dx);
@@ -278,6 +312,9 @@ public class SweetCycleGallery extends FrameLayout {
     }
 
     private void moveAllVerticalSmooth(final int dy) {
+        if (adapter == null || adapter.getCount() == 0) {
+            return;
+        }
         if (isSmoothing || orientation == HORIZONTAL) {
             return;
         }
@@ -302,7 +339,7 @@ public class SweetCycleGallery extends FrameLayout {
             @Override
             public void onAnimationStart(Animator animation) {
                 isMoving = true;
-                isSmoothing = false;
+                isSmoothing = true;
             }
 
             @Override
@@ -317,6 +354,9 @@ public class SweetCycleGallery extends FrameLayout {
     }
 
     private void moveAllHorizontalSmooth(int dx) {
+        if (adapter == null || adapter.getCount() == 0) {
+            return;
+        }
         if (isSmoothing || orientation == VERTICAL) {
             return;
         }
@@ -402,7 +442,7 @@ public class SweetCycleGallery extends FrameLayout {
     }
 
     private void alignHorizontal(Rect targetMiddleRect) {
-        if (isMoving || orientation == VERTICAL) {
+        if (isMoving || orientation == VERTICAL || adapter == null || adapter.getCount() == 0) {
             return;
         }
         int newMiddleIndex = getMiddleIndex();
@@ -428,7 +468,7 @@ public class SweetCycleGallery extends FrameLayout {
     }
 
     private void alignVertical(Rect targetMiddleRect) {
-        if (isMoving || orientation == HORIZONTAL) {
+        if (isMoving || orientation == HORIZONTAL || adapter == null || adapter.getCount() == 0) {
             return;
         }
         int newMiddleIndex = getMiddleIndex();
@@ -450,6 +490,22 @@ public class SweetCycleGallery extends FrameLayout {
             views[i].setBottom(targetMiddleRect.bottom + offset_y);
             views[i].setLeft(targetMiddleRect.left);
             views[i].setRight(targetMiddleRect.right);
+        }
+    }
+
+    class AdapterDataSetObserver extends DataSetObserver {
+        @Override
+        public void onChanged() {
+            super.onChanged();
+            requestLayout();
+            isNeedResetViews = true;
+        }
+
+        @Override
+        public void onInvalidated() {
+            super.onInvalidated();
+            requestLayout();
+            isNeedResetViews = true;
         }
     }
 
