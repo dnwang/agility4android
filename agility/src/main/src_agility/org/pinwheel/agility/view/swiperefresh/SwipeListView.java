@@ -14,7 +14,7 @@ import android.widget.ListView;
  * @date 2014/8/12 17:03
  * @description
  */
-public final class SwipeListView extends AbsSwipeAbsListView {
+public class SwipeListView extends AbsSwipeAbsListView {
 
     private ListView mListView;
 

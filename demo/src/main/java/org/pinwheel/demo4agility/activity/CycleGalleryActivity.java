@@ -23,7 +23,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
 //            if (convertView == null) {
 //                convertView = new Button(CycleGalleryActivity.this);
 //            }
-
+//
 //            Button btn = (Button) convertView;
 //            btn.setGravity(Gravity.LEFT | Gravity.TOP);
 //            btn.setTextSize(32);

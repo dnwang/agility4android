@@ -15,7 +15,7 @@ import android.widget.ScrollView;
  * @date 2014/8/12 17:03
  * @description
  */
-public final class SwipeScrollView extends AbsSwipeView<ScrollView> {
+public class SwipeScrollView extends AbsSwipeView<ScrollView> {
 
     private ScrollView mScrollView;
 

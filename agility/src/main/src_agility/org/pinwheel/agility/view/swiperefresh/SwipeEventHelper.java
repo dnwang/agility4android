@@ -6,7 +6,7 @@ import android.widget.AbsListView;
 /**
  * Created by dnwang on 4/14/15.
  */
-public final class SwipeEventHelper implements SwipeListView.OnRefreshListener, AbsListView.OnScrollListener {
+public class SwipeEventHelper implements SwipeListView.OnRefreshListener, AbsListView.OnScrollListener {
 
     public static final int TYPE_SCROLL = 0x00;
     public static final int TYPE_PULL_UP = 0x10;

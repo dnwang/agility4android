@@ -13,7 +13,7 @@ import android.widget.GridView;
  * @date 2014/8/12 17:03
  * @description
  */
-public final class SwipeGridView extends AbsSwipeAbsListView {
+public class SwipeGridView extends AbsSwipeAbsListView {
 
     private GridView mGridView;
 
