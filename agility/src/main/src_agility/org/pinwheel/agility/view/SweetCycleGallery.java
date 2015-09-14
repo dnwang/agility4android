@@ -25,6 +25,7 @@ import android.widget.FrameLayout;
  *
  * @author dnwang
  */
+@Deprecated
 public class SweetCycleGallery extends FrameLayout {
     private static final String TAG = SweetCycleGallery.class.getSimpleName();
 

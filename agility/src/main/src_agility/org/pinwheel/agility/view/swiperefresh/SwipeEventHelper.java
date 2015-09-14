@@ -92,7 +92,7 @@ public class SwipeEventHelper implements SwipeListView.OnRefreshListener, AbsLis
         if (adapter != null) {
             adapter.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
         }
-        if (lastLine < 0 && adapter != null) {
+        if (lastLine > 0 && adapter != null) {
             if (totalItemCount - (firstVisibleItem + visibleItemCount) <= lastLine * columns) {
                 onLoading(TYPE_SCROLL);
             }
