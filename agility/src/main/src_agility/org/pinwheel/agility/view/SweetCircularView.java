@@ -26,13 +26,16 @@ import java.util.ArrayList;
 public class SweetCircularView extends ViewGroup {
 
     private static final int MOVE_SLOP = 10;
-    private static final long DURATION = 200l;
 
-    protected float sensibility = 0.5f;
+    private long durationOnAutoScroll = 300l;
+    private long durationOnTouchRelease = 200l;
+    private float sensibility = 0.5f;
+    private int orientation = LinearLayout.HORIZONTAL;
+    private OnItemSwitchListener onItemSwitchListener;
+
     protected AdapterDataSetObserver dataSetObserver;
     protected BaseAdapter adapter;
     protected ArrayList<ItemWrapper> items = new ArrayList<ItemWrapper>();
-    protected int orientation = LinearLayout.HORIZONTAL;
     protected int currentItemIndex = 0;
 
     public SweetCircularView(Context context) {
@@ -52,19 +55,6 @@ public class SweetCircularView extends ViewGroup {
 
     private void init() {
         setRecycleItemSize(3);// set default size
-    }
-
-    public void setSensibility(float sensibility) {
-        this.sensibility = Math.max(0, Math.min(1.0f, sensibility));
-    }
-
-    public float getSensibility() {
-        return this.sensibility;
-    }
-
-    public void setOrientation(int orientation) {
-        this.orientation = orientation == LinearLayout.VERTICAL ? orientation : LinearLayout.HORIZONTAL;
-        requestLayout();
     }
 
     public int getCurrentIndex() {
@@ -97,6 +87,47 @@ public class SweetCircularView extends ViewGroup {
         }
         dataSetObserver = new AdapterDataSetObserver();
         adapter.registerDataSetObserver(dataSetObserver);
+    }
+
+    public BaseAdapter getAdapter() {
+        return adapter;
+    }
+
+    public void setSensibility(float sensibility) {
+        this.sensibility = Math.max(0, Math.min(1.0f, sensibility));
+    }
+
+    public float getSensibility() {
+        return this.sensibility;
+    }
+
+    public void setOrientation(int orientation) {
+        this.orientation = orientation == LinearLayout.VERTICAL ? orientation : LinearLayout.HORIZONTAL;
+        requestLayout();
+    }
+
+    public int getOrientation() {
+        return orientation;
+    }
+
+    public void setDurationOnTouchRelease(long duration) {
+        durationOnTouchRelease = Math.max(0, duration);
+    }
+
+    public long getDurationOnTouchRelease() {
+        return durationOnTouchRelease;
+    }
+
+    public void setDurationOnAutoScroll(long duration) {
+        durationOnAutoScroll = Math.max(0, duration);
+    }
+
+    public long getDurationOnAutoScroll() {
+        return durationOnAutoScroll;
+    }
+
+    public void setOnItemSwitchListener(OnItemSwitchListener listener) {
+        onItemSwitchListener = listener;
     }
 
     /**
@@ -375,7 +406,7 @@ public class SweetCircularView extends ViewGroup {
 
     protected final void autoMoveX(float dx, final int changeIndex) {
         ValueAnimator animator = ValueAnimator.ofFloat(0, dx);
-        animator.setDuration(DURATION);
+        animator.setDuration(durationOnTouchRelease);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             private float lastValue;
 
@@ -399,7 +430,7 @@ public class SweetCircularView extends ViewGroup {
 
     protected final void autoMoveY(float dy, final int changeIndex) {
         ValueAnimator animator = ValueAnimator.ofFloat(0, dy);
-        animator.setDuration(DURATION);
+        animator.setDuration(durationOnTouchRelease);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             private float lastValue;
 
@@ -531,6 +562,14 @@ public class SweetCircularView extends ViewGroup {
         public void setStatus(int status) {
             this.status = status;
         }
+
+    }
+
+    public static interface OnItemSwitchListener {
+
+        public void onItemSelected(int dataIndex, int viewIndex);
+
+        public void onItemScrolled(int dataIndex, int viewIndex, int offset);
 
     }
 
