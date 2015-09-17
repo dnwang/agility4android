@@ -27,7 +27,7 @@ public class SweetCircularView extends ViewGroup {
 
     private static final int MOVE_SLOP = 10;
 
-    private long durationOnAutoScroll = 300l;
+    private long durationOnAutoScroll = 350l;
     private long durationOnTouchRelease = 200l;
     private float sensibility = 0.5f;
     private int orientation = LinearLayout.HORIZONTAL;
@@ -253,7 +253,7 @@ public class SweetCircularView extends ViewGroup {
         }
         int itemStatus = item.getStatus();
         if (itemStatus != ItemWrapper.FORCE) {
-            if (item.getDataIndex() == targetDataIndex && itemStatus == ItemWrapper.USEING) {
+            if (item.getDataIndex() == targetDataIndex && itemStatus == ItemWrapper.USING) {
                 return;
             }
         }
@@ -342,39 +342,29 @@ public class SweetCircularView extends ViewGroup {
                         isMoving = false;
                         break;
                     }
-                    View v = items.get(currentItemIndex).getView();
-                    if (v == null) {
+                    View centerView = items.get(currentItemIndex).getView();
+                    if (centerView == null) {
                         break;
                     }
                     int changeIndex = 0;
+                    float offset = 0;
+                    float maxOffset = 0;
                     if (orientation == LinearLayout.HORIZONTAL) {
-                        // x
-                        float currentOffsetX = v.getTranslationX();
-                        int itemWidth = v.getWidth();
-                        if (currentOffsetX < -itemWidth * sensibility) {
-                            changeIndex = 1;
-                        } else if (currentOffsetX > itemWidth * sensibility) {
-                            changeIndex = -1;
-                        }
-                        if (changeIndex == 0) {
-                            autoMoveX(-currentOffsetX, 0);
-                        } else {
-                            autoMoveX((itemWidth - Math.abs(currentOffsetX)) * -changeIndex, changeIndex);
-                        }
+                        offset = centerView.getTranslationX();
+                        maxOffset = centerView.getWidth();
                     } else if (orientation == LinearLayout.VERTICAL) {
-                        // y
-                        float currentOffsetY = v.getTranslationY();
-                        int itemHeight = v.getHeight();
-                        if (currentOffsetY < -itemHeight * sensibility) {
-                            changeIndex = 1;
-                        } else if (currentOffsetY > itemHeight * sensibility) {
-                            changeIndex = -1;
-                        }
-                        if (changeIndex == 0) {
-                            autoMoveY(-currentOffsetY, 0);
-                        } else {
-                            autoMoveY((itemHeight - Math.abs(currentOffsetY)) * -changeIndex, changeIndex);
-                        }
+                        offset = centerView.getTranslationY();
+                        maxOffset = centerView.getHeight();
+                    }
+                    if (offset < -maxOffset * sensibility) {
+                        changeIndex = 1;
+                    } else if (offset > maxOffset * sensibility) {
+                        changeIndex = -1;
+                    }
+                    if (changeIndex == 0) {
+                        autoMove(-offset, durationOnTouchRelease, 0);
+                    } else {
+                        autoMove((maxOffset - Math.abs(offset)) * -changeIndex, durationOnTouchRelease, changeIndex);
                     }
                 }
                 break;
@@ -384,72 +374,108 @@ public class SweetCircularView extends ViewGroup {
         return true;
     }
 
-    protected final void moveX(float dx) {
+    protected final void moveX(float offset) {
         isMoving = true;
         for (ItemWrapper item : items) {
             View view = item.getView();
             if (view != null) {
-                view.setTranslationX(view.getTranslationX() + dx);
+                view.setTranslationX(view.getTranslationX() + offset);
             }
+        }
+        if (onItemSwitchListener != null) {
+            onItemSwitchListener.onItemScrolled(items.get(currentItemIndex).getDataIndex(), currentItemIndex, offset);
         }
     }
 
-    protected final void moveY(float dy) {
+    protected final void moveY(float offset) {
         isMoving = true;
         for (ItemWrapper item : items) {
             View view = item.getView();
             if (view != null) {
-                view.setTranslationY(view.getTranslationY() + dy);
+                view.setTranslationY(view.getTranslationY() + offset);
             }
+        }
+        if (onItemSwitchListener != null) {
+            onItemSwitchListener.onItemScrolled(items.get(currentItemIndex).getDataIndex(), currentItemIndex, offset);
         }
     }
 
-    protected final void autoMoveX(float dx, final int changeIndex) {
-        ValueAnimator animator = ValueAnimator.ofFloat(0, dx);
-        animator.setDuration(durationOnTouchRelease);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+    private ValueAnimator autoScroller;
+
+    protected final void autoMove(float offset, long duration, final int changeIndex) {
+        if (offset == 0) {
+            return;
+        }
+        if (autoScroller != null && autoScroller.isStarted()) {
+            autoScroller.cancel();
+        }
+        autoScroller = ValueAnimator.ofFloat(0, offset);
+        autoScroller.setDuration(duration);
+        autoScroller.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             private float lastValue;
 
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float currentValue = (Float) animation.getAnimatedValue();
-                moveX(currentValue - lastValue);
+                if (orientation == LinearLayout.HORIZONTAL) {
+                    moveX(currentValue - lastValue);
+                } else if (orientation == LinearLayout.VERTICAL) {
+                    moveY(currentValue - lastValue);
+                }
                 lastValue = currentValue;
             }
         });
-        animator.addListener(new AnimatorListenerAdapter() {
+        autoScroller.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 isMoving = false;
-                currentItemIndex = cycleItemIndex(currentItemIndex + changeIndex);
+                // only this change currentItemIndex
+                int oldDataIndex = items.get(currentItemIndex).getDataIndex();
+                int newDataIndex = cycleDataIndex(oldDataIndex + changeIndex);
+                int oldItemIndex = currentItemIndex;
+                int newItemIndex = cycleItemIndex(currentItemIndex + changeIndex);
+                if (onItemSwitchListener != null) {
+                    onItemSwitchListener.onItemSelected(newDataIndex, oldDataIndex, newItemIndex, oldItemIndex);
+                }
+                currentItemIndex = newItemIndex;
                 requestLayout();
             }
         });
-        animator.start();
+        autoScroller.start();
     }
 
-    protected final void autoMoveY(float dy, final int changeIndex) {
-        ValueAnimator animator = ValueAnimator.ofFloat(0, dy);
-        animator.setDuration(durationOnTouchRelease);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            private float lastValue;
+    public void moveNext() {
+        if (items.size() == 0) {
+            return;
+        }
+        View centerView = items.get(currentItemIndex).getView();
+        if (centerView == null) {
+            return;
+        }
+        int offset = 0;
+        if (orientation == LinearLayout.HORIZONTAL) {
+            offset = centerView.getWidth();
+        } else if (orientation == LinearLayout.VERTICAL) {
+            offset = centerView.getHeight();
+        }
+        autoMove(-offset, durationOnAutoScroll, 1);
+    }
 
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float currentValue = (Float) animation.getAnimatedValue();
-                moveY(currentValue - lastValue);
-                lastValue = currentValue;
-            }
-        });
-        animator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                isMoving = false;
-                currentItemIndex = cycleItemIndex(currentItemIndex + changeIndex);
-                requestLayout();
-            }
-        });
-        animator.start();
+    public void movePrevious() {
+        if (items.size() == 0) {
+            return;
+        }
+        View centerView = items.get(currentItemIndex).getView();
+        if (centerView == null) {
+            return;
+        }
+        int offset = 0;
+        if (orientation == LinearLayout.HORIZONTAL) {
+            offset = centerView.getWidth();
+        } else if (orientation == LinearLayout.VERTICAL) {
+            offset = centerView.getHeight();
+        }
+        autoMove(offset, durationOnAutoScroll, -1);
     }
 
     protected final int cycleDataIndex(int dataIndex) {
@@ -510,7 +536,7 @@ public class SweetCircularView extends ViewGroup {
     private final class ItemWrapper {
 
         public static final int NONE = 0x0;
-        public static final int USEING = 0x1;
+        public static final int USING = 0x1;
         public static final int FORCE = 0x2;
 
         private int status;
@@ -548,7 +574,7 @@ public class SweetCircularView extends ViewGroup {
 
         public void setDataIndex(int dataIndex) {
             this.dataIndex = dataIndex;
-            this.status = USEING;
+            this.status = USING;
         }
 
         public int getDataIndex() {
@@ -567,9 +593,9 @@ public class SweetCircularView extends ViewGroup {
 
     public static interface OnItemSwitchListener {
 
-        public void onItemSelected(int dataIndex, int viewIndex);
+        public void onItemSelected(int newDataIndex, int oldDataIndex, int newItemIndex, int oldItemIndex);
 
-        public void onItemScrolled(int dataIndex, int viewIndex, int offset);
+        public void onItemScrolled(int dataIndex, int itemIndex, float offset);
 
     }
 

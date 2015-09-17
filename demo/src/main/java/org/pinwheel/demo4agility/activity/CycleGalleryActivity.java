@@ -1,11 +1,15 @@
 package org.pinwheel.demo4agility.activity;
 
-import android.graphics.Color;
-import android.os.Handler;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.view.SweetCircularView;
 
@@ -13,6 +17,7 @@ import java.util.Arrays;
 
 
 public class CycleGalleryActivity extends AbsTestActivity {
+    private static final String TAG = CycleGalleryActivity.class.getSimpleName();
 
     private SweetCircularView gallery;
 
@@ -20,42 +25,41 @@ public class CycleGalleryActivity extends AbsTestActivity {
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
 //            if (convertView == null) {
-//            convertView = createView(position);
+//                convertView = new Button(CycleGalleryActivity.this);
 //            }
-            if (convertView == null) {
-                convertView = new Button(CycleGalleryActivity.this);
-            }
-
-            Button btn = (Button) convertView;
-            btn.setGravity(Gravity.CENTER);
-            btn.setTextSize(32);
-            btn.setText("" + position);
-            btn.setBackgroundColor(getResources().getColor(getItem(position)));
+//
+//            Button btn = (Button) convertView;
+//            btn.setGravity(Gravity.CENTER);
+//            btn.setTextSize(32);
+//            btn.setText("" + position);
+//            btn.setBackgroundColor(getResources().getColor(getItem(position)));
 //            convertView.setOnClickListener(new View.OnClickListener() {
 //                @Override
 //                public void onClick(View v) {
 //                    logout(position);
 //                }
 //            });
-            logout("getView() position:" + position);
-            return convertView;
+//            logout("getView() position:" + position);
+//            return convertView;
+            return createView(position);// test for ScrollView
         }
 
         private View createView(final int position) {
             HorizontalScrollView scrollView = new HorizontalScrollView(CycleGalleryActivity.this);
-            scrollView.setBackgroundColor(Color.WHITE);
             LinearLayout linearLayout = new LinearLayout(CycleGalleryActivity.this);
             linearLayout.setOrientation(LinearLayout.HORIZONTAL);
             TextView textView = new TextView(CycleGalleryActivity.this);
             textView.setBackgroundColor(getResources().getColor(getItem(position)));
-            textView.setText("sdfasfasdfafafaf\n\n\n\nadfadfafdafasfasf\n\n\n\nsdfsfsfsdf\n\n\n\nsdfsfsf\n\n\n\nsdfsfsf\n\n\n\nsdfsfsfsfds");
+            textView.setText("" + position);
+            textView.setTextSize(32);
+            textView.setGravity(Gravity.CENTER);
             textView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     logout(position);
                 }
             });
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(1500, -1);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(1200, 600);
             linearLayout.addView(textView, params);
             scrollView.addView(linearLayout);
             return scrollView;
@@ -74,44 +78,60 @@ public class CycleGalleryActivity extends AbsTestActivity {
         ));
     }
 
-    Handler handler = new Handler();
-
     @Override
     protected View getContentView() {
         FrameLayout container = new FrameLayout(this);
 
         gallery = new SweetCircularView(this);
         gallery.setAdapter(adapter);
-        gallery.setOrientation(LinearLayout.HORIZONTAL);
-        gallery.setSensibility(0.25f);
+//        gallery.setOrientation(LinearLayout.HORIZONTAL);
+        gallery.setOrientation(LinearLayout.VERTICAL);
+        gallery.setSensibility(0.35f);
         FrameLayout.LayoutParams galleryParams = new FrameLayout.LayoutParams(-1, -1);
         galleryParams.setMargins(50, 50, 50, 50);
         container.addView(gallery, galleryParams);
 
+        gallery.setOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
+            @Override
+            public void onItemSelected(int newDataIndex, int oldDataIndex, int newItemIndex, int oldItemIndex) {
+                Log.d(TAG, "onItemSelected(" + newDataIndex + ", " + oldDataIndex + ", " + newItemIndex + ", " + oldItemIndex + ")");
+            }
+
+            @Override
+            public void onItemScrolled(int dataIndex, int itemIndex, float offset) {
+                Log.d(TAG, "onItemScrolled(" + dataIndex + ", " + itemIndex + ", " + offset + ")");
+            }
+        });
+
         FrameLayout.LayoutParams left = new FrameLayout.LayoutParams(-2, -2, Gravity.LEFT | Gravity.CENTER_VERTICAL);
         Button leftBtn = new Button(this);
-        leftBtn.setText("Fun0");
+        leftBtn.setText("<");
         container.addView(leftBtn, left);
 
         FrameLayout.LayoutParams right = new FrameLayout.LayoutParams(-2, -2, Gravity.RIGHT | Gravity.CENTER_VERTICAL);
         Button rightBtn = new Button(this);
-        rightBtn.setText("Fun1");
+        rightBtn.setText(">");
         container.addView(rightBtn, right);
 
-        FrameLayout.LayoutParams top = new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-        Button topBtn = new Button(this);
-        topBtn.setText("Fun2");
-        container.addView(topBtn, top);
+        LinearLayout funcContainer = new LinearLayout(this);
+        funcContainer.setOrientation(LinearLayout.HORIZONTAL);
+        Button func1 = new Button(this);
+        func1.setText("add");
+        Button func2 = new Button(this);
+        func2.setText("remove");
+        Button func3 = new Button(this);
+        func3.setText("replace");
+        Button func4 = new Button(this);
+        func4.setText("reSize");
+        funcContainer.addView(func1);
+        funcContainer.addView(func2);
+        funcContainer.addView(func3);
+        funcContainer.addView(func4);
+        container.addView(funcContainer);
 
-        FrameLayout.LayoutParams bottom = new FrameLayout.LayoutParams(-2, -2, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-        Button bottomBtn = new Button(this);
-        bottomBtn.setText("Fun3");
-        container.addView(bottomBtn, bottom);
-
-        leftBtn.setOnClickListener(new View.OnClickListener() {
+        func1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                gallery.setCurrentIndex(gallery.getCurrentIndex() - 1);
                 adapter.addItem(android.R.color.holo_red_dark);
                 adapter.addItem(android.R.color.holo_orange_dark);
                 adapter.addItem(android.R.color.holo_blue_dark);
@@ -119,28 +139,41 @@ public class CycleGalleryActivity extends AbsTestActivity {
                 adapter.notifyDataSetChanged();
             }
         });
-        topBtn.setOnClickListener(new View.OnClickListener() {
+        func2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                adapter.removeAll();
-//                adapter.notifyDataSetChanged();
-                gallery.setCurrentIndex(gallery.getCurrentIndex() - 1);
+                adapter.removeAll();
+                adapter.notifyDataSetChanged();
+            }
+        });
+        func3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                adapter.removeAll();
+                adapter.addItem(android.R.color.darker_gray);
+                adapter.addItem(android.R.color.holo_purple);
+                adapter.notifyDataSetChanged();
+            }
+        });
+        func4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gallery.setRecycleItemSize(5);
+                adapter.notifyDataSetChanged();
+            }
+        });
+        leftBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                gallery.setCurrentIndex(gallery.getCurrentIndex() - 1);
+                gallery.moveNext();
             }
         });
         rightBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                adapter.addItem(android.R.color.darker_gray);
-                adapter.notifyDataSetChanged();
-            }
-        });
-        bottomBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                adapter.removeAll();
-//                adapter.addItem(android.R.color.holo_blue_dark);
-//                adapter.notifyDataSetChanged();
-                gallery.setCurrentIndex(gallery.getCurrentIndex() + 1);
+//                gallery.setCurrentIndex(gallery.getCurrentIndex() + 1);
+                gallery.movePrevious();
             }
         });
 

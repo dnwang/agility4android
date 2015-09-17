@@ -30,5 +30,5 @@ SweetList系列顶部横向事件处理,viewpager切换导致监听失效
 添加Sweetcoverflow
 20150826;dnwang;
 添加新控件SweetCycleGallery,循环滑动，支持嵌套事件
-20150916;dnwang;
+20150918;dnwang;
 删除SweetCycleGallery,增加SweetCircularView,效果类似,功能更完善,性能优化
