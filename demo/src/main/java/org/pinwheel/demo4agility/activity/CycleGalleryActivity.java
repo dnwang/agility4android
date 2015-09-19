@@ -4,16 +4,22 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.view.SweetCircularView;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
 public class CycleGalleryActivity extends AbsTestActivity {
@@ -36,7 +42,8 @@ public class CycleGalleryActivity extends AbsTestActivity {
 //            convertView.setOnClickListener(new View.OnClickListener() {
 //                @Override
 //                public void onClick(View v) {
-//                    logout(position);
+////                    logout(position);
+//                    Toast.makeText(CycleGalleryActivity.this, position + "", Toast.LENGTH_SHORT).show();
 //                }
 //            });
 //            logout("getView() position:" + position);
@@ -57,6 +64,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
                 @Override
                 public void onClick(View v) {
                     logout(position);
+                    Toast.makeText(CycleGalleryActivity.this, position + "", Toast.LENGTH_SHORT).show();
                 }
             });
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(1200, 600);
@@ -84,12 +92,25 @@ public class CycleGalleryActivity extends AbsTestActivity {
 
         gallery = new SweetCircularView(this);
         gallery.setAdapter(adapter);
-//        gallery.setOrientation(LinearLayout.HORIZONTAL);
-        gallery.setOrientation(LinearLayout.VERTICAL);
+        gallery.setMinimumHeight(800);
+        gallery.setOrientation(LinearLayout.HORIZONTAL);
+//        gallery.setOrientation(LinearLayout.VERTICAL);
         gallery.setSensibility(0.35f);
-        FrameLayout.LayoutParams galleryParams = new FrameLayout.LayoutParams(-1, -1);
-        galleryParams.setMargins(50, 50, 50, 50);
-        container.addView(gallery, galleryParams);
+        // test nested
+        LinearLayout c1 = new LinearLayout(this);
+        LinearLayout c2 = new LinearLayout(this);
+        c2.addView(c1);
+        c1.addView(gallery);
+        ListView listView = new ListView(this);
+        listView.addHeaderView(c2);
+
+        List<String> array = new ArrayList<String>();
+        for (int i = 0; i < 30; i++) {
+            array.add("" + i);
+        }
+        BaseAdapter arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, array);
+        listView.setAdapter(arrayAdapter);
+        container.addView(listView);
 
         gallery.setOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
             @Override

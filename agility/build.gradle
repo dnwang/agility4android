@@ -5,8 +5,8 @@ android {
     buildToolsVersion '21.1.2'
     defaultConfig {
         minSdkVersion 14
-        versionCode 44
-        versionName '3.4.0'
+        versionCode 46
+        versionName '3.4.1'
     }
     buildTypes {
         release {
