@@ -10,7 +10,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name">
         <activity
-            android:name=".activity.LauncherActivity"
+            android:name="org.pinwheel.demo4agility.activity.LauncherActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,7 +20,10 @@
 
         <activity
             android:name="org.pinwheel.demo4agility.activity.DownLoadActivity"
-            android:label="下载文件,图片;缓存,缩略图" />
+            android:label="RequestManager(下载文件,图片);\n缓存,缩略图" />
+        <activity
+            android:name="org.pinwheel.demo4agility.activity.RequestActivity"
+            android:label="RequestManager请求测试" />
         <activity
             android:name="org.pinwheel.demo4agility.activity.OverListActivity"
             android:label="回弹List" />
@@ -37,8 +40,8 @@
             android:name="org.pinwheel.demo4agility.activity.TabActivity"
             android:label="TabController嵌套" />
         <activity
-            android:name="org.pinwheel.demo4agility.activity.RequestActivity"
-            android:label="请求RequestManager" />
+            android:name="org.pinwheel.demo4agility.activity.HttpClientAgentActivity"
+            android:label="HttpClientAgent\n(OkHttp, Volley, HttpConnection)" />
         <activity
             android:name="org.pinwheel.demo4agility.activity.DialogActivity"
             android:label="SweetDialog" />
@@ -52,29 +55,26 @@
             android:name="org.pinwheel.demo4agility.activity.EventBusActivity"
             android:label="EventBus总线解偶" />
         <activity
-            android:name=".activity.ServerAPITestActivity"
+            android:name="org.pinwheel.demo4agility.activity.ServerAPITestActivity"
             android:label="ECMobile server API Test" />
+        <!--<activity-->
+        <!--android:name=".activity.LiteSuitActivity"-->
+        <!--android:label="LiteUtils Http + Common + ORM" />-->
         <activity
-            android:name=".activity.LiteSuitActivity"
-            android:label="LiteUtils Http + Common + ORM" />
-        <activity
-            android:name=".activity.InternalListActivity"
+            android:name="org.pinwheel.demo4agility.activity.InternalListActivity"
             android:label="ScrollView 嵌套 ListView" />
         <activity
-            android:name=".activity.IndicatorActivity"
-            android:label="分页视图 ＋ 分页器" />
-        <activity
-            android:name=".activity.BouncyEditAndTextActivity"
+            android:name="org.pinwheel.demo4agility.activity.BouncyEditAndTextActivity"
             android:configChanges="orientation|keyboard"
             android:label="弹性Edit ＋ 放缩Text" />
         <activity
-            android:name=".activity.FieldActivity"
+            android:name="org.pinwheel.demo4agility.activity.FieldActivity"
             android:label="反射 + 注入" />
         <activity
-            android:name=".activity.CycleGalleryActivity"
-            android:label="循环Gallery＋支持嵌套事件(ListView,ScrollView...)" />
+            android:name="org.pinwheel.demo4agility.activity.CycleGalleryActivity"
+            android:label="SweetCircularView＋支持嵌套事件\n(ListView, ScrollView...)" />
         <activity
-            android:name=".activity.Json2ClassActivity"
-            android:label="测试" />
+            android:name="org.pinwheel.demo4agility.activity.Json2ClassActivity"
+            android:label="测试 Json2Class" />
     </application>
 </manifest>

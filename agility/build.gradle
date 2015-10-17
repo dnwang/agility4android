@@ -1,12 +1,12 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion '21.1.2'
+    compileSdkVersion 23
+    buildToolsVersion '23.0.1'
     defaultConfig {
         minSdkVersion 14
-        versionCode 46
-        versionName '3.4.1'
+        versionCode 49
+        versionName '4.0.0'
     }
     buildTypes {
         release {
@@ -18,7 +18,7 @@ android {
         main {
             java.srcDirs = [
                     'src/main/src_agility',
-                    'src/main/src_litesuits',
+//                    'src/main/src_litesuits',
                     'src/main/src_photoview'
             ]
         }
@@ -27,4 +27,9 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.squareup.okhttp:okhttp:2.5.0'
+    compile 'com.google.code.gson:gson:2.4'
+    compile 'eu.the4thfloor.volley:com.android.volley:2015.05.28'
+    compile 'com.android.support:support-v4:23.0.1'
+    compile 'com.google.guava:guava:19.0-rc2'
 }

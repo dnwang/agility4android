@@ -2,14 +2,29 @@ package org.pinwheel.agility.net;
 
 import android.content.Context;
 import android.util.Log;
-import com.android.volley.*;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkResponse;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.Volley;
-import org.pinwheel.agility.net.parser.IResponseParser;
+
+import org.pinwheel.agility.net.parser.IDataParser;
 import org.pinwheel.agility.net.parser.StringParser;
 
 import java.util.Map;
 
+/**
+ * Copyright (C), 2015 <br>
+ * <br>
+ * All rights reserved <br>
+ * <br>
+ *
+ * @author dnwang
+ */
 public final class RequestManager {
     public static boolean debug = false;
 
@@ -62,7 +77,7 @@ public final class RequestManager {
         }
     }
 
-    public static <T> void doGet(Request adapter, IResponseParser<T> parser, OnRequestListener<T> listener) {
+    public static <T> void doGet(Request adapter, IDataParser<T> parser, OnRequestListener<T> listener) {
         if (instance != null) {
             instance.doRequest(com.android.volley.Request.Method.GET, adapter, parser, listener);
         }
@@ -74,7 +89,7 @@ public final class RequestManager {
         }
     }
 
-    public static <T> void doPost(Request adapter, IResponseParser<T> parser, OnRequestListener<T> listener) {
+    public static <T> void doPost(Request adapter, IDataParser<T> parser, OnRequestListener<T> listener) {
         if (instance != null) {
             instance.doRequest(com.android.volley.Request.Method.POST, adapter, parser, listener);
         }
@@ -86,7 +101,7 @@ public final class RequestManager {
         }
     }
 
-    public static <T> void doPut(Request adapter, IResponseParser<T> parser, OnRequestListener<T> listener) {
+    public static <T> void doPut(Request adapter, IDataParser<T> parser, OnRequestListener<T> listener) {
         if (instance != null) {
             instance.doRequest(com.android.volley.Request.Method.PUT, adapter, parser, listener);
         }
@@ -98,7 +113,7 @@ public final class RequestManager {
         }
     }
 
-    public static <T> void doDelete(Request adapter, IResponseParser<T> parser, OnRequestListener<T> listener) {
+    public static <T> void doDelete(Request adapter, IDataParser<T> parser, OnRequestListener<T> listener) {
         if (instance != null) {
             instance.doRequest(com.android.volley.Request.Method.DELETE, adapter, parser, listener);
         }
@@ -109,15 +124,17 @@ public final class RequestManager {
         this.mQueue = Volley.newRequestQueue(context);
     }
 
-    private <T> void doRequest(int method, Request adapter, IResponseParser<T> parser, OnRequestListener<T> listener) {
+    private <T> void doRequest(int method, Request adapter, IDataParser<T> parser, OnRequestListener<T> listener) {
         if (mQueue == null || adapter == null || parser == null) {
             return;
         }
         RequestWrapper<T> request = new RequestWrapper<T>(method, adapter, parser, listener);
 
         // 使用 adapter tag 标记一条 request
-        final String tag = adapter.getTag();
-        request.setTag(tag);
+        final Object tag = adapter.getTag();
+        if (tag != null) {
+            request.setTag(tag);
+        }
         // END
 
         // 设置请求次数，每次超时时长
@@ -145,12 +162,12 @@ public final class RequestManager {
 
     private static class RequestWrapper<T> extends com.android.volley.Request<T> {
 
-        private IResponseParser<T> mParser;
+        private IDataParser<T> mParser;
         private OnRequestListener<T> mListener;
         private Request mAdapter;
 
-        public RequestWrapper(int method, Request adapter, IResponseParser<T> parser, OnRequestListener<T> listener) {
-            super(method, adapter.getUrlByMethod(method), null);
+        public RequestWrapper(int method, Request adapter, IDataParser<T> parser, OnRequestListener<T> listener) {
+            super(method, adapter.getUrlByMethod(), null);
             this.mAdapter = adapter;
             this.mParser = parser;
             this.mListener = listener;
@@ -200,36 +217,36 @@ public final class RequestManager {
 
         @Override
         protected Map<String, String> getParams() throws AuthFailureError {
-            return mAdapter.getParams();
-//            Map<String, String> params = mAdapter.getParams();
-//            if (params != null && !params.isEmpty()) {
-//                Map<String, String> superParams = super.getParams();
-//                if (superParams != null) {
-//                    superParams.putAll(params);
-//                    return superParams;
-//                } else {
-//                    return params;
-//                }
-//            } else {
-//                return super.getParams();
-//            }
+//            return mAdapter.getParams();
+            Map<String, String> params = mAdapter.getParams();
+            if (params != null && !params.isEmpty()) {
+                Map<String, String> superParams = super.getParams();
+                if (superParams != null) {
+                    superParams.putAll(params);
+                    return superParams;
+                } else {
+                    return params;
+                }
+            } else {
+                return super.getParams();
+            }
         }
 
         @Override
         public Map<String, String> getHeaders() throws AuthFailureError {
-            return mAdapter.getHeaders();
-//            Map<String, String> headers = mAdapter.getHeaders();
-//            if (headers != null && !headers.isEmpty()) {
-//                Map<String, String> superHeaders = super.getHeaders();
-//                if (superHeaders != null) {
-//                    superHeaders.putAll(headers);
-//                    return superHeaders;
-//                } else {
-//                    return headers;
-//                }
-//            } else {
-//                return super.getHeaders();
-//            }
+//            return mAdapter.getHeaders();
+            Map<String, String> headers = mAdapter.getHeaders();
+            if (headers != null && !headers.isEmpty()) {
+                Map<String, String> superHeaders = super.getHeaders();
+                if (superHeaders != null) {
+                    superHeaders.putAll(headers);
+                    return superHeaders;
+                } else {
+                    return headers;
+                }
+            } else {
+                return super.getHeaders();
+            }
         }
 
         @Override

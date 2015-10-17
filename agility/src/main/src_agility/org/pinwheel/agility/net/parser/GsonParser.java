@@ -1,84 +1,130 @@
 package org.pinwheel.agility.net.parser;
 
-import com.google.gson.Gson;
-import com.litesuits.android.log.Log;
+import android.util.Log;
 
-import org.pinwheel.agility.net.RequestManager;
+import com.google.gson.Gson;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2014/10/30 23:26
- * @description
  */
-public final class GsonParser<T> implements IResponseParser<T> {
+public final class GsonParser<T> implements IDataParser<T> {
     private static final String TAG = GsonParser.class.getSimpleName();
 
-    private T obj;
+    private T result;
 
-    private Gson mGson;
+    private Gson gson;
     private Class<T> cls;
     private Type type;
 
+    private OnParseAdapter listener;
+
     public GsonParser(Class<T> cls) {
-        this.mGson = new Gson();
+        this.gson = new Gson();
         this.cls = cls;
     }
 
     public GsonParser(Type type) {
-        this.mGson = new Gson();
+        this.gson = new Gson();
         this.type = type;
     }
 
     @Override
     public final void parse(InputStream inStream) throws Exception {
+        if (listener != null) {
+            listener.dispatchOnProgress(0, -1);
+        }
+
         if (cls != null) {
-            this.onParse(mGson.fromJson(new InputStreamReader(inStream), cls));
+            this.onParse(gson.fromJson(new InputStreamReader(inStream), cls));
         } else if (type != null) {
-            this.onParse((T) mGson.fromJson(new InputStreamReader(inStream), type));
+            this.onParse((T) gson.fromJson(new InputStreamReader(inStream), type));
+        }
+
+        if (listener != null) {
+            listener.dispatchOnComplete();
         }
     }
 
     @Override
     public final void parse(String dataString) throws Exception {
-        if (cls != null) {
-            this.onParse(mGson.fromJson(dataString, cls));
-        } else if (type != null) {
-            this.onParse((T) mGson.fromJson(dataString, type));
+        if (listener != null) {
+            listener.dispatchOnProgress(0, dataString == null ? -1 : dataString.getBytes().length);
         }
 
-        if (RequestManager.debug) {
+        if (debug) {
             Log.d(TAG, dataString);
+        }
+
+        if (cls != null) {
+            this.onParse(gson.fromJson(dataString, cls));
+        } else if (type != null) {
+            this.onParse((T) gson.fromJson(dataString, type));
+        }
+
+        if (listener != null) {
+            long length = dataString == null ? -1 : dataString.getBytes().length;
+            listener.dispatchOnProgress(length, length);
+        }
+
+        if (listener != null) {
+            listener.dispatchOnComplete();
         }
     }
 
     @Override
     public final void parse(byte[] dataBytes) throws Exception {
-        String result = new String(dataBytes, "UTF-8");
-        if (cls != null) {
-            this.onParse(mGson.fromJson(result, cls));
-        } else if (type != null) {
-            this.onParse((T) mGson.fromJson(result, type));
+        if (listener != null) {
+            listener.dispatchOnProgress(0, dataBytes == null ? -1 : dataBytes.length);
         }
 
-        if (RequestManager.debug) {
+        String result = new String(dataBytes, "UTF-8");
+        if (debug) {
             Log.d(TAG, result);
+        }
+        if (cls != null) {
+            this.onParse(gson.fromJson(result, cls));
+        } else if (type != null) {
+            this.onParse((T) gson.fromJson(result, type));
+        }
+
+        if (listener != null) {
+            listener.dispatchOnProgress(dataBytes.length, dataBytes.length);
+        }
+
+        if (listener != null) {
+            listener.dispatchOnComplete();
         }
     }
 
     protected void onParse(T t) throws Exception {
-        this.obj = t;
+        this.result = t;
     }
 
     @Override
     public T getResult() {
-        return obj;
+        return result;
+    }
+
+    @Override
+    public void release() {
+        gson = null;
+        cls = null;
+        type = null;
+        listener = null;
+        result = null;
+    }
+
+    @Override
+    public void setOnParseAdapter(OnParseAdapter listener) {
+        this.listener = listener;
     }
 }

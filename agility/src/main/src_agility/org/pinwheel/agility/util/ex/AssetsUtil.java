@@ -6,9 +6,15 @@ import android.content.res.AssetManager;
 import android.os.Handler;
 import android.webkit.WebView;
 import android.widget.Toast;
-import org.apache.http.protocol.HTTP;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.StringWriter;
 
 /**
  * Assets目录工具类，用于访问各种Assets目录下的文件
@@ -103,7 +109,7 @@ public class AssetsUtil {
                     });
                 }
             }, "demo");
-            web.loadData("<html><head></head><body onload=\"javascript:window.demo.clickOnAndroid()\"></body></html>", "text/html", HTTP.UTF_8);
+            web.loadData("<html><head></head><body onload=\"javascript:window.demo.clickOnAndroid()\"></body></html>", "text/html", "utf-8");
         } catch (IOException e) {
             e.printStackTrace();
         }

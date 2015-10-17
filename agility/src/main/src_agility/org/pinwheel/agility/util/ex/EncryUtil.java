@@ -2,8 +2,6 @@ package org.pinwheel.agility.util.ex;
 
 import android.text.TextUtils;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
@@ -13,6 +11,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * 加密方式工具类
@@ -165,7 +166,8 @@ public class EncryUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new String(org.apache.commons.codec.binary.Base64.encodeBase64(encrypt));
+//        return new String(org.apache.commons.codec.binary.Base64.encodeBase64(encrypt));
+        return new String(android.util.Base64.encode(encrypt, android.util.Base64.DEFAULT));
     }
 
     /**
@@ -182,7 +184,8 @@ public class EncryUtil {
                 Key key = generateKeyAES(keyStr);
                 Cipher cipher = Cipher.getInstance(AESTYPE);
                 cipher.init(Cipher.DECRYPT_MODE, key);
-                decrypt = cipher.doFinal(org.apache.commons.codec.binary.Base64.decodeBase64(encryptData.getBytes()));
+//                decrypt = cipher.doFinal(org.apache.commons.codec.binary.Base64.decodeBase64(encryptData.getBytes()));
+                decrypt = cipher.doFinal(android.util.Base64.decode(encryptData.getBytes(), android.util.Base64.DEFAULT));
             } catch (Exception e) {
                 e.printStackTrace();
             }
