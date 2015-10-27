@@ -65,6 +65,45 @@ public final class BaseUtils {
     }
 
     /**
+     * 流转字节
+     * @param inputStream
+     * @return
+     */
+    public static byte[] stream2Byte(InputStream inputStream) {
+        byte[] content = null;
+        BufferedInputStream in = null;
+        ByteArrayOutputStream out = null;
+        try {
+            in = new BufferedInputStream(inputStream);
+            out = new ByteArrayOutputStream(1024);
+            byte[] temp = new byte[1024];
+            int size = 0;
+            while ((size = in.read(temp)) != -1) {
+                out.write(temp, 0, size);
+            }
+            content = out.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return content;
+    }
+
+    /**
      * 判断当前网络是否为wifi
      *
      * @param mContext

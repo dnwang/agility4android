@@ -20,15 +20,27 @@ import java.util.Set;
 public class Request implements Serializable {
 
     private String baseUrl;
-    private String method;
-    private byte[] body;
-    private Map<String, String> params;
-    private Map<String, String> headers;
-    private int numOfRetries, timeOut;
-    private boolean isKeepSingle;
-    private Object tag;
-    private IDataParser responseParser;
-    private HttpClientAgent.OnRequestAdapter requestListener;
+    protected String method;
+    protected byte[] body;
+    protected Map<String, String> params;
+    protected Map<String, String> headers;
+    protected int numOfRetries, timeOut;
+    protected boolean isKeepSingle;
+    protected Object tag;
+    protected IDataParser responseParser;
+    protected HttpClientAgent.OnRequestAdapter requestListener;
+
+    protected Request(String method, String url) {
+        this.baseUrl = TextUtils.isEmpty(url) ? "http://" : url;
+        this.method = TextUtils.isEmpty(method) ? "GET" : method;
+        body = null;
+        params = new HashMap<String, String>(0);
+        headers = new HashMap<String, String>(0);
+        numOfRetries = 0;
+        timeOut = 10 * 60;
+        isKeepSingle = false;
+        tag = baseUrl;
+    }
 
     private Request(Builder builder) {
         baseUrl = builder.url;
@@ -39,31 +51,7 @@ public class Request implements Serializable {
         timeOut = builder.timeOut;
         numOfRetries = builder.numOfRetries;
         isKeepSingle = builder.isKeepSingle;
-        tag = builder.tag;
-    }
-
-    protected String getMethod() {
-        return method;
-    }
-
-    protected byte[] getBody() {
-        return body;
-    }
-
-    protected Map<String, String> getHeaders() {
-        return headers;
-    }
-
-    protected Map<String, String> getParams() {
-        return params;
-    }
-
-    protected IDataParser getResponseParser() {
-        return responseParser;
-    }
-
-    protected HttpClientAgent.OnRequestAdapter getRequestListener() {
-        return requestListener;
+        tag = builder.tag == null ? baseUrl : builder.tag;// use baseUrl as default tag
     }
 
     /**
@@ -90,6 +78,22 @@ public class Request implements Serializable {
         }
     }
 
+    public String getMethod() {
+        return method;
+    }
+
+    public byte[] getBody() {
+        return body;
+    }
+
+    public Map<String, String> getParams() {
+        return params;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
     public int getTimeout() {
         return timeOut;
     }
@@ -106,6 +110,14 @@ public class Request implements Serializable {
         return tag;
     }
 
+    public IDataParser getResponseParser() {
+        return responseParser;
+    }
+
+    public HttpClientAgent.OnRequestAdapter getRequestListener() {
+        return requestListener;
+    }
+
     public void setOnRequestListener(HttpClientAgent.OnRequestAdapter listener) {
         this.requestListener = listener;
     }
@@ -119,10 +131,27 @@ public class Request implements Serializable {
         setOnRequestListener(listener);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (tag == null || o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Request request = (Request) o;
+        return tag.equals(request.tag);
+    }
+
+    @Override
+    public int hashCode() {
+        return tag == null ? 0 : tag.hashCode();
+    }
+
     /**
      * Request builder
      */
-    public static final class Builder {
+    public static class Builder {
 
         private String url;
         private String method;
@@ -143,20 +172,20 @@ public class Request implements Serializable {
             numOfRetries = 0;
             timeOut = 10 * 60;
             isKeepSingle = false;
-            tag = url; // default tag
+            tag = null;
         }
 
-        public Builder url(String url) {
+        public final Builder url(String url) {
             this.url = TextUtils.isEmpty(url) ? "http://" : url;
             return this;
         }
 
-        public Builder method(String method) {
+        public final Builder method(String method) {
             this.method = TextUtils.isEmpty(method) ? "GET" : method;
             return this;
         }
 
-        public Builder addHeader(String key, Object value) {
+        public final Builder addHeader(String key, Object value) {
             if (TextUtils.isEmpty(key)) {
                 return this;
             }
@@ -164,12 +193,12 @@ public class Request implements Serializable {
             return this;
         }
 
-        public Builder body(byte[] bytes) {
+        public final Builder body(byte[] bytes) {
             this.body = bytes;
             return this;
         }
 
-        public Builder addParam(String key, Object value) {
+        public final Builder addParam(String key, Object value) {
             if (TextUtils.isEmpty(key)) {
                 return this;
             }
@@ -177,7 +206,7 @@ public class Request implements Serializable {
             return this;
         }
 
-        public Builder addParams(Map<String, String> values) {
+        public final Builder addParams(Map<String, String> values) {
             if (values == null || values.isEmpty()) {
                 return this;
             }
@@ -185,22 +214,23 @@ public class Request implements Serializable {
             return this;
         }
 
-        public Builder timeOut(int timeOut, int numOfRetries) {
+        public final Builder timeOut(int timeOut, int numOfRetries) {
             this.timeOut = Math.max(0, timeOut);
             this.numOfRetries = Math.max(0, numOfRetries);
             return this;
         }
 
-        public Builder tag(String tag) {
+        public final Builder tag(Object tag) {
+            this.tag = tag;
             return this;
         }
 
-        public Builder keepSingle(boolean isKeySingle) {
+        public final Builder keepSingle(boolean isKeySingle) {
             this.isKeepSingle = isKeySingle;
             return this;
         }
 
-        public Request create() {
+        public final Request create() {
             return new Request(this);
         }
     }

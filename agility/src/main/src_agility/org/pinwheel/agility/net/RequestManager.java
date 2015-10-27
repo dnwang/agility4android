@@ -142,7 +142,7 @@ public final class RequestManager {
         // END
 
         // 清除队列中 相同url的请求
-        if (adapter.isKeepSingle()) {
+        if (tag != null && adapter.isKeepSingle()) {
             mQueue.cancelAll(new RequestQueue.RequestFilter() {
                 @Override
                 public boolean apply(com.android.volley.Request request) {
@@ -155,7 +155,7 @@ public final class RequestManager {
         mQueue.add(request);
 
         if (debug) {
-            Log.d(TAG, "Request Tag:" + request.getTag().toString());
+            Log.d(TAG, "Request Tag:" + String.valueOf(request.getTag()));
             Log.d(TAG, "Request Url:" + request.getUrl());
         }
     }

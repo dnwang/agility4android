@@ -2,6 +2,7 @@ package org.pinwheel.agility.util;
 
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
+
 import com.android.volley.toolbox.ImageLoader;
 
 /**
@@ -13,7 +14,8 @@ import com.android.volley.toolbox.ImageLoader;
  * @date 2015/3/14 21:50
  * @description
  */
-public class BitmapCache implements ImageLoader.ImageCache {
+@Deprecated
+class BitmapCache implements ImageLoader.ImageCache {
 
     private LruCache<String, Bitmap> mCache;
 
