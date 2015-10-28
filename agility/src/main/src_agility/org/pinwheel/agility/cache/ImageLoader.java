@@ -5,9 +5,10 @@ import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
-
 import org.pinwheel.agility.net.HttpClientAgent;
+import org.pinwheel.agility.net.HttpConnectionAgent;
 import org.pinwheel.agility.net.OkHttpAgent;
+import org.pinwheel.agility.net.VolleyAgent;
 import org.pinwheel.agility.net.parser.IDataParser;
 
 import java.io.InputStream;
@@ -27,6 +28,12 @@ import java.util.concurrent.Executors;
  */
 public final class ImageLoader {
     private static final String TAG = ImageLoader.class.getSimpleName();
+
+    public static final int DEFAULT = 0x00;
+    public static final int OKHTTP = 0x01;
+    public static final int VOLLEY = 0x02;
+
+    public static int HTTP_ENGINE = DEFAULT;
 
     private static final String PATH = "bitmap";
     private static final int CACHE_SIZE_OF_DISK = 1024 * 1024 * 1024;//1G
@@ -48,11 +55,21 @@ public final class ImageLoader {
 
     private ImageLoader(Context context) {
         executor = Executors.newCachedThreadPool();
-        taskMap = new HashMap<String, ImageTaskDispatcher.Task>();
+        taskMap = new HashMap<>();
         DiskCache diskCache = new DiskCache(Tools.getDiskCacheDir(context, PATH), 0, CACHE_SIZE_OF_DISK);
         MemoryCache memoryCache = new MemoryCache(CACHE_SIZE_OF_MEMORY);
         cacheLoader = new SimpleCacheLoader(memoryCache, diskCache);
-        taskDispatcher = new ImageTaskDispatcher(5, new OkHttpAgent());
+
+        // Auto select http engine
+        HttpClientAgent httpClientAgent;
+        if (OKHTTP == HTTP_ENGINE) {
+            httpClientAgent = new OkHttpAgent();
+        } else if (VOLLEY == HTTP_ENGINE) {
+            httpClientAgent = new VolleyAgent(context);
+        } else {
+            httpClientAgent = new HttpConnectionAgent();
+        }
+        taskDispatcher = new ImageTaskDispatcher(5, httpClientAgent);
     }
 
     public CacheLoader getCacheLoader() {
@@ -63,7 +80,7 @@ public final class ImageLoader {
         if (view == null || TextUtils.isEmpty(url) || executor == null) {
             return;
         }
-        final WeakReference<View> viewReference = new WeakReference<View>(view);
+        final WeakReference<View> viewReference = new WeakReference<>(view);
         executor.submit(new Runnable() {
             @Override
             public void run() {
@@ -75,7 +92,7 @@ public final class ImageLoader {
                     Tools.setBitmapInUIThread(viewReference, cache);
                 } else {
                     Tools.setBitmapInUIThread(viewReference, null);
-                    loadBitmap(viewReference, key, url);
+                    getBitmapAsTask(viewReference, key, url);
                 }
             }
         });
@@ -85,7 +102,7 @@ public final class ImageLoader {
         if (view == null || TextUtils.isEmpty(url) || executor == null) {
             return;
         }
-        final WeakReference<View> viewReference = new WeakReference<View>(view);
+        final WeakReference<View> viewReference = new WeakReference<>(view);
         executor.submit(new Runnable() {
             @Override
             public void run() {
@@ -96,8 +113,8 @@ public final class ImageLoader {
                     // load cache success
                     Tools.setBitmapInUIThread(viewReference, cache);
                 } else {
-                    Tools.setBitmapInUIThread(viewReference, null);
-                    loadBitmap(viewReference, key, url);
+                    Tools.setBitmapInUIThread(viewReference, null);// default bitmap
+                    getBitmapAsTask(viewReference, key, url);
                 }
             }
         });
@@ -107,7 +124,7 @@ public final class ImageLoader {
         if (imageView == null || TextUtils.isEmpty(url) || executor == null) {
             return;
         }
-        final WeakReference<ImageView> viewReference = new WeakReference<ImageView>(imageView);
+        final WeakReference<ImageView> viewReference = new WeakReference<>(imageView);
         executor.submit(new Runnable() {
             @Override
             public void run() {
@@ -124,13 +141,13 @@ public final class ImageLoader {
                     Tools.setBitmapInUIThread(viewReference, cache);
                 } else {
                     Tools.setBitmapInUIThread(viewReference, null);
-                    loadBitmap(viewReference, key, url);
+                    getBitmapAsTask(viewReference, key, url);
                 }
             }
         });
     }
 
-    private void loadBitmap(final WeakReference<? extends View> viewReference, String key, String url) {
+    private void getBitmapAsTask(final WeakReference<? extends View> viewReference, String key, String url) {
         final ImageTaskDispatcher.Task task = new ImageTaskDispatcher.Task(key, url);
         task.addView(viewReference);
         task.setResponseParser(new CacheParser(task), new HttpClientAgent.OnRequestAdapter<Bitmap>() {
@@ -142,6 +159,7 @@ public final class ImageLoader {
 
             @Override
             public void onDeliverError(Exception e) {
+                task.applyBitmap(null); // error bitmap
                 removeTaskInLoadingComplete(task.getId());
             }
         });

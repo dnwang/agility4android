@@ -3,7 +3,6 @@ package org.pinwheel.agility.cache;
 import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.View;
-
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.Request;
 
@@ -29,7 +28,7 @@ class ImageTaskDispatcher {
     public ImageTaskDispatcher(int maxTaskNum, HttpClientAgent httpClientAgent) {
         this.isDownloading = false;
         this.httpClientAgent = httpClientAgent;
-        this.queue = new ArrayBlockingQueue<Request>(maxTaskNum);
+        this.queue = new ArrayBlockingQueue<>(maxTaskNum);
     }
 
     public void post(Request request) {
@@ -55,30 +54,61 @@ class ImageTaskDispatcher {
         if (request == null) {
             return;
         }
-        final HttpClientAgent.OnRequestAdapter requestAdapter = request.getRequestListener();
-        request.setOnRequestListener(new HttpClientAgent.OnRequestAdapter() {
+        request.setOnRequestListener(new OnRequestWrapper(request.getRequestListener()) {
             @Override
-            public void onDeliverSuccess(Object obj) {
-                if (requestAdapter != null) {
-                    requestAdapter.onDeliverSuccess(obj);
-                }
-
-                isDownloading = false;
-                startDownload();
-            }
-
-            @Override
-            public void onDeliverError(Exception e) {
-                if (requestAdapter != null) {
-                    requestAdapter.onDeliverError(e);
-                }
-
+            public void onDeliverComplete() {
                 isDownloading = false;
                 startDownload();
             }
         });
         isDownloading = true;
         httpClientAgent.enqueue(request);
+    }
+
+    /**
+     * Request callback wrapper
+     */
+    private static abstract class OnRequestWrapper extends HttpClientAgent.OnRequestAdapter {
+
+        private HttpClientAgent.OnRequestAdapter adapter;
+
+        public OnRequestWrapper(HttpClientAgent.OnRequestAdapter adapter) {
+            this.adapter = adapter;
+        }
+
+        @Override
+        public boolean onRequest(Request request) {
+            if (adapter != null) {
+                return adapter.onRequest(request);
+            }
+            return super.onRequest(request);
+        }
+
+        @Override
+        public boolean onResponse(Object args) {
+            if (adapter != null) {
+                return adapter.onResponse(args);
+            }
+            return super.onResponse(args);
+        }
+
+        @Override
+        public void onDeliverSuccess(Object obj) {
+            if (adapter != null) {
+                adapter.onDeliverSuccess(obj);
+            }
+            onDeliverComplete();
+        }
+
+        @Override
+        public void onDeliverError(Exception e) {
+            if (adapter != null) {
+                adapter.onDeliverError(e);
+            }
+            onDeliverComplete();
+        }
+
+        public abstract void onDeliverComplete();
     }
 
     /**
@@ -98,7 +128,7 @@ class ImageTaskDispatcher {
         public Task(String id, String url) {
             super("GET", url);
             this.id = id;
-            this.views = new HashSet<WeakReference<? extends View>>(1);
+            this.views = new HashSet<>(1);
         }
 
         public String getId() {

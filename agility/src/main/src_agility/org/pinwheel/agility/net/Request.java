@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public class Request implements Serializable {
 
-    private String baseUrl;
+    protected String baseUrl;
     protected String method;
     protected byte[] body;
     protected Map<String, String> params;

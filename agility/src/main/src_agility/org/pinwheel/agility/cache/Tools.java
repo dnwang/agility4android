@@ -9,11 +9,7 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.ImageView;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.ref.WeakReference;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -75,7 +71,7 @@ final class Tools {
         }
     }
 
-    public static void setBitmapInUIThread(final WeakReference<? extends View> viewReference, final Bitmap bitmap){
+    public static void setBitmapInUIThread(final WeakReference<? extends View> viewReference, final Bitmap bitmap) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -116,6 +112,15 @@ final class Tools {
             }
         }
         return content;
+    }
+
+    public static boolean haveOkHttp() {
+        try {
+            Class cls = Class.forName("com.squareup.okhttp.OkHttpClient");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
 }

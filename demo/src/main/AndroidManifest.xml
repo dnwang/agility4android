@@ -78,6 +78,6 @@
             android:label="测试 Json2Class" />
         <activity
             android:name="org.pinwheel.demo4agility.activity.CacheActivity"
-            android:label="缓存" />
+            android:label="图片缓存 ImageLoader" />
     </application>
 </manifest>

@@ -105,7 +105,8 @@ public class SimpleCacheLoader implements CacheLoader {
         if (memoryCache == null || diskCache == null) {
             return null;
         }
-        CacheEntity value = memoryCache.getCache(key);
+        String memoryKey = key + width + height;
+        CacheEntity value = memoryCache.getCache(memoryKey);
         if (value != null) {
             return ((BitmapEntity) value).get();
         } else {
@@ -113,7 +114,7 @@ public class SimpleCacheLoader implements CacheLoader {
             if (inputStream != null) {
                 BitmapEntity data = new BitmapEntity();
                 data.decodeFrom(inputStream, width, height);
-                memoryCache.setCache(key, data);
+                memoryCache.setCache(memoryKey, data);
                 return data.get();
             } else {
                 return null;
@@ -125,7 +126,8 @@ public class SimpleCacheLoader implements CacheLoader {
         if (memoryCache == null || diskCache == null) {
             return null;
         }
-        CacheEntity value = memoryCache.getCache(key);
+        String memoryKey = key + maxWidth + maxHeight + scaleType.toString();
+        CacheEntity value = memoryCache.getCache(memoryKey);
         if (value != null) {
             return ((BitmapEntity) value).get();
         } else {
@@ -133,7 +135,7 @@ public class SimpleCacheLoader implements CacheLoader {
             if (inputStream != null) {
                 BitmapEntity data = new BitmapEntity();
                 data.decodeFrom(inputStream, scaleType, maxWidth, maxHeight);
-                memoryCache.setCache(key, data);
+                memoryCache.setCache(memoryKey, data);
                 return data.get();
             } else {
                 return null;
