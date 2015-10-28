@@ -8,9 +8,9 @@ import android.widget.GridView;
 import android.widget.ImageView;
 
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
-import org.pinwheel.agility.cache.ImageLoader;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.demo4agility.R;
+import org.pinwheel.demo4agility.test.ImageLoaderManager;
 
 /**
  * Copyright (C), 2015 <br>
@@ -97,7 +97,7 @@ public class CacheActivity extends AbsTestActivity {
             }
             ImageView imageView = BaseUtils.getViewByHolder(convertView, R.id.image);
 
-            ImageLoader.getInstance(context).setImageByScaleType(imageView, getItem(position));
+            ImageLoaderManager.getImageLoader(context).setImage(imageView, getItem(position), 256, 256);
 
             return convertView;
         }

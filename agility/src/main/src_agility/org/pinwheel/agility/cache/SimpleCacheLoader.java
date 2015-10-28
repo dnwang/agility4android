@@ -105,7 +105,7 @@ public class SimpleCacheLoader implements CacheLoader {
         if (memoryCache == null || diskCache == null) {
             return null;
         }
-        String memoryKey = key + width + height;
+        String memoryKey = key + String.valueOf(width) + String.valueOf(height);
         CacheEntity value = memoryCache.getCache(memoryKey);
         if (value != null) {
             return ((BitmapEntity) value).get();
@@ -126,7 +126,7 @@ public class SimpleCacheLoader implements CacheLoader {
         if (memoryCache == null || diskCache == null) {
             return null;
         }
-        String memoryKey = key + maxWidth + maxHeight + scaleType.toString();
+        String memoryKey = key + String.valueOf(maxWidth) + String.valueOf(maxHeight) + scaleType.toString();
         CacheEntity value = memoryCache.getCache(memoryKey);
         if (value != null) {
             return ((BitmapEntity) value).get();

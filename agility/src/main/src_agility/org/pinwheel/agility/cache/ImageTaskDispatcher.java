@@ -3,6 +3,7 @@ package org.pinwheel.agility.cache;
 import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.View;
+
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.Request;
 
@@ -20,6 +21,7 @@ import java.util.concurrent.BlockingQueue;
  * @author dnwang
  */
 class ImageTaskDispatcher {
+    private static final String TAG = ImageTaskDispatcher.class.getSimpleName();
 
     private boolean isDownloading;
     private BlockingQueue<Request> queue;
@@ -120,7 +122,6 @@ class ImageTaskDispatcher {
      * @author dnwang
      */
     static class Task extends Request {
-        private static final String TAG = Task.class.getSimpleName();
 
         private String id;
         private final HashSet<WeakReference<? extends View>> views;

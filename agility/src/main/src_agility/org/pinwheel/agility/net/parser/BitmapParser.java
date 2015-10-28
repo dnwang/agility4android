@@ -3,7 +3,6 @@ package org.pinwheel.agility.net.parser;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,14 +16,11 @@ import java.io.InputStream;
  *
  * @author dnwang
  */
-public class BitmapParser implements IDataParser<Bitmap> {
-    private final static String TAG = BitmapParser.class.getSimpleName();
+public class BitmapParser extends DataParserAdapter<Bitmap> {
 
     private Bitmap result;
     private String fileName;
     private Bitmap.CompressFormat format;
-
-    private OnParseAdapter listener;
 
     public BitmapParser(File fileName, Bitmap.CompressFormat format) {
         this(fileName.getAbsolutePath(), format);
@@ -37,51 +33,32 @@ public class BitmapParser implements IDataParser<Bitmap> {
 
     @Override
     public void parse(InputStream inStream) throws Exception {
-        if (listener != null) {
-            listener.dispatchOnProgress(0, -1);
-        }
+        dispatchOnProgress(0, -1);
 
         result = BitmapFactory.decodeStream(inStream);
 
         saveBitmap2File(result);
 
-        if (listener != null) {
-            listener.dispatchOnComplete();
-        }
+        dispatchOnComplete();
     }
 
     @Override
     public void parse(byte[] dataBytes) throws Exception {
-        if (listener != null) {
-            listener.dispatchOnProgress(0, dataBytes == null ? -1 : dataBytes.length);
-        }
+        dispatchOnProgress(0, dataBytes == null ? -1 : dataBytes.length);
 
         result = BitmapFactory.decodeByteArray(dataBytes, 0, dataBytes.length);
 
-        if (listener != null) {
-            listener.dispatchOnProgress(dataBytes.length, dataBytes.length);
-        }
+        dispatchOnProgress(dataBytes.length, dataBytes.length);
 
         saveBitmap2File(result);
 
-        if (listener != null) {
-            listener.dispatchOnComplete();
-        }
+        dispatchOnComplete();
     }
 
     @Override
     public void parse(String dataString) throws Exception {
-        if (listener != null) {
-            listener.dispatchOnProgress(-1, -1);
-        }
-
-        if (debug) {
-            Log.e(TAG, TAG + " not support !");
-        }
-
-        if (listener != null) {
-            listener.dispatchOnComplete();
-        }
+        dispatchOnProgress(-1, -1);
+        dispatchOnComplete();
     }
 
     @Override
@@ -91,17 +68,12 @@ public class BitmapParser implements IDataParser<Bitmap> {
 
     @Override
     public void release() {
+        super.release();
         if (result != null && result.isRecycled()) {
             result.recycle();
         }
         fileName = null;
         format = null;
-        listener = null;
-    }
-
-    @Override
-    public void setOnParseAdapter(OnParseAdapter listener) {
-        this.listener = listener;
     }
 
     protected final void saveBitmap2File(Bitmap bitmap) throws Exception {

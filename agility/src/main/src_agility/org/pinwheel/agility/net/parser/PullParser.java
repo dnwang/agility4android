@@ -1,6 +1,5 @@
 package org.pinwheel.agility.net.parser;
 
-import android.util.Log;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -17,8 +16,7 @@ import java.util.Map;
  *
  * @author dnwang
  */
-public abstract class PullParser<T> implements IDataParser<T> {
-    private static final String TAG = PullParser.class.getSimpleName();
+public abstract class PullParser<T> extends DataParserAdapter<T> {
 
     private XmlPullParser parser;
 
@@ -69,14 +67,8 @@ public abstract class PullParser<T> implements IDataParser<T> {
     protected abstract void onParse(String tag, int eventType, XmlPullParser parser) throws Exception;
 
     @Override
-    public void setOnParseAdapter(OnParseAdapter listener) {
-        if (debug) {
-            Log.e(TAG, TAG + " not support !");
-        }
-    }
-
-    @Override
     public void release() {
+        super.release();
         parser = null;
     }
 

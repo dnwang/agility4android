@@ -13,53 +13,36 @@ import java.io.InputStreamReader;
  *
  * @author dnwang
  */
-public class StringParser implements IDataParser<String> {
-    private final static String TAG = StringParser.class.getSimpleName();
+public class StringParser extends DataParserAdapter<String> {
 
     private String result;
-
-    private OnParseAdapter listener;
 
     @Override
     public void parse(InputStream inStream) throws Exception {
         result = streamToString(inStream);
-        if (listener != null) {
-            listener.dispatchOnComplete();
-        }
+        dispatchOnComplete();
     }
 
     @Override
     public void parse(byte[] dataBytes) throws Exception {
-        if (listener != null) {
-            listener.dispatchOnProgress(0, 0);
-        }
+        dispatchOnProgress(0, 0);
 
         result = new String(dataBytes, "UTF-8");
 
-        if (listener != null) {
-            listener.dispatchOnProgress(0, result.getBytes().length);
-        }
+        dispatchOnProgress(0, result.getBytes().length);
 
-        if (listener != null) {
-            listener.dispatchOnComplete();
-        }
+        dispatchOnComplete();
     }
 
     @Override
     public void parse(String dataString) throws Exception {
-        if (listener != null) {
-            listener.dispatchOnProgress(0, 0);
-        }
+        dispatchOnProgress(0, 0);
 
         result = dataString;
 
-        if (listener != null) {
-            listener.dispatchOnProgress(0, result == null ? -1 : result.getBytes().length);
-        }
+        dispatchOnProgress(0, result == null ? -1 : result.getBytes().length);
 
-        if (listener != null) {
-            listener.dispatchOnComplete();
-        }
+        dispatchOnComplete();
     }
 
     @Override
@@ -69,13 +52,8 @@ public class StringParser implements IDataParser<String> {
 
     @Override
     public void release() {
+        super.release();
         result = null;
-        listener = null;
-    }
-
-    @Override
-    public void setOnParseAdapter(OnParseAdapter listener) {
-        this.listener = listener;
     }
 
     protected final String streamToString(InputStream is) {
@@ -91,13 +69,11 @@ public class StringParser implements IDataParser<String> {
                 sb.append(line + "\n");
 
                 // progress callback
-                if (listener != null) {
-                    progress += line.length();
-                    currentTime = System.currentTimeMillis();
-                    if (currentTime - lastTime > 1000) {
-                        listener.dispatchOnProgress(progress, -1);// -1 unknown
-                        lastTime = currentTime;
-                    }
+                progress += line.length();
+                currentTime = System.currentTimeMillis();
+                if (currentTime - lastTime > 1000) {
+                    dispatchOnProgress(progress, -1);// -1 unknown
+                    lastTime = currentTime;
                 }
                 // end
             }

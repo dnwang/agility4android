@@ -12,12 +12,10 @@ import java.io.InputStream;
  *
  * @author dnwang
  */
-public class FileParser implements IDataParser<File> {
+public class FileParser extends DataParserAdapter<File> {
 
     private File result;
     private String fileName;
-
-    private OnParseAdapter listener;
 
     public FileParser(File fileName) {
         this(fileName.getAbsolutePath());
@@ -30,25 +28,19 @@ public class FileParser implements IDataParser<File> {
     @Override
     public void parse(InputStream inStream) throws Exception {
         result = save(fileName, inStream);
-        if (listener != null) {
-            listener.dispatchOnComplete();
-        }
+        dispatchOnComplete();
     }
 
     @Override
     public void parse(byte[] dataBytes) throws Exception {
         result = save(fileName, dataBytes);
-        if (listener != null) {
-            listener.dispatchOnComplete();
-        }
+        dispatchOnComplete();
     }
 
     @Override
     public void parse(String dataString) throws Exception {
         result = save(fileName, dataString.getBytes());
-        if (listener != null) {
-            listener.dispatchOnComplete();
-        }
+        dispatchOnComplete();
     }
 
     @Override
@@ -58,14 +50,9 @@ public class FileParser implements IDataParser<File> {
 
     @Override
     public void release() {
+        super.release();
         result = null;
         fileName = null;
-        listener = null;
-    }
-
-    @Override
-    public void setOnParseAdapter(OnParseAdapter listener) {
-        this.listener = listener;
     }
 
     protected final File save(String name, InputStream inStream) throws Exception {
@@ -90,13 +77,11 @@ public class FileParser implements IDataParser<File> {
             while ((len = inStream.read(buf)) != -1) {
                 fout.write(buf, 0, len);
                 // progress callback
-                if (listener != null) {
-                    progress += len;
-                    currentTime = System.currentTimeMillis();
-                    if (currentTime - lastTime > 1000) {
-                        listener.dispatchOnProgress(progress, -1);// -1 unknown
-                        lastTime = currentTime;
-                    }
+                progress += len;
+                currentTime = System.currentTimeMillis();
+                if (currentTime - lastTime > 1000) {
+                    dispatchOnProgress(progress, -1);// -1 unknown
+                    lastTime = currentTime;
                 }
                 // end
             }
@@ -132,15 +117,11 @@ public class FileParser implements IDataParser<File> {
             fout = new FileOutputStream(name);
 
             // progress callback
-            if (listener != null) {
-                listener.dispatchOnProgress(0, data.length);
-            }
+            dispatchOnProgress(0, data.length);
 
             fout.write(data);
 
-            if (listener != null) {
-                listener.dispatchOnProgress(data.length, data.length);
-            }
+            dispatchOnProgress(data.length, data.length);
             // end
 
             target_file = new File(name);
