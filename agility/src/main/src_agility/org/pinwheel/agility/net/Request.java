@@ -30,14 +30,14 @@ public class Request implements Serializable {
     protected IDataParser responseParser;
     protected HttpClientAgent.OnRequestAdapter requestListener;
 
-    protected Request(String method, String url) {
+    protected Request(String method, String url, int timeOut) {
         this.baseUrl = TextUtils.isEmpty(url) ? "http://" : url;
         this.method = TextUtils.isEmpty(method) ? "GET" : method;
+        this.timeOut = timeOut;
         body = null;
         params = new HashMap<String, String>(0);
         headers = new HashMap<String, String>(0);
         numOfRetries = 0;
-        timeOut = 10 * 60;
         isKeepSingle = false;
         tag = baseUrl;
     }

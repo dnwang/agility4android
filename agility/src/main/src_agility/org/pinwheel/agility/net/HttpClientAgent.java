@@ -40,7 +40,7 @@ public interface HttpClientAgent {
 
         public abstract void onDeliverError(Exception e);
 
-        final void dispatchOnError(final Exception e) {
+        protected final void dispatchOnError(final Exception e) {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
@@ -49,7 +49,7 @@ public interface HttpClientAgent {
             });
         }
 
-        final void dispatchOnSuccess(final Object result) {
+        protected final void dispatchOnSuccess(final Object result) {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
@@ -57,7 +57,8 @@ public interface HttpClientAgent {
                         onDeliverSuccess(null);
                     } else {
                         try {
-                            onDeliverSuccess((T) result);
+                            T obj = (T) result;
+                            onDeliverSuccess(obj);
                         } catch (ClassCastException e) {
                             onDeliverError(e);
                         }

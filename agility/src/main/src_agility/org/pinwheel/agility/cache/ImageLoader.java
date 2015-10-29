@@ -3,8 +3,10 @@ package org.pinwheel.agility.cache;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.util.BaseUtils;
@@ -33,7 +35,7 @@ public class ImageLoader {
     // Default max memory cache size
     public static final int DEFAULT_MAX_MEMORY_CACHE = (int) (Runtime.getRuntime().maxMemory() / 1024 / 8);//1/8 total memory
     // Default max parallel number
-    public static final int DEFAULT_PARALLEL_TASK = 5;
+    public static final int DEFAULT_PARALLEL_TASK = 6;
 
     /**
      * Network task map
@@ -196,7 +198,7 @@ public class ImageLoader {
      * @return is put
      */
     protected boolean checkAndPutTask(ImageTaskDispatcher.Task task) {
-        synchronized (taskMap) {
+        synchronized (ImageLoader.class) {
             boolean is = taskMap.containsKey(task.getId());
             if (!is) {
                 taskMap.put(task.getId(), task);
@@ -211,7 +213,7 @@ public class ImageLoader {
      * @param taskId taskId
      */
     protected void removeTaskInLoadingComplete(String taskId) {
-        synchronized (taskMap) {
+        synchronized (ImageLoader.class) {
             taskMap.remove(taskId);
         }
     }
@@ -223,7 +225,7 @@ public class ImageLoader {
      * @param view   weakReference
      */
     protected void addViewToTask(String taskId, WeakReference<? extends View> view) {
-        synchronized (taskMap) {
+        synchronized (ImageLoader.class) {
             ImageTaskDispatcher.Task task = taskMap.get(taskId);
             if (task != null) {
                 task.addView(view);
@@ -237,7 +239,7 @@ public class ImageLoader {
      * @param view weakReference
      */
     protected void clearViewInTaskMap(WeakReference<? extends View> view) {
-        synchronized (taskMap) {
+        synchronized (ImageLoader.class) {
             Collection<ImageTaskDispatcher.Task> tasks = taskMap.values();
             for (ImageTaskDispatcher.Task task : tasks) {
                 task.removeView(view);
@@ -249,7 +251,7 @@ public class ImageLoader {
      * Release all reference
      */
     public void release() {
-        synchronized (taskMap) {
+        synchronized (ImageLoader.class) {
             taskMap.clear();
         }
         if (executor != null) {
@@ -294,6 +296,7 @@ public class ImageLoader {
         @Override
         public void run() {
             if (viewReference.get() == null) {
+                Log.e("--------->", "AsyncLoader run view = null!");
                 return;
             }
             // get disk cache
@@ -310,13 +313,13 @@ public class ImageLoader {
                 // load disk cache success
                 ImageLoaderUtils.setBitmapInUIThread(viewReference, cache);
             } else {
+                clearViewInTaskMap(viewReference);
                 ImageTaskDispatcher.Task task = createTask(viewReference, key, url);
                 if (!checkAndPutTask(task)) {
                     // start this new task now
                     taskDispatcher.post(task);
                 } else {
                     // no need start task, because task was already loaded
-                    clearViewInTaskMap(viewReference);
                     addViewToTask(key, viewReference);
                 }
             }
@@ -342,6 +345,7 @@ public class ImageLoader {
 
                 @Override
                 public void onDeliverError(Exception e) {
+                    Log.e("--------->", "onDeliverError");
                     task.applyBitmap(errorRes); // show error bitmap
                     removeTaskInLoadingComplete(task.getId());
                 }

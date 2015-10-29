@@ -11,6 +11,7 @@ import com.squareup.okhttp.Response;
 import org.pinwheel.agility.net.parser.IDataParser;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -100,6 +101,9 @@ public class OkHttpAgent implements HttpClientAgent {
                             // no need handle continue
                             return;
                         }
+                    }
+                    if (response.code() != HttpURLConnection.HTTP_OK) {
+                        throw new IllegalStateException("Response code: " + response.code() + "; message: " + response.message());
                     }
                 } catch (Exception e) {
                     if (debug) {

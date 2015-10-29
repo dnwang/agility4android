@@ -6,6 +6,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -60,6 +61,10 @@ final class ImageLoaderUtils {
     }
 
     public static void setBitmap(WeakReference<? extends View> viewReference, Bitmap bitmap) {
+        if (bitmap == null){
+            Log.e("--------->", "setBitmap bitmap bitmap = null!");
+        }
+
         View v = viewReference.get();
         if (v != null) {
             if (v instanceof ImageView) {
@@ -71,11 +76,14 @@ final class ImageLoaderUtils {
                     v.setBackgroundDrawable(new BitmapDrawable(bitmap));
                 }
             }
+        }else{
+            Log.e("--------->", "setBitmap bitmap view = null!");
         }
     }
 
     public static void setBitmap(WeakReference<? extends View> viewReference, int res) {
         if (res <= 0) {
+            Log.e("--------->", "setBitmap res res<0!");
             setBitmap(viewReference, null);
         } else {
             View v = viewReference.get();
@@ -85,6 +93,8 @@ final class ImageLoaderUtils {
                 } else {
                     v.setBackgroundResource(res);
                 }
+            }else{
+                Log.e("--------->", "setBitmap res view = null!");
             }
         }
     }

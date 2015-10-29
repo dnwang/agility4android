@@ -79,13 +79,17 @@ public class HttpConnectionAgent implements HttpClientAgent {
                         dataOutputStream.flush();
                         dataOutputStream.close();
                     }
-
+                    int code = connection.getResponseCode();
+                    String message = connection.getResponseMessage();
                     if (callback != null) {
                         if (callback.onResponse(connection)) {
                             // no need handle continue
                             connection.disconnect();
                             return;
                         }
+                    }
+                    if (code != HttpURLConnection.HTTP_OK) {
+                        throw new IllegalStateException("Response code: " + code + "; message: " + message);
                     }
                 } catch (Exception e) {
                     if (debug) {

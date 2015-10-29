@@ -1,7 +1,6 @@
 package org.pinwheel.agility.cache;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 import android.view.View;
 
 import org.pinwheel.agility.net.HttpClientAgent;
@@ -21,7 +20,6 @@ import java.util.concurrent.BlockingQueue;
  * @author dnwang
  */
 class ImageTaskDispatcher {
-    private static final String TAG = ImageTaskDispatcher.class.getSimpleName();
 
     private boolean isDownloading;
     private BlockingQueue<Request> queue;
@@ -127,7 +125,7 @@ class ImageTaskDispatcher {
         private final HashSet<WeakReference<? extends View>> views;
 
         public Task(String id, String url) {
-            super("GET", url);
+            super("GET", url, 20);
             this.id = id;
             this.views = new HashSet<>(1);
         }
@@ -148,8 +146,7 @@ class ImageTaskDispatcher {
         }
 
         public void applyBitmap(final Bitmap bitmap) {
-            Log.e(TAG, "applyBitmap()--> url:" + getUrl() + ", size:" + views.size());
-            synchronized (views) {
+            synchronized (Task.class) {
                 for (WeakReference<? extends View> viewReference : views) {
                     ImageLoaderUtils.setBitmap(viewReference, bitmap);
                 }
@@ -157,8 +154,7 @@ class ImageTaskDispatcher {
         }
 
         public void applyBitmap(final int res) {
-            Log.e(TAG, "applyBitmap()--> url:" + getUrl() + ", size:" + views.size());
-            synchronized (views) {
+            synchronized (Task.class) {
                 for (WeakReference<? extends View> viewReference : views) {
                     ImageLoaderUtils.setBitmap(viewReference, res);
                 }
@@ -169,7 +165,7 @@ class ImageTaskDispatcher {
             if (targetView.get() == null) {
                 return;
             }
-            synchronized (views) {
+            synchronized (Task.class) {
                 views.add(targetView);
             }
         }
@@ -178,7 +174,7 @@ class ImageTaskDispatcher {
             if (targetView.get() == null) {
                 return;
             }
-            synchronized (views) {
+            synchronized (Task.class) {
                 for (WeakReference<? extends View> reference : views) {
                     View v = reference.get();
                     if (v != null && v == targetView.get()) {
