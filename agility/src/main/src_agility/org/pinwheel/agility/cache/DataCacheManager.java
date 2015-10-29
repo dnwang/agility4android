@@ -30,7 +30,7 @@ public final class DataCacheManager {
     private SimpleCacheLoader cacheLoader;
 
     private DataCacheManager(Context context) {
-        DiskCache diskCache = new DiskCache(Tools.getDiskCacheDir(context, PATH), 0, CACHE_SIZE_OF_DISK);
+        DiskCache diskCache = new DiskCache(ImageLoaderUtils.getDiskCacheDir(context, PATH), 0, CACHE_SIZE_OF_DISK);
         MemoryCache memoryCache = new MemoryCache(CACHE_SIZE_OF_MEMORY);
         cacheLoader = new SimpleCacheLoader(memoryCache, diskCache);
     }

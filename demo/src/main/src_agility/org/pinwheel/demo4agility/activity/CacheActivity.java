@@ -6,9 +6,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
 import android.widget.ImageView;
-
+import com.android.volley.toolbox.NetworkImageView;
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.util.BaseUtils;
+import org.pinwheel.agility.util.BitmapLoader;
 import org.pinwheel.demo4agility.R;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
 
@@ -55,7 +56,7 @@ public class CacheActivity extends AbsTestActivity {
 
     @Override
     protected void onInitInCreate() {
-
+        BitmapLoader.init(this);
     }
 
     @Override
@@ -71,6 +72,15 @@ public class CacheActivity extends AbsTestActivity {
 
     @Override
     protected void doTest() {
+        for (String url : urls) {
+            adapter.addItem(url);
+        }
+        for (String url : urls) {
+            adapter.addItem(url);
+        }
+        for (String url : urls) {
+            adapter.addItem(url);
+        }
         for (String url : urls) {
             adapter.addItem(url);
         }
@@ -95,9 +105,10 @@ public class CacheActivity extends AbsTestActivity {
             if (convertView == null) {
                 convertView = inflater.inflate(R.layout.item_image, null);
             }
+//            NetworkImageView imageView = BaseUtils.getViewByHolder(convertView, R.id.image);
+//            BitmapLoader.getInstance().setImageFromNetwork(imageView, getItem(position));
             ImageView imageView = BaseUtils.getViewByHolder(convertView, R.id.image);
-
-            ImageLoaderManager.getImageLoader(context).setImage(imageView, getItem(position), 256, 256);
+            ImageLoaderManager.getImageLoader(context).setImageByScaleType(imageView, getItem(position));
 
             return convertView;
         }

@@ -151,7 +151,16 @@ class ImageTaskDispatcher {
             Log.e(TAG, "applyBitmap()--> url:" + getUrl() + ", size:" + views.size());
             synchronized (views) {
                 for (WeakReference<? extends View> viewReference : views) {
-                    Tools.setBitmap(viewReference, bitmap);
+                    ImageLoaderUtils.setBitmap(viewReference, bitmap);
+                }
+            }
+        }
+
+        public void applyBitmap(final int res) {
+            Log.e(TAG, "applyBitmap()--> url:" + getUrl() + ", size:" + views.size());
+            synchronized (views) {
+                for (WeakReference<? extends View> viewReference : views) {
+                    ImageLoaderUtils.setBitmap(viewReference, res);
                 }
             }
         }

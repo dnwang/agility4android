@@ -5,9 +5,9 @@ import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
-
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
+import org.pinwheel.agility.util.BaseUtils;
 
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
@@ -26,7 +26,14 @@ import java.util.concurrent.Executors;
  */
 public class ImageLoader {
 
+    // Disk cache path
     private static final String PATH = "bitmap";
+    // Default max disk cache size
+    public static final int DEFAULT_MAX_DISK_CACHE = 1024 * 1024 * 1024;//1G
+    // Default max memory cache size
+    public static final int DEFAULT_MAX_MEMORY_CACHE = (int) (Runtime.getRuntime().maxMemory() / 1024 / 8);//1/8 total memory
+    // Default max parallel number
+    public static final int DEFAULT_PARALLEL_TASK = 5;
 
     /**
      * Network task map
@@ -48,14 +55,14 @@ public class ImageLoader {
     private int errorRes;
 
     /**
-     * default diskCacheSize: 1024 * 1024 * 1024;//1G
-     * default memoryCacheSize: (int) (Runtime.getRuntime().maxMemory() / 1024 / 8);// 1/8 total memory size
+     * Default diskCacheSize: 1G
+     * Default memoryCacheSize: 1/8 total memory
      *
      * @param context    context
      * @param httpEngine HttpClientAgent
      */
     public ImageLoader(Context context, HttpClientAgent httpEngine) {
-        this(context, 1024 * 1024 * 1024, (int) (Runtime.getRuntime().maxMemory() / 1024 / 8), httpEngine);
+        this(context, DEFAULT_MAX_MEMORY_CACHE, DEFAULT_MAX_DISK_CACHE, httpEngine, DEFAULT_PARALLEL_TASK);
     }
 
     /**
@@ -65,24 +72,43 @@ public class ImageLoader {
      * @param memoryCacheSize memoryCacheSize
      * @param diskCacheSize   diskCacheSize
      * @param httpEngine      HttpClientAgent
+     * @param maxParallelTask Http task parallel num
      */
-    public ImageLoader(Context context, int memoryCacheSize, int diskCacheSize, HttpClientAgent httpEngine) {
+    public ImageLoader(Context context, int memoryCacheSize, int diskCacheSize, HttpClientAgent httpEngine, int maxParallelTask) {
         executor = Executors.newCachedThreadPool();
         taskMap = new HashMap<>();
-        DiskCache diskCache = new DiskCache(Tools.getDiskCacheDir(context, PATH), 0, diskCacheSize);
-        MemoryCache memoryCache = new MemoryCache(memoryCacheSize);
+        DiskCache diskCache = new DiskCache(
+                ImageLoaderUtils.getDiskCacheDir(context, PATH),
+                BaseUtils.getVersionCode(context),
+                Math.max(0, diskCacheSize));
+        MemoryCache memoryCache = new MemoryCache(Math.max(0, memoryCacheSize));
         cacheLoader = new SimpleCacheLoader(memoryCache, diskCache);
-        taskDispatcher = new ImageTaskDispatcher(5, httpEngine);
+        taskDispatcher = new ImageTaskDispatcher(Math.max(1, maxParallelTask), httpEngine);
     }
 
+    /**
+     * Get image cache controller
+     *
+     * @return cacheLoader
+     */
     public CacheLoader getCacheLoader() {
         return cacheLoader;
     }
 
+    /**
+     * Set image resource when load image error
+     *
+     * @param errorRes image resource id
+     */
     public void setErrorRes(int errorRes) {
         this.errorRes = errorRes;
     }
 
+    /**
+     * Set image resource when loading image
+     *
+     * @param defaultRes image resource id
+     */
     public void setDefaultRes(int defaultRes) {
         this.defaultRes = defaultRes;
     }
@@ -92,13 +118,14 @@ public class ImageLoader {
             return;
         }
         WeakReference<View> viewReference = new WeakReference<>(view);
+        ImageLoaderUtils.setBitmap(viewReference, defaultRes); // show default bitmap
         // convert cache key
-        String key = Tools.convertByMD5(url);
+        String key = ImageLoaderUtils.convertUrl(url);
         CacheEntity memoryCache = cacheLoader.getMemoryCache().getCache(key);
         if (memoryCache != null && memoryCache instanceof BitmapEntity) {
             Bitmap bitmap = ((BitmapEntity) memoryCache).get();
             if (bitmap != null) {
-                Tools.setBitmap(viewReference, bitmap);
+                ImageLoaderUtils.setBitmap(viewReference, bitmap);
                 return;
             }
         }
@@ -113,15 +140,16 @@ public class ImageLoader {
             return;
         }
         WeakReference<View> viewReference = new WeakReference<>(view);
+        ImageLoaderUtils.setBitmap(viewReference, defaultRes); // show default bitmap
         // convert cache key
-        String key = Tools.convertByMD5(url);
+        String key = ImageLoaderUtils.convertUrl(url);
         // according view params load cache
         String memoryKey = key + String.valueOf(width) + String.valueOf(height);
         CacheEntity memoryCache = cacheLoader.getMemoryCache().getCache(memoryKey);
         if (memoryCache != null && memoryCache instanceof BitmapEntity) {
             Bitmap bitmap = ((BitmapEntity) memoryCache).get();
             if (bitmap != null) {
-                Tools.setBitmap(viewReference, bitmap);
+                ImageLoaderUtils.setBitmap(viewReference, bitmap);
                 return;
             }
         }
@@ -137,8 +165,9 @@ public class ImageLoader {
             return;
         }
         WeakReference<ImageView> viewReference = new WeakReference<>(imageView);
+        ImageLoaderUtils.setBitmap(viewReference, defaultRes);// show default bitmap
         // convert cache key
-        String key = Tools.convertByMD5(url);
+        String key = ImageLoaderUtils.convertUrl(url);
         // according imageView params load cache
         ImageView.ScaleType scaleType = imageView.getScaleType();
         int maxWidth = imageView.getMeasuredWidth();
@@ -148,7 +177,7 @@ public class ImageLoader {
         if (memoryCache != null && memoryCache instanceof BitmapEntity) {
             Bitmap bitmap = ((BitmapEntity) memoryCache).get();
             if (bitmap != null) {
-                Tools.setBitmap(viewReference, bitmap);
+                ImageLoaderUtils.setBitmap(viewReference, bitmap);
                 return;
             }
         }
@@ -279,10 +308,8 @@ public class ImageLoader {
             // set default bitmap and dispatch task
             if (cache != null) {
                 // load disk cache success
-                Tools.setBitmapInUIThread(viewReference, cache);
+                ImageLoaderUtils.setBitmapInUIThread(viewReference, cache);
             } else {
-                Tools.setBitmapInUIThread(viewReference, null);
-
                 ImageTaskDispatcher.Task task = createTask(viewReference, key, url);
                 if (!checkAndPutTask(task)) {
                     // start this new task now
@@ -315,7 +342,7 @@ public class ImageLoader {
 
                 @Override
                 public void onDeliverError(Exception e) {
-                    task.applyBitmap(null); // error bitmap
+                    task.applyBitmap(errorRes); // show error bitmap
                     removeTaskInLoadingComplete(task.getId());
                 }
             });

@@ -9,14 +9,8 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.ImageView;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.ref.WeakReference;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * Copyright (C), 2015 <br>
@@ -26,22 +20,23 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author dnwang
  */
-final class Tools {
+final class ImageLoaderUtils {
 
-    private Tools() {
+    private ImageLoaderUtils() {
 
     }
 
-    public static String convertByMD5(String url) {
-        String cacheKey;
-        try {
-            final MessageDigest mDigest = MessageDigest.getInstance("MD5");
-            mDigest.update(url.getBytes());
-            cacheKey = bytesToHexString(mDigest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            cacheKey = String.valueOf(url.hashCode());
-        }
-        return cacheKey;
+    public static String convertUrl(String url) {
+        return String.valueOf(url.hashCode());
+//        String cacheKey;
+//        try {
+//            final MessageDigest mDigest = MessageDigest.getInstance("MD5");
+//            mDigest.update(url.getBytes());
+//            cacheKey = bytesToHexString(mDigest.digest());
+//        } catch (NoSuchAlgorithmException e) {
+//            cacheKey = String.valueOf(url.hashCode());
+//        }
+//        return cacheKey;
     }
 
     private static String bytesToHexString(byte[] bytes) {
@@ -70,7 +65,26 @@ final class Tools {
             if (v instanceof ImageView) {
                 ((ImageView) v).setImageBitmap(bitmap);
             } else {
-                v.setBackgroundDrawable(new BitmapDrawable(bitmap));
+                if (bitmap == null) {
+                    v.setBackgroundDrawable(null);
+                } else {
+                    v.setBackgroundDrawable(new BitmapDrawable(bitmap));
+                }
+            }
+        }
+    }
+
+    public static void setBitmap(WeakReference<? extends View> viewReference, int res) {
+        if (res <= 0) {
+            setBitmap(viewReference, null);
+        } else {
+            View v = viewReference.get();
+            if (v != null) {
+                if (v instanceof ImageView) {
+                    ((ImageView) v).setImageResource(res);
+                } else {
+                    v.setBackgroundResource(res);
+                }
             }
         }
     }
@@ -80,6 +94,15 @@ final class Tools {
             @Override
             public void run() {
                 setBitmap(viewReference, bitmap);
+            }
+        });
+    }
+
+    public static void setBitmapInUIThread(final WeakReference<? extends View> viewReference, final int res) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                setBitmap(viewReference, res);
             }
         });
     }

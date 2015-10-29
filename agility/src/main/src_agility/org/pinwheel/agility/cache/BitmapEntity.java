@@ -48,7 +48,7 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
         if (inputStream == null || scaleType == null || maxWidth < 0 || maxHeight < 0) {
             return;
         }
-        byte[] bytes = Tools.stream2Byte(inputStream);
+        byte[] bytes = ImageLoaderUtils.stream2Byte(inputStream);
         if (bytes == null) {
             return;
         }
