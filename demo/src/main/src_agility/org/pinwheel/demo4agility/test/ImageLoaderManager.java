@@ -1,7 +1,6 @@
 package org.pinwheel.demo4agility.test;
 
 import android.content.Context;
-
 import org.pinwheel.agility.cache.ImageLoader;
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.HttpClientAgentHelper;
@@ -37,14 +36,14 @@ public final class ImageLoaderManager {
 
     private static ImageLoader newInstance(Context context) {
         HttpClientAgent httpClientAgent;
-//        if (HttpClientAgentHelper.isImportOkHttp()) {
-//            httpClientAgent = new OkHttpAgent();
-//        } else {
+        if (HttpClientAgentHelper.isImportOkHttp()) {
+            httpClientAgent = new OkHttpAgent();
+        } else {
             httpClientAgent = new HttpConnectionAgent();
-//        }
+        }
         ImageLoader imageLoader = new ImageLoader(context, httpClientAgent);
-        imageLoader.setDefaultRes(R.drawable.ic_launcher);
-        imageLoader.setErrorRes(R.drawable.ic_load);
+        imageLoader.setDefaultRes(R.drawable.holo_btn_av_download);
+        imageLoader.setErrorRes(R.drawable.holo_btn_alerts_and_states_error);
         return imageLoader;
     }
 

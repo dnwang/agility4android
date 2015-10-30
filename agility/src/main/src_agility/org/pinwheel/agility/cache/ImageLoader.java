@@ -3,10 +3,8 @@ package org.pinwheel.agility.cache;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.util.BaseUtils;
@@ -120,8 +118,10 @@ public class ImageLoader {
             return;
         }
         WeakReference<View> viewReference = new WeakReference<>(view);
+        clearViewInTaskMap(viewReference);
         ImageLoaderUtils.setBitmap(viewReference, defaultRes); // show default bitmap
         // convert cache key
+        // loading memory cache first
         String key = ImageLoaderUtils.convertUrl(url);
         CacheEntity memoryCache = cacheLoader.getMemoryCache().getCache(key);
         if (memoryCache != null && memoryCache instanceof BitmapEntity) {
@@ -142,10 +142,12 @@ public class ImageLoader {
             return;
         }
         WeakReference<View> viewReference = new WeakReference<>(view);
+        clearViewInTaskMap(viewReference);
         ImageLoaderUtils.setBitmap(viewReference, defaultRes); // show default bitmap
         // convert cache key
         String key = ImageLoaderUtils.convertUrl(url);
         // according view params load cache
+        // loading memory cache first
         String memoryKey = key + String.valueOf(width) + String.valueOf(height);
         CacheEntity memoryCache = cacheLoader.getMemoryCache().getCache(memoryKey);
         if (memoryCache != null && memoryCache instanceof BitmapEntity) {
@@ -167,6 +169,7 @@ public class ImageLoader {
             return;
         }
         WeakReference<ImageView> viewReference = new WeakReference<>(imageView);
+        clearViewInTaskMap(viewReference);
         ImageLoaderUtils.setBitmap(viewReference, defaultRes);// show default bitmap
         // convert cache key
         String key = ImageLoaderUtils.convertUrl(url);
@@ -174,6 +177,7 @@ public class ImageLoader {
         ImageView.ScaleType scaleType = imageView.getScaleType();
         int maxWidth = imageView.getMeasuredWidth();
         int maxHeight = imageView.getMeasuredHeight();
+        // loading memory cache first
         String memoryKey = key + String.valueOf(maxWidth) + String.valueOf(maxHeight) + scaleType.toString();
         CacheEntity memoryCache = cacheLoader.getMemoryCache().getCache(memoryKey);
         if (memoryCache != null && memoryCache instanceof BitmapEntity) {
@@ -198,7 +202,7 @@ public class ImageLoader {
      * @return is put
      */
     protected boolean checkAndPutTask(ImageTaskDispatcher.Task task) {
-        synchronized (ImageLoader.class) {
+        synchronized (taskMap) {
             boolean is = taskMap.containsKey(task.getId());
             if (!is) {
                 taskMap.put(task.getId(), task);
@@ -207,13 +211,13 @@ public class ImageLoader {
         }
     }
 
-    /**
+     /**
      * Clear task when network task complete
      *
      * @param taskId taskId
      */
     protected void removeTaskInLoadingComplete(String taskId) {
-        synchronized (ImageLoader.class) {
+        synchronized (taskMap) {
             taskMap.remove(taskId);
         }
     }
@@ -225,7 +229,7 @@ public class ImageLoader {
      * @param view   weakReference
      */
     protected void addViewToTask(String taskId, WeakReference<? extends View> view) {
-        synchronized (ImageLoader.class) {
+        synchronized (taskMap) {
             ImageTaskDispatcher.Task task = taskMap.get(taskId);
             if (task != null) {
                 task.addView(view);
@@ -239,7 +243,7 @@ public class ImageLoader {
      * @param view weakReference
      */
     protected void clearViewInTaskMap(WeakReference<? extends View> view) {
-        synchronized (ImageLoader.class) {
+        synchronized (taskMap) {
             Collection<ImageTaskDispatcher.Task> tasks = taskMap.values();
             for (ImageTaskDispatcher.Task task : tasks) {
                 task.removeView(view);
@@ -251,7 +255,7 @@ public class ImageLoader {
      * Release all reference
      */
     public void release() {
-        synchronized (ImageLoader.class) {
+        synchronized (taskMap) {
             taskMap.clear();
         }
         if (executor != null) {
@@ -296,7 +300,6 @@ public class ImageLoader {
         @Override
         public void run() {
             if (viewReference.get() == null) {
-                Log.e("--------->", "AsyncLoader run view = null!");
                 return;
             }
             // get disk cache
@@ -313,7 +316,6 @@ public class ImageLoader {
                 // load disk cache success
                 ImageLoaderUtils.setBitmapInUIThread(viewReference, cache);
             } else {
-                clearViewInTaskMap(viewReference);
                 ImageTaskDispatcher.Task task = createTask(viewReference, key, url);
                 if (!checkAndPutTask(task)) {
                     // start this new task now
@@ -345,7 +347,6 @@ public class ImageLoader {
 
                 @Override
                 public void onDeliverError(Exception e) {
-                    Log.e("--------->", "onDeliverError");
                     task.applyBitmap(errorRes); // show error bitmap
                     removeTaskInLoadingComplete(task.getId());
                 }

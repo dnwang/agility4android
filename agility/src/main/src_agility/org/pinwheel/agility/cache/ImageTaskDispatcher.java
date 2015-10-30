@@ -2,12 +2,12 @@ package org.pinwheel.agility.cache;
 
 import android.graphics.Bitmap;
 import android.view.View;
-
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.Request;
 
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -146,7 +146,7 @@ class ImageTaskDispatcher {
         }
 
         public void applyBitmap(final Bitmap bitmap) {
-            synchronized (Task.class) {
+            synchronized (views) {
                 for (WeakReference<? extends View> viewReference : views) {
                     ImageLoaderUtils.setBitmap(viewReference, bitmap);
                 }
@@ -154,7 +154,7 @@ class ImageTaskDispatcher {
         }
 
         public void applyBitmap(final int res) {
-            synchronized (Task.class) {
+            synchronized (views) {
                 for (WeakReference<? extends View> viewReference : views) {
                     ImageLoaderUtils.setBitmap(viewReference, res);
                 }
@@ -165,7 +165,7 @@ class ImageTaskDispatcher {
             if (targetView.get() == null) {
                 return;
             }
-            synchronized (Task.class) {
+            synchronized (views) {
                 views.add(targetView);
             }
         }
@@ -174,15 +174,21 @@ class ImageTaskDispatcher {
             if (targetView.get() == null) {
                 return;
             }
-            synchronized (Task.class) {
-                for (WeakReference<? extends View> reference : views) {
-                    View v = reference.get();
-                    if (v != null && v == targetView.get()) {
-                        views.remove(reference);
+            synchronized (views) {
+                Iterator<WeakReference<? extends View>> iterator = views.iterator();
+                while (iterator.hasNext()) {
+                    WeakReference<? extends View> viewReference = iterator.next();
+                    View v = viewReference.get();
+                    if (v != null) {
+                        if (v == targetView.get()) {
+                            iterator.remove();
+                        }
+                    } else {
+                        iterator.remove();
                     }
                 }
             }
-        }
 
+        }
     }
 }
