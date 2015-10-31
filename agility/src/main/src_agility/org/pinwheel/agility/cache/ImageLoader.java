@@ -5,12 +5,13 @@ import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
+
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.util.BaseUtils;
 
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
@@ -117,7 +118,7 @@ public class ImageLoader {
         if (view == null || TextUtils.isEmpty(url) || executor == null) {
             return;
         }
-        WeakReference<View> viewReference = new WeakReference<>(view);
+        SoftReference<View> viewReference = new SoftReference<>(view);
         clearViewInTaskMap(viewReference);
         ImageLoaderUtils.setBitmap(viewReference, defaultRes); // show default bitmap
         // convert cache key
@@ -141,7 +142,7 @@ public class ImageLoader {
         if (view == null || TextUtils.isEmpty(url) || executor == null) {
             return;
         }
-        WeakReference<View> viewReference = new WeakReference<>(view);
+        SoftReference<View> viewReference = new SoftReference<>(view);
         clearViewInTaskMap(viewReference);
         ImageLoaderUtils.setBitmap(viewReference, defaultRes); // show default bitmap
         // convert cache key
@@ -168,7 +169,7 @@ public class ImageLoader {
         if (imageView == null || TextUtils.isEmpty(url) || executor == null) {
             return;
         }
-        WeakReference<ImageView> viewReference = new WeakReference<>(imageView);
+        SoftReference<ImageView> viewReference = new SoftReference<>(imageView);
         clearViewInTaskMap(viewReference);
         ImageLoaderUtils.setBitmap(viewReference, defaultRes);// show default bitmap
         // convert cache key
@@ -211,7 +212,7 @@ public class ImageLoader {
         }
     }
 
-     /**
+    /**
      * Clear task when network task complete
      *
      * @param taskId taskId
@@ -226,9 +227,9 @@ public class ImageLoader {
      * Add view to taskMap
      *
      * @param taskId taskId
-     * @param view   weakReference
+     * @param view   SoftReference
      */
-    protected void addViewToTask(String taskId, WeakReference<? extends View> view) {
+    protected void addViewToTask(String taskId, SoftReference<? extends View> view) {
         synchronized (taskMap) {
             ImageTaskDispatcher.Task task = taskMap.get(taskId);
             if (task != null) {
@@ -240,9 +241,9 @@ public class ImageLoader {
     /**
      * Remove view in taskMap
      *
-     * @param view weakReference
+     * @param view SoftReference
      */
-    protected void clearViewInTaskMap(WeakReference<? extends View> view) {
+    protected void clearViewInTaskMap(SoftReference<? extends View> view) {
         synchronized (taskMap) {
             Collection<ImageTaskDispatcher.Task> tasks = taskMap.values();
             for (ImageTaskDispatcher.Task task : tasks) {
@@ -272,14 +273,14 @@ public class ImageLoader {
      */
     protected final class AsyncLoader implements Runnable {
 
-        private WeakReference<? extends View> viewReference;
+        private SoftReference<? extends View> viewReference;
         private String key;
         private String url;
         private ImageView.ScaleType scaleType;
         private int maxWidth;
         private int maxHeight;
 
-        public AsyncLoader(WeakReference<? extends View> viewReference, String key, String url) {
+        public AsyncLoader(SoftReference<? extends View> viewReference, String key, String url) {
             this.viewReference = viewReference;
             this.key = key;
             this.url = url;
@@ -335,7 +336,7 @@ public class ImageLoader {
          * @param url           task image url
          * @return ImageTask
          */
-        private ImageTaskDispatcher.Task createTask(final WeakReference<? extends View> viewReference, String key, String url) {
+        private ImageTaskDispatcher.Task createTask(final SoftReference<? extends View> viewReference, String key, String url) {
             final ImageTaskDispatcher.Task task = new ImageTaskDispatcher.Task(key, url);
             task.addView(viewReference);
             task.setResponseParser(new CacheParser(this), new HttpClientAgent.OnRequestAdapter<Bitmap>() {

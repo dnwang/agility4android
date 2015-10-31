@@ -3,6 +3,8 @@ package org.pinwheel.agility.cache;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 
+import java.lang.ref.SoftReference;
+
 /**
  * Copyright (C), 2015 <br>
  * <br>

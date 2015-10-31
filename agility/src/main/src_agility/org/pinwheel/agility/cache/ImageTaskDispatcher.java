@@ -2,10 +2,11 @@ package org.pinwheel.agility.cache;
 
 import android.graphics.Bitmap;
 import android.view.View;
+
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.Request;
 
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -122,7 +123,7 @@ class ImageTaskDispatcher {
     static class Task extends Request {
 
         private String id;
-        private final HashSet<WeakReference<? extends View>> views;
+        private final HashSet<SoftReference<? extends View>> views;
 
         public Task(String id, String url) {
             super("GET", url, 20);
@@ -147,7 +148,7 @@ class ImageTaskDispatcher {
 
         public void applyBitmap(final Bitmap bitmap) {
             synchronized (views) {
-                for (WeakReference<? extends View> viewReference : views) {
+                for (SoftReference<? extends View> viewReference : views) {
                     ImageLoaderUtils.setBitmap(viewReference, bitmap);
                 }
             }
@@ -155,13 +156,13 @@ class ImageTaskDispatcher {
 
         public void applyBitmap(final int res) {
             synchronized (views) {
-                for (WeakReference<? extends View> viewReference : views) {
+                for (SoftReference<? extends View> viewReference : views) {
                     ImageLoaderUtils.setBitmap(viewReference, res);
                 }
             }
         }
 
-        public void addView(WeakReference<? extends View> targetView) {
+        public void addView(SoftReference<? extends View> targetView) {
             if (targetView.get() == null) {
                 return;
             }
@@ -170,14 +171,14 @@ class ImageTaskDispatcher {
             }
         }
 
-        public void removeView(WeakReference<? extends View> targetView) {
+        public void removeView(SoftReference<? extends View> targetView) {
             if (targetView.get() == null) {
                 return;
             }
             synchronized (views) {
-                Iterator<WeakReference<? extends View>> iterator = views.iterator();
+                Iterator<SoftReference<? extends View>> iterator = views.iterator();
                 while (iterator.hasNext()) {
-                    WeakReference<? extends View> viewReference = iterator.next();
+                    SoftReference<? extends View> viewReference = iterator.next();
                     View v = viewReference.get();
                     if (v != null) {
                         if (v == targetView.get()) {

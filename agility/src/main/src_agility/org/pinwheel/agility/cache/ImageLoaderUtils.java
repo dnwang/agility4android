@@ -9,8 +9,12 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.ImageView;
 
-import java.io.*;
-import java.lang.ref.WeakReference;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.SoftReference;
 
 /**
  * Copyright (C), 2015 <br>
@@ -59,7 +63,7 @@ final class ImageLoaderUtils {
         }
     }
 
-    public static void setBitmap(WeakReference<? extends View> viewReference, Bitmap bitmap) {
+    public static void setBitmap(SoftReference<? extends View> viewReference, Bitmap bitmap) {
         View v = viewReference.get();
         if (v != null) {
             if (v instanceof ImageView) {
@@ -74,7 +78,7 @@ final class ImageLoaderUtils {
         }
     }
 
-    public static void setBitmap(WeakReference<? extends View> viewReference, int res) {
+    public static void setBitmap(SoftReference<? extends View> viewReference, int res) {
         if (res <= 0) {
             setBitmap(viewReference, null);
         } else {
@@ -89,7 +93,7 @@ final class ImageLoaderUtils {
         }
     }
 
-    public static void setBitmapInUIThread(final WeakReference<? extends View> viewReference, final Bitmap bitmap) {
+    public static void setBitmapInUIThread(final SoftReference<? extends View> viewReference, final Bitmap bitmap) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -98,7 +102,7 @@ final class ImageLoaderUtils {
         });
     }
 
-    public static void setBitmapInUIThread(final WeakReference<? extends View> viewReference, final int res) {
+    public static void setBitmapInUIThread(final SoftReference<? extends View> viewReference, final int res) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {

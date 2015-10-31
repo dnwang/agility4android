@@ -95,7 +95,9 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
         if (bitmap == null) {
             return 0;
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            return bitmap.getAllocationByteCount();
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
             return bitmap.getByteCount();
         } else {
             return bitmap.getRowBytes() * bitmap.getHeight();
