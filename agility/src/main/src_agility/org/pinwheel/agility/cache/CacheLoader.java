@@ -12,6 +12,9 @@ import android.graphics.Bitmap;
  */
 public interface CacheLoader {
 
+    public static final int DEFAULT_MAX_DISK_CACHE = 32 * 1024 * 1024;//32M
+    public static final int DEFAULT_MAX_MEMORY_CACHE = 4 * 1024 * 1024;//4M
+
     public void setString(String key, String string);
 
     public String getString(String key);
@@ -20,6 +23,6 @@ public interface CacheLoader {
 
     public Bitmap getBitmap(String key);
 
-    public Bitmap getBitmap(String key, int width, int height);
+    public void release();
 
 }

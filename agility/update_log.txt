@@ -42,3 +42,7 @@ v4.0.0;20151014;dnwang;
 添加HttpClientAgent,屏蔽volley,okHttp,httpConnection差异性,统一接口;
 修改Request,使用Builder模式创建;
 整理包内容,移除Litesuits框架;
+
+v4.0.1;20151101;dnwang;
+修复HttpAgent返回状态BUG;
+添加完整的Cache包:图片缓存框架ImageLoader,使用LruCache的磁盘缓存DiskCache

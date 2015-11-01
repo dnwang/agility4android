@@ -2,18 +2,23 @@ package org.pinwheel.agility.cache;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.ImageView;
 
 import org.pinwheel.agility.net.HttpClientAgent;
+import org.pinwheel.agility.net.HttpClientAgent.OnRequestAdapter;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
+import org.pinwheel.agility.net.parser.IDataParser;
 import org.pinwheel.agility.util.BaseUtils;
 
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,19 +32,18 @@ import java.util.concurrent.Executors;
  */
 public class ImageLoader {
 
-    // Disk cache path
+    /**
+     * Disk cache path
+     */
     private static final String PATH = "bitmap";
-    // Default max disk cache size
-    public static final int DEFAULT_MAX_DISK_CACHE = 1024 * 1024 * 1024;//1G
-    // Default max memory cache size
-    public static final int DEFAULT_MAX_MEMORY_CACHE = (int) (Runtime.getRuntime().maxMemory() / 1024 / 8);//1/8 total memory
-    // Default max parallel number
+    /**
+     * Default max parallel number
+     */
     public static final int DEFAULT_PARALLEL_TASK = 6;
-
     /**
      * Network task map
      */
-    private final HashMap<String, ImageTaskDispatcher.Task> taskMap;
+    private final HashMap<String, AsyncLoaderTask> asyncTaskMap;
     /**
      * Memory and disk cache loader
      */
@@ -47,23 +51,24 @@ public class ImageLoader {
     /**
      * Network bitmap task dispatcher
      */
-    private ImageTaskDispatcher taskDispatcher;
+    private NetworkTaskDispatcher taskDispatcher;
 
     private ExecutorService executor;
 
-    private int defaultRes;
-
-    private int errorRes;
+    /**
+     * Global default loader options
+     */
+    private ImageLoaderOptions defaultOptions;
 
     /**
-     * Default diskCacheSize: 1G
-     * Default memoryCacheSize: 1/8 total memory
+     * Default diskCacheSize: {@link CacheLoader}
+     * Default memoryCacheSize: {@link CacheLoader}
      *
      * @param context    context
      * @param httpEngine HttpClientAgent
      */
     public ImageLoader(Context context, HttpClientAgent httpEngine) {
-        this(context, DEFAULT_MAX_MEMORY_CACHE, DEFAULT_MAX_DISK_CACHE, httpEngine, DEFAULT_PARALLEL_TASK);
+        this(context, CacheLoader.DEFAULT_MAX_MEMORY_CACHE, CacheLoader.DEFAULT_MAX_DISK_CACHE, httpEngine, DEFAULT_PARALLEL_TASK);
     }
 
     /**
@@ -76,15 +81,16 @@ public class ImageLoader {
      * @param maxParallelTask Http task parallel num
      */
     public ImageLoader(Context context, int memoryCacheSize, int diskCacheSize, HttpClientAgent httpEngine, int maxParallelTask) {
+//        executor = Executors.newFixedThreadPool(maxParallelTask);
         executor = Executors.newCachedThreadPool();
-        taskMap = new HashMap<>();
+        asyncTaskMap = new HashMap<>();
         DiskCache diskCache = new DiskCache(
                 ImageLoaderUtils.getDiskCacheDir(context, PATH),
                 BaseUtils.getVersionCode(context),
                 Math.max(0, diskCacheSize));
         MemoryCache memoryCache = new MemoryCache(Math.max(0, memoryCacheSize));
         cacheLoader = new SimpleCacheLoader(memoryCache, diskCache);
-        taskDispatcher = new ImageTaskDispatcher(Math.max(1, maxParallelTask), httpEngine);
+        taskDispatcher = new NetworkTaskDispatcher(Math.max(1, maxParallelTask), httpEngine);
     }
 
     /**
@@ -96,34 +102,26 @@ public class ImageLoader {
         return cacheLoader;
     }
 
-    /**
-     * Set image resource when load image error
-     *
-     * @param errorRes image resource id
-     */
-    public void setErrorRes(int errorRes) {
-        this.errorRes = errorRes;
+    public void setDefaultOptions(ImageLoaderOptions defaultOptions) {
+        this.defaultOptions = defaultOptions == null ? new ImageLoaderOptions.Builder().create() : defaultOptions;
     }
 
-    /**
-     * Set image resource when loading image
-     *
-     * @param defaultRes image resource id
-     */
-    public void setDefaultRes(int defaultRes) {
-        this.defaultRes = defaultRes;
+    public void setImage(View view, String url) {
+        setImage(view, url, defaultOptions);
     }
 
-    public void setImage(View view, final String url) {
-        if (view == null || TextUtils.isEmpty(url) || executor == null) {
+    public void setImage(View view, String url, ImageLoaderOptions options) {
+        if (view == null || TextUtils.isEmpty(url) || options == null || executor == null) {
             return;
         }
         SoftReference<View> viewReference = new SoftReference<>(view);
-        clearViewInTaskMap(viewReference);
-        ImageLoaderUtils.setBitmap(viewReference, defaultRes); // show default bitmap
+        // clear view
+        clearViewInAsyncTaskMap(viewReference);
+        // show default bitmap
+        ImageLoaderUtils.setBitmap(viewReference, options.getDefaultRes());
         // convert cache key
+        String key = ImageLoaderUtils.convertUrl(url + options.getKey());
         // loading memory cache first
-        String key = ImageLoaderUtils.convertUrl(url);
         CacheEntity memoryCache = cacheLoader.getMemoryCache().getCache(key);
         if (memoryCache != null && memoryCache instanceof BitmapEntity) {
             Bitmap bitmap = ((BitmapEntity) memoryCache).get();
@@ -132,81 +130,31 @@ public class ImageLoader {
                 return;
             }
         }
-
         // async load disk cache and network bitmap
-        AsyncLoader asyncLoader = new AsyncLoader(viewReference, key, url);
-        executor.submit(asyncLoader);
-    }
-
-    public void setImage(View view, final String url, final int width, final int height) {
-        if (view == null || TextUtils.isEmpty(url) || executor == null) {
-            return;
+        AsyncLoaderTask asyncLoader = new AsyncLoaderTask(key, url, options);
+        // check task is already in queue, if not put it
+        if (!checkAndPutAsyncTask(asyncLoader)) {
+            // add this view to task
+            asyncLoader.addView(viewReference);
+            // start new task
+            executor.execute(asyncLoader);
+        } else {
+            // put view to task only, no need start new task
+            addViewToAsyncTask(key, viewReference);
         }
-        SoftReference<View> viewReference = new SoftReference<>(view);
-        clearViewInTaskMap(viewReference);
-        ImageLoaderUtils.setBitmap(viewReference, defaultRes); // show default bitmap
-        // convert cache key
-        String key = ImageLoaderUtils.convertUrl(url);
-        // according view params load cache
-        // loading memory cache first
-        String memoryKey = key + String.valueOf(width) + String.valueOf(height);
-        CacheEntity memoryCache = cacheLoader.getMemoryCache().getCache(memoryKey);
-        if (memoryCache != null && memoryCache instanceof BitmapEntity) {
-            Bitmap bitmap = ((BitmapEntity) memoryCache).get();
-            if (bitmap != null) {
-                ImageLoaderUtils.setBitmap(viewReference, bitmap);
-                return;
-            }
-        }
-
-        // async load disk cache and network bitmap
-        AsyncLoader asyncLoader = new AsyncLoader(viewReference, key, url);
-        asyncLoader.setBitmapBound(width, height);
-        executor.submit(asyncLoader);
-    }
-
-    public void setImageByScaleType(ImageView imageView, String url) {
-        if (imageView == null || TextUtils.isEmpty(url) || executor == null) {
-            return;
-        }
-        SoftReference<ImageView> viewReference = new SoftReference<>(imageView);
-        clearViewInTaskMap(viewReference);
-        ImageLoaderUtils.setBitmap(viewReference, defaultRes);// show default bitmap
-        // convert cache key
-        String key = ImageLoaderUtils.convertUrl(url);
-        // according imageView params load cache
-        ImageView.ScaleType scaleType = imageView.getScaleType();
-        int maxWidth = imageView.getMeasuredWidth();
-        int maxHeight = imageView.getMeasuredHeight();
-        // loading memory cache first
-        String memoryKey = key + String.valueOf(maxWidth) + String.valueOf(maxHeight) + scaleType.toString();
-        CacheEntity memoryCache = cacheLoader.getMemoryCache().getCache(memoryKey);
-        if (memoryCache != null && memoryCache instanceof BitmapEntity) {
-            Bitmap bitmap = ((BitmapEntity) memoryCache).get();
-            if (bitmap != null) {
-                ImageLoaderUtils.setBitmap(viewReference, bitmap);
-                return;
-            }
-        }
-
-        // async load disk cache and network bitmap
-        AsyncLoader asyncLoader = new AsyncLoader(viewReference, key, url);
-        asyncLoader.setImageScaleType(scaleType);
-        asyncLoader.setBitmapBound(maxWidth, maxHeight);
-        executor.submit(asyncLoader);
     }
 
     /**
-     * Check a task is already in taskMap ,if not put it
+     * Check a task is already in task ,if not put it
      *
      * @param task task
      * @return is put
      */
-    protected boolean checkAndPutTask(ImageTaskDispatcher.Task task) {
-        synchronized (taskMap) {
-            boolean is = taskMap.containsKey(task.getId());
+    protected boolean checkAndPutAsyncTask(AsyncLoaderTask task) {
+        synchronized (asyncTaskMap) {
+            boolean is = asyncTaskMap.containsKey(task.key);
             if (!is) {
-                taskMap.put(task.getId(), task);
+                asyncTaskMap.put(task.key, task);
             }
             return is;
         }
@@ -215,23 +163,24 @@ public class ImageLoader {
     /**
      * Clear task when network task complete
      *
-     * @param taskId taskId
+     * @param key key
      */
-    protected void removeTaskInLoadingComplete(String taskId) {
-        synchronized (taskMap) {
-            taskMap.remove(taskId);
+    protected void removeAsyncTaskAtLoadingComplete(String key) {
+        AsyncLoaderTask task = asyncTaskMap.remove(key);
+        if (task != null) {
+            task.release();
         }
     }
 
     /**
-     * Add view to taskMap
+     * Add view to task
      *
-     * @param taskId taskId
-     * @param view   SoftReference
+     * @param key  key
+     * @param view SoftReference
      */
-    protected void addViewToTask(String taskId, SoftReference<? extends View> view) {
-        synchronized (taskMap) {
-            ImageTaskDispatcher.Task task = taskMap.get(taskId);
+    protected void addViewToAsyncTask(String key, SoftReference<? extends View> view) {
+        synchronized (asyncTaskMap) {
+            AsyncLoaderTask task = asyncTaskMap.get(key);
             if (task != null) {
                 task.addView(view);
             }
@@ -239,14 +188,14 @@ public class ImageLoader {
     }
 
     /**
-     * Remove view in taskMap
+     * Remove view in task
      *
      * @param view SoftReference
      */
-    protected void clearViewInTaskMap(SoftReference<? extends View> view) {
-        synchronized (taskMap) {
-            Collection<ImageTaskDispatcher.Task> tasks = taskMap.values();
-            for (ImageTaskDispatcher.Task task : tasks) {
+    protected void clearViewInAsyncTaskMap(SoftReference<? extends View> view) {
+        synchronized (asyncTaskMap) {
+            Collection<AsyncLoaderTask> tasks = asyncTaskMap.values();
+            for (AsyncLoaderTask task : tasks) {
                 task.removeView(view);
             }
         }
@@ -256,8 +205,8 @@ public class ImageLoader {
      * Release all reference
      */
     public void release() {
-        synchronized (taskMap) {
-            taskMap.clear();
+        synchronized (asyncTaskMap) {
+            asyncTaskMap.clear();
         }
         if (executor != null) {
             executor.shutdown();
@@ -269,122 +218,159 @@ public class ImageLoader {
     }
 
     /**
-     * Time consuming loader (disk cache load / network task)
+     * Load bitmap task
      */
-    protected final class AsyncLoader implements Runnable {
+    protected final class AsyncLoaderTask implements Runnable {
 
-        private SoftReference<? extends View> viewReference;
+        private HashSet<SoftReference<? extends View>> viewReferences;
         private String key;
         private String url;
-        private ImageView.ScaleType scaleType;
-        private int maxWidth;
-        private int maxHeight;
+        private ImageLoaderOptions options;
 
-        public AsyncLoader(SoftReference<? extends View> viewReference, String key, String url) {
-            this.viewReference = viewReference;
+        /**
+         * Network task response callback
+         */
+        private OnRequestAdapter<Bitmap> requestAdapter = new OnRequestAdapter<Bitmap>() {
+            @Override
+            public void onDeliverSuccess(Bitmap obj) {
+                applyBitmap(obj);
+            }
+
+            @Override
+            public void onDeliverError(Exception e) {
+                applyBitmap(options.getErrorRes()); // show error bitmap
+            }
+        };
+
+        /**
+         * Network bitmap parser
+         */
+        private IDataParser<Bitmap> dataParser = new DataParserAdapter<Bitmap>() {
+            @Override
+            public void parse(InputStream inputStream) throws Exception {
+                BitmapEntity bitmapEntity = new BitmapEntity();
+                bitmapEntity.decodeFrom(inputStream, options);
+                cacheLoader.setBitmap(key, bitmapEntity.get());
+            }
+
+            @Override
+            public Bitmap getResult() {
+                return cacheLoader.getBitmap(key);
+            }
+        };
+
+        public AsyncLoaderTask(String key, String url, ImageLoaderOptions options) {
+            this.viewReferences = new HashSet<>();
             this.key = key;
             this.url = url;
-            this.maxHeight = -1;
-            this.maxHeight = -1;
-            this.scaleType = null;
+            this.options = options;
         }
 
-        public void setImageScaleType(ImageView.ScaleType scaleType) {
-            this.scaleType = scaleType;
+        /**
+         * Release all view references
+         */
+        public void release() {
+            viewReferences.clear();
         }
 
-        public void setBitmapBound(int maxWidth, int maxHeight) {
-            this.maxWidth = maxWidth;
-            this.maxHeight = maxHeight;
+        public String getUrl() {
+            return url;
         }
 
-        @Override
-        public void run() {
-            if (viewReference.get() == null) {
+        public IDataParser<Bitmap> getDataParser() {
+            return dataParser;
+        }
+
+        public OnRequestAdapter<Bitmap> getRequestAdapter() {
+            return requestAdapter;
+        }
+
+        public ImageLoaderOptions getOptions() {
+            return options;
+        }
+
+        /**
+         * Apply bitmap to all view
+         *
+         * @param bitmap bitmap
+         */
+        public void applyBitmap(final Bitmap bitmap) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    for (SoftReference<? extends View> viewReference : viewReferences) {
+                        ImageLoaderUtils.setBitmap(viewReference, bitmap);
+                    }
+                    // remove this task from taskMap! task is all complete
+                    removeAsyncTaskAtLoadingComplete(key);
+                }
+            });
+        }
+
+        public void applyBitmap(final int res) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    for (SoftReference<? extends View> viewReference : viewReferences) {
+                        ImageLoaderUtils.setBitmap(viewReference, res);
+                    }
+                    // remove this task from taskMap! task is all complete
+                    removeAsyncTaskAtLoadingComplete(key);
+                }
+            });
+        }
+
+        /**
+         * Add view to this task
+         *
+         * @param targetView view
+         */
+        public void addView(SoftReference<? extends View> targetView) {
+            if (targetView.get() == null) {
                 return;
             }
-            // get disk cache
-            Bitmap cache;
-            if (scaleType != null && maxHeight != -1 & maxWidth != -1) {
-                cache = cacheLoader.getBitmap(key, scaleType, maxWidth, maxHeight);
-            } else if (scaleType == null && maxHeight != -1 && maxWidth != -1) {
-                cache = cacheLoader.getBitmap(key, maxWidth, maxHeight);
-            } else {
-                cache = cacheLoader.getBitmap(key);
-            }
-            // set default bitmap and dispatch task
-            if (cache != null) {
-                // load disk cache success
-                ImageLoaderUtils.setBitmapInUIThread(viewReference, cache);
-            } else {
-                ImageTaskDispatcher.Task task = createTask(viewReference, key, url);
-                if (!checkAndPutTask(task)) {
-                    // start this new task now
-                    taskDispatcher.post(task);
-                } else {
-                    // no need start task, because task was already loaded
-                    addViewToTask(key, viewReference);
-                }
+            synchronized (asyncTaskMap) {
+                viewReferences.add(targetView);
             }
         }
 
         /**
-         * Create a network task
+         * Remove view from this task
          *
-         * @param viewReference view
-         * @param key           taskId
-         * @param url           task image url
-         * @return ImageTask
+         * @param targetView view
          */
-        private ImageTaskDispatcher.Task createTask(final SoftReference<? extends View> viewReference, String key, String url) {
-            final ImageTaskDispatcher.Task task = new ImageTaskDispatcher.Task(key, url);
-            task.addView(viewReference);
-            task.setResponseParser(new CacheParser(this), new HttpClientAgent.OnRequestAdapter<Bitmap>() {
-                @Override
-                public void onDeliverSuccess(Bitmap obj) {
-                    task.applyBitmap(obj);
-                    removeTaskInLoadingComplete(task.getId());
-                }
-
-                @Override
-                public void onDeliverError(Exception e) {
-                    task.applyBitmap(errorRes); // show error bitmap
-                    removeTaskInLoadingComplete(task.getId());
-                }
-            });
-            return task;
-        }
-    }
-
-    /**
-     * Network bitmap parser
-     */
-    protected final class CacheParser extends DataParserAdapter<Bitmap> {
-
-        private AsyncLoader asyncLoader;
-
-        public CacheParser(AsyncLoader asyncLoader) {
-            this.asyncLoader = asyncLoader;
-        }
-
-        @Override
-        public void parse(InputStream inputStream) throws Exception {
-            cacheLoader.getDiskCache().setCache(asyncLoader.key, inputStream);
-        }
-
-        @Override
-        public Bitmap getResult() {
-            Bitmap cache;
-            if (asyncLoader.scaleType != null && asyncLoader.maxHeight != -1 & asyncLoader.maxWidth != -1) {
-                cache = cacheLoader.getBitmap(asyncLoader.key, asyncLoader.scaleType, asyncLoader.maxWidth, asyncLoader.maxHeight);
-            } else if (asyncLoader.scaleType == null && asyncLoader.maxHeight != -1 && asyncLoader.maxWidth != -1) {
-                cache = cacheLoader.getBitmap(asyncLoader.key, asyncLoader.maxWidth, asyncLoader.maxHeight);
-            } else {
-                cache = cacheLoader.getBitmap(asyncLoader.key);
+        public void removeView(SoftReference<? extends View> targetView) {
+            if (targetView.get() == null) {
+                return;
             }
-            return cache;
+            synchronized (asyncTaskMap) {
+                Iterator<SoftReference<? extends View>> iterator = viewReferences.iterator();
+                while (iterator.hasNext()) {
+                    SoftReference<? extends View> viewReference = iterator.next();
+                    View v = viewReference.get();
+                    if (v != null) {
+                        if (v == targetView.get()) {
+                            iterator.remove();
+                        }
+                    } else {
+                        iterator.remove();
+                    }
+                }
+            }
         }
 
+        @Override
+        public void run() {
+            // get memory / disk cache
+            Bitmap cache = cacheLoader.getBitmap(key);
+            if (cache != null) {
+                // load cache success
+                applyBitmap(cache);
+            } else {
+                // post this task to download queue
+                taskDispatcher.post(this);
+            }
+        }
     }
 
 }

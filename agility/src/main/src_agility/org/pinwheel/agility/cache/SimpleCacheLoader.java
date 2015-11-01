@@ -1,7 +1,6 @@
 package org.pinwheel.agility.cache;
 
 import android.graphics.Bitmap;
-import android.widget.ImageView;
 
 import java.io.InputStream;
 
@@ -31,6 +30,7 @@ public class SimpleCacheLoader implements CacheLoader {
         return diskCache;
     }
 
+    @Override
     public void release() {
         memoryCache.release();
         diskCache.release();
@@ -93,49 +93,6 @@ public class SimpleCacheLoader implements CacheLoader {
                 BitmapEntity data = new BitmapEntity();
                 data.decodeFrom(inputStream);
                 memoryCache.setCache(key, data);
-                return data.get();
-            } else {
-                return null;
-            }
-        }
-    }
-
-    @Override
-    public Bitmap getBitmap(String key, int width, int height) {
-        if (memoryCache == null || diskCache == null) {
-            return null;
-        }
-        String memoryKey = key + String.valueOf(width) + String.valueOf(height);
-        CacheEntity value = memoryCache.getCache(memoryKey);
-        if (value != null) {
-            return ((BitmapEntity) value).get();
-        } else {
-            InputStream inputStream = diskCache.getCache(key);
-            if (inputStream != null) {
-                BitmapEntity data = new BitmapEntity();
-                data.decodeFrom(inputStream, width, height);
-                memoryCache.setCache(memoryKey, data);
-                return data.get();
-            } else {
-                return null;
-            }
-        }
-    }
-
-    public Bitmap getBitmap(String key, ImageView.ScaleType scaleType, int maxWidth, int maxHeight) {
-        if (memoryCache == null || diskCache == null) {
-            return null;
-        }
-        String memoryKey = key + String.valueOf(maxWidth) + String.valueOf(maxHeight) + scaleType.toString();
-        CacheEntity value = memoryCache.getCache(memoryKey);
-        if (value != null) {
-            return ((BitmapEntity) value).get();
-        } else {
-            InputStream inputStream = diskCache.getCache(key);
-            if (inputStream != null) {
-                BitmapEntity data = new BitmapEntity();
-                data.decodeFrom(inputStream, scaleType, maxWidth, maxHeight);
-                memoryCache.setCache(memoryKey, data);
                 return data.get();
             } else {
                 return null;

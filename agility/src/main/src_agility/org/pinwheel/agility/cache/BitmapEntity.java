@@ -6,8 +6,10 @@ import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.widget.ImageView;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -37,18 +39,47 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
     }
 
     protected void decodeFrom(InputStream inputStream, int width, int height) {
-        if (inputStream == null || width < 0 || height < 0) {
+        if (inputStream == null) {
             return;
         }
         obj = BitmapFactory.decodeStream(inputStream);
-        obj = ThumbnailUtils.extractThumbnail(obj, width, height, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+        if (obj != null && width > 0 && height > 0) {
+            obj = ThumbnailUtils.extractThumbnail(obj, width, height, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+        }
+    }
+
+    protected void decodeFrom(InputStream inputStream, float scale, int maxWidth, int maxHeight) {
+        if (inputStream == null) {
+            return;
+        }
+        obj = BitmapFactory.decodeStream(inputStream);
+        if (obj != null && scale > 0) {
+            int scaleWidth = (int) (obj.getWidth() * scale);
+            int scaleHeight = (int) (obj.getHeight() * scale);
+            if (maxWidth > 0 && maxHeight > 0) {
+                if (scaleWidth < scaleHeight) {
+                    if (scaleWidth > maxWidth) {
+                        float s = maxWidth * 1.0f / scaleWidth;
+                        scaleWidth = (int) (s * scaleWidth);
+                        scaleHeight = (int) (s * scaleHeight);
+                    }
+                } else {
+                    if (scaleHeight > maxHeight) {
+                        float s = maxHeight * 1.0f / scaleHeight;
+                        scaleWidth = (int) (s * scaleWidth);
+                        scaleHeight = (int) (s * scaleHeight);
+                    }
+                }
+            }
+            obj = ThumbnailUtils.extractThumbnail(obj, scaleWidth, scaleHeight, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+        }
     }
 
     protected void decodeFrom(InputStream inputStream, ImageView.ScaleType scaleType, int maxWidth, int maxHeight) {
         if (inputStream == null || scaleType == null || maxWidth < 0 || maxHeight < 0) {
             return;
         }
-        byte[] bytes = ImageLoaderUtils.stream2Byte(inputStream);
+        byte[] bytes = stream2Byte(inputStream);
         if (bytes == null) {
             return;
         }
@@ -72,6 +103,15 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
         } else {
             obj = tempBitmap;
         }
+    }
+
+    protected void decodeFrom(InputStream inputStream, ImageLoaderOptions options) {
+        if (options.getFixedWidth() > 0 && options.getFixedHeight() > 0) {
+            decodeFrom(inputStream, options.getFixedWidth(), options.getFixedHeight());
+        } else {
+            decodeFrom(inputStream, options.getScale(), options.getMaxWidth(), options.getMaxHeight());
+        }
+        // TODO: 11/1/15 waiting add ...
     }
 
     @Override
@@ -154,6 +194,40 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
             n *= 2;
         }
         return (int) n;
+    }
+
+    protected final byte[] stream2Byte(InputStream inputStream) {
+        byte[] content = null;
+        BufferedInputStream in = null;
+        ByteArrayOutputStream out = null;
+        try {
+            in = new BufferedInputStream(inputStream);
+            out = new ByteArrayOutputStream(1024);
+            byte[] temp = new byte[1024];
+            int size = 0;
+            while ((size = in.read(temp)) != -1) {
+                out.write(temp, 0, size);
+            }
+            content = out.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return content;
     }
 
 }

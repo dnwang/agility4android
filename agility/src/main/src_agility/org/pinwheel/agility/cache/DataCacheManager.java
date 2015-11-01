@@ -3,6 +3,8 @@ package org.pinwheel.agility.cache;
 import android.content.Context;
 import android.graphics.Bitmap;
 
+import org.pinwheel.agility.util.BaseUtils;
+
 /**
  * Copyright (C), 2015 <br>
  * <br>
@@ -14,8 +16,6 @@ import android.graphics.Bitmap;
 public final class DataCacheManager {
 
     private static final String PATH = "data";
-    private static final int CACHE_SIZE_OF_DISK = 100 * 1024 * 1024;//100M
-    private static final int CACHE_SIZE_OF_MEMORY = (int) (Runtime.getRuntime().maxMemory() / 1024 / 10);// 1/10 total memory size
 
     private static DataCacheManager instance = null;
 
@@ -26,12 +26,14 @@ public final class DataCacheManager {
         return instance;
     }
 
-    private Context context;
-    private SimpleCacheLoader cacheLoader;
+    private CacheLoader cacheLoader;
 
     private DataCacheManager(Context context) {
-        DiskCache diskCache = new DiskCache(ImageLoaderUtils.getDiskCacheDir(context, PATH), 0, CACHE_SIZE_OF_DISK);
-        MemoryCache memoryCache = new MemoryCache(CACHE_SIZE_OF_MEMORY);
+        DiskCache diskCache = new DiskCache(
+                ImageLoaderUtils.getDiskCacheDir(context, PATH),
+                BaseUtils.getVersionCode(context),
+                CacheLoader.DEFAULT_MAX_DISK_CACHE);
+        MemoryCache memoryCache = new MemoryCache(CacheLoader.DEFAULT_MAX_MEMORY_CACHE);
         cacheLoader = new SimpleCacheLoader(memoryCache, diskCache);
     }
 
@@ -54,6 +56,7 @@ public final class DataCacheManager {
         return cacheLoader.getString(key);
     }
 
+    @Deprecated
     public Bitmap getBitmap(String key) {
         if (cacheLoader == null) {
             return null;

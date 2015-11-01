@@ -24,6 +24,8 @@ public interface HttpClientAgent {
     public void release();
 
     /**
+     * Request callback
+     *
      * @param <T>
      */
     abstract class OnRequestAdapter<T> {
@@ -69,6 +71,8 @@ public interface HttpClientAgent {
     }
 
     /**
+     * Handle Tag
+     *
      * @param <T>
      */
     abstract class OnRequestHandleTagAdapter<T> extends OnRequestAdapter<T> {
@@ -83,6 +87,54 @@ public interface HttpClientAgent {
             return tag;
         }
 
+    }
+
+    /**
+     * Request callback wrapper
+     *
+     * @param <T>
+     */
+    abstract class OnRequestWrapper<T> extends OnRequestAdapter<T> {
+
+        private OnRequestAdapter adapter;
+
+        public OnRequestWrapper(OnRequestAdapter adapter) {
+            this.adapter = adapter;
+        }
+
+        @Override
+        public boolean onRequest(Request request) {
+            if (adapter != null) {
+                return adapter.onRequest(request);
+            }
+            return super.onRequest(request);
+        }
+
+        @Override
+        public boolean onResponse(Object args) {
+            if (adapter != null) {
+                return adapter.onResponse(args);
+            }
+            return super.onResponse(args);
+        }
+
+        @Override
+        public void onDeliverSuccess(T obj) {
+            if (adapter != null) {
+                adapter.onDeliverSuccess(obj);
+            }
+            onDeliverComplete();
+        }
+
+        @Override
+        public void onDeliverError(Exception e) {
+            if (adapter != null) {
+                adapter.onDeliverError(e);
+            }
+            onDeliverComplete();
+        }
+
+        public abstract void onDeliverComplete();
     }
 
 }
