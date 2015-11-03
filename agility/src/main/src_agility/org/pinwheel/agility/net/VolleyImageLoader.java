@@ -1,8 +1,9 @@
-package org.pinwheel.agility.util;
+package org.pinwheel.agility.net;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 import android.widget.ImageView;
 import com.android.volley.Request;
@@ -11,9 +12,11 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.android.volley.toolbox.Volley;
 
-public final class BitmapLoader {
+import org.pinwheel.agility.util.BitmapUtils;
 
-    public static BitmapLoader instance;
+public final class VolleyImageLoader {
+
+    public static VolleyImageLoader instance;
 
     private BitmapCache mCache;
     private BitmapCache mCacheWithThumbnail;
@@ -24,9 +27,9 @@ public final class BitmapLoader {
     private int default_src, error_src;
     private int default_thumbnail_width, default_thumbnail_height;
 
-    public static synchronized BitmapLoader init(Context context) {
+    public static synchronized VolleyImageLoader init(Context context) {
         if (instance == null) {
-            instance = new BitmapLoader(context);
+            instance = new VolleyImageLoader(context);
         }
         return instance;
     }
@@ -49,52 +52,54 @@ public final class BitmapLoader {
         }
     }
 
-    public static BitmapLoader getInstance() {
+    public static VolleyImageLoader getInstance() {
         return instance;
     }
 
-    private BitmapLoader(Context context) {
+    private VolleyImageLoader(Context context) {
         this.mQueue = Volley.newRequestQueue(context);
-        this.mCache = new BitmapCache(10 * 1024 * 1024);
+        this.mCache = new BitmapCache(8 * 1024 * 1024);
         this.mCacheWithThumbnail = new BitmapCache(5 * 1024 * 1024);
         this.mImageLoader = new ImageLoader(mQueue, mCache);
     }
 
-    public BitmapLoader setDefaultImage(int default_src, int error_src) {
+    public VolleyImageLoader setDefaultImage(int default_src, int error_src) {
         this.default_src = default_src;
         this.error_src = error_src;
         return instance;
     }
 
-    public BitmapLoader setDefaultThumbnail(int default_thumbnail_width, int default_thumbnail_height) {
+    public VolleyImageLoader setDefaultThumbnail(int default_thumbnail_width, int default_thumbnail_height) {
         this.default_thumbnail_width = default_thumbnail_width;
         this.default_thumbnail_height = default_thumbnail_height;
         return instance;
     }
 
-    public void setImageFromNetwork(NetworkImageView imageView, String img_url) {
-        this.setImageFromNetwork(imageView, img_url, default_src, error_src);
+    public void setImage(NetworkImageView imageView, String img_url) {
+        this.setImage(imageView, img_url, default_src, error_src);
     }
 
-    public void setImageFromNetwork(NetworkImageView imageView, String img_url, int default_src, int error_src) {
+    public void setImage(NetworkImageView imageView, String img_url, int default_src, int error_src) {
         imageView.setDefaultImageResId(default_src);
         imageView.setErrorImageResId(error_src);
         imageView.setImageUrl(img_url, mImageLoader);
     }
 
-    public void setImageFromNetwork(String img_url, ImageLoader.ImageListener listener) {
+    public void setImage(String img_url, ImageLoader.ImageListener listener) {
         mImageLoader.get(img_url, listener);
     }
 
-
+    @Deprecated
     public void setThumbnailFromNative(ImageView imageView, String img_path) {
         this.setThumbnailFromNative(imageView, img_path, default_thumbnail_width, default_thumbnail_height);
     }
 
+    @Deprecated
     public void setThumbnailFromNative(ImageView imageView, String img_path, int width, int height) {
         this.setThumbnailFromNative(imageView, img_path, width, height, default_src, error_src);
     }
 
+    @Deprecated
     public void setThumbnailFromNative(final ImageView imageView, final String img_path, final int width, final int height, int default_src, final int error_src) {
         if (TextUtils.isEmpty(img_path)) {
             return;
@@ -125,11 +130,12 @@ public final class BitmapLoader {
         }.start();
     }
 
-
+    @Deprecated
     public void setImageFromNative(ImageView imageView, String img_path) {
         this.setImageFromNative(imageView, img_path, default_src, error_src);
     }
 
+    @Deprecated
     public void setImageFromNative(final ImageView imageView, final String img_path, int default_src, final int error_src) {
         if (TextUtils.isEmpty(img_path)) {
             return;
@@ -158,5 +164,36 @@ public final class BitmapLoader {
                 });
             }
         }.start();
+    }
+
+    private static class BitmapCache implements ImageLoader.ImageCache {
+
+        private LruCache<String, Bitmap> mCache;
+
+        public BitmapCache(int maxSize) {
+            mCache = new LruCache<String, Bitmap>(maxSize) {
+                @Override
+                protected int sizeOf(String key, Bitmap value) {
+                    return value.getRowBytes() * value.getHeight();
+                }
+            };
+        }
+
+        @Override
+        public Bitmap getBitmap(String key) {
+            return mCache.get(key);
+        }
+
+        @Override
+        public void putBitmap(String key, Bitmap arg1) {
+            mCache.put(key, arg1);
+        }
+
+        public void clear() {
+            if (mCache != null) {
+                mCache.evictAll();
+            }
+        }
+
     }
 }

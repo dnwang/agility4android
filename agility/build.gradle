@@ -5,8 +5,8 @@ android {
     buildToolsVersion '23.0.1'
     defaultConfig {
         minSdkVersion 14
-        versionCode 54
-        versionName '4.0.1.54'
+        versionCode 55
+        versionName '4.0.2.55'
     }
     buildTypes {
         release {

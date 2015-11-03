@@ -25,8 +25,8 @@ public class HttpConnectionAgent implements HttpClientAgent {
 
     private ExecutorService executor;
 
-    public HttpConnectionAgent() {
-        executor = Executors.newCachedThreadPool();
+    public HttpConnectionAgent(int parallelSize) {
+        executor = Executors.newFixedThreadPool(parallelSize);
     }
 
     protected void convert(Request request, HttpURLConnection connection) throws Exception {
@@ -59,7 +59,7 @@ public class HttpConnectionAgent implements HttpClientAgent {
             @Override
             public void run() {
                 if (callback != null) {
-                    if (callback.onRequest(request)) {
+                    if (callback.onRequestPrepare(request)) {
                         // no need handle continue
                         return;
                     }
@@ -82,7 +82,7 @@ public class HttpConnectionAgent implements HttpClientAgent {
                     int code = connection.getResponseCode();
                     String message = connection.getResponseMessage();
                     if (callback != null) {
-                        if (callback.onResponse(connection)) {
+                        if (callback.onRequestResponse(connection)) {
                             // no need handle continue
                             connection.disconnect();
                             return;

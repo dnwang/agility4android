@@ -85,7 +85,7 @@ public class ImageLoader {
         executor = Executors.newCachedThreadPool();
         asyncTaskMap = new HashMap<>();
         DiskCache diskCache = new DiskCache(
-                ImageLoaderUtils.getDiskCacheDir(context, PATH),
+                CacheUtils.getDiskCacheDir(context, PATH),
                 BaseUtils.getVersionCode(context),
                 Math.max(0, diskCacheSize));
         MemoryCache memoryCache = new MemoryCache(Math.max(0, memoryCacheSize));
@@ -118,15 +118,15 @@ public class ImageLoader {
         // clear view
         clearViewInAsyncTaskMap(viewReference);
         // show default bitmap
-        ImageLoaderUtils.setBitmap(viewReference, options.getDefaultRes());
+        CacheUtils.setBitmap(viewReference, options.getDefaultRes());
         // convert cache key
-        String key = ImageLoaderUtils.convertUrl(url + options.getKey());
+        String key = CacheUtils.convertKey(url + options.getKey());
         // loading memory cache first
         CacheEntity memoryCache = cacheLoader.getMemoryCache().getCache(key);
         if (memoryCache != null && memoryCache instanceof BitmapEntity) {
             Bitmap bitmap = ((BitmapEntity) memoryCache).get();
             if (bitmap != null) {
-                ImageLoaderUtils.setBitmap(viewReference, bitmap);
+                CacheUtils.setBitmap(viewReference, bitmap);
                 return;
             }
         }
@@ -299,7 +299,7 @@ public class ImageLoader {
                 @Override
                 public void run() {
                     for (SoftReference<? extends View> viewReference : viewReferences) {
-                        ImageLoaderUtils.setBitmap(viewReference, bitmap);
+                        CacheUtils.setBitmap(viewReference, bitmap);
                     }
                     // remove this task from taskMap! task is all complete
                     removeAsyncTaskAtLoadingComplete(key);
@@ -312,7 +312,7 @@ public class ImageLoader {
                 @Override
                 public void run() {
                     for (SoftReference<? extends View> viewReference : viewReferences) {
-                        ImageLoaderUtils.setBitmap(viewReference, res);
+                        CacheUtils.setBitmap(viewReference, res);
                     }
                     // remove this task from taskMap! task is all complete
                     removeAsyncTaskAtLoadingComplete(key);

@@ -20,13 +20,13 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author dnwang
  */
-final class ImageLoaderUtils {
+final class CacheUtils {
 
-    private ImageLoaderUtils() {
+    private CacheUtils() {
 
     }
 
-    public static String convertUrl(String key) {
+    public static String convertKey(String key) {
 //        return String.valueOf(key.hashCode());
         return md5(key);
     }

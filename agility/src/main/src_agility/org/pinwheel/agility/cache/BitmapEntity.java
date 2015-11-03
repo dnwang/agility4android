@@ -36,6 +36,11 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
             return;
         }
         obj = BitmapFactory.decodeStream(inputStream);
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     protected void decodeFrom(InputStream inputStream, int width, int height) {
@@ -45,6 +50,11 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
         obj = BitmapFactory.decodeStream(inputStream);
         if (obj != null && width > 0 && height > 0) {
             obj = ThumbnailUtils.extractThumbnail(obj, width, height, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+        }
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -72,6 +82,11 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
                 }
             }
             obj = ThumbnailUtils.extractThumbnail(obj, scaleWidth, scaleHeight, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+        }
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

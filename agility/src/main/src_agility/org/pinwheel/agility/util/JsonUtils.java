@@ -1,4 +1,4 @@
-package org.pinwheel.agility.util.ex;
+package org.pinwheel.agility.util;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -12,7 +12,7 @@ import java.util.List;
  * [{"":"","":""},{"":"","":""},{"":"","":""}]、 {"":"","":""}]  单层嵌套
  * {"":"","":{}}  只支持多层的Json对象嵌套    多层的数组嵌套，混合嵌套暂不不支持
  */
-public class JsonUtil {
+public final class JsonUtils {
     /**
      * json数据解析     [{"":"","":""},{"":"","":""},{"":"","":""}]  单层嵌套模式
      * 暂不支持[,,,,](数组中嵌套的不是Json对象而是普通对象)

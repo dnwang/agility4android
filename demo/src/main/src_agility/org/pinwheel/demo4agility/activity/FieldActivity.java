@@ -5,7 +5,7 @@ import android.view.View;
 import org.pinwheel.agility.field.FieldUtils;
 import org.pinwheel.agility.field.Ignore;
 import org.pinwheel.agility.net.Request;
-import org.pinwheel.agility.net.RequestManager;
+import org.pinwheel.agility.net.VolleyRequestHelper;
 import org.pinwheel.demo4agility.field.DemoEntity;
 import org.pinwheel.demo4agility.field.InjectStruct;
 
@@ -56,10 +56,10 @@ public class FieldActivity extends AbsTestActivity {
         // add method test 201506029
         Map<String, String> values = FieldUtils.obj2Map(new DemoEntity());
         logout(values);
-        RequestManager.init(this);
-        RequestManager.debug = true;
+        VolleyRequestHelper.init(this);
+        VolleyRequestHelper.debug = true;
         Request api = new Request.Builder().url("http://www.baidu.com").addParams(values).create();
-        RequestManager.doGet(api, null);
+        VolleyRequestHelper.doGet(api, null);
     }
 
     private void reflexValue(String space, Object obj) {

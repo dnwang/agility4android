@@ -25,17 +25,17 @@ import java.util.Map;
  *
  * @author dnwang
  */
-public final class RequestManager {
+public final class VolleyRequestHelper {
     public static boolean debug = false;
 
-    private static final String TAG = RequestManager.class.getSimpleName();
-    private static RequestManager instance = null;
+    private static final String TAG = VolleyRequestHelper.class.getSimpleName();
+    private static VolleyRequestHelper instance = null;
 
     private RequestQueue mQueue;
 
-    public static synchronized RequestManager init(Context context) {
+    public static synchronized VolleyRequestHelper init(Context context) {
         if (instance == null) {
-            instance = new RequestManager(context);
+            instance = new VolleyRequestHelper(context);
         }
         return instance;
     }
@@ -120,7 +120,7 @@ public final class RequestManager {
     }
 
 
-    private RequestManager(Context context) {
+    private VolleyRequestHelper(Context context) {
         this.mQueue = Volley.newRequestQueue(context);
     }
 
@@ -182,7 +182,7 @@ public final class RequestManager {
                 mParser.parse(response.data);
                 return Response.success(mParser.getResult(), HttpHeaderParser.parseCacheHeaders(response));
             } catch (Exception e) {
-                if (RequestManager.debug) {
+                if (VolleyRequestHelper.debug) {
                     Log.e(TAG, e.getMessage());
                 }
                 VolleyError error = new VolleyError(e.getMessage());

@@ -32,8 +32,8 @@ public class HttpClientAgentActivity extends AbsTestActivity {
 
     @Override
     protected void onInitInCreate() {
-        httpClientAgent = new HttpConnectionAgent();
-        httpClientAgent = new OkHttpAgent();
+        httpClientAgent = new HttpConnectionAgent(6);
+        httpClientAgent = new OkHttpAgent(6);
 //        httpClientAgent = new VolleyAgent(getApplicationContext());
     }
 

@@ -16,7 +16,7 @@ import java.lang.reflect.Type;
  *
  * @author dnwang
  */
-public final class GsonParser<T> extends DataParserAdapter<T> {
+public class GsonParser<T> extends DataParserAdapter<T> {
     private static final String TAG = GsonParser.class.getSimpleName();
 
     private static boolean debug = false;

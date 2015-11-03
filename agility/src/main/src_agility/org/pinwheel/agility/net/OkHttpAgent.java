@@ -32,9 +32,9 @@ public class OkHttpAgent implements HttpClientAgent {
     private OkHttpClient client;
     private ExecutorService executor;
 
-    public OkHttpAgent() {
+    public OkHttpAgent(int parallelSize) {
         client = new OkHttpClient();
-        executor = Executors.newCachedThreadPool();
+        executor = Executors.newFixedThreadPool(parallelSize);
     }
 
     protected com.squareup.okhttp.Request convert(Request request) {
@@ -87,7 +87,7 @@ public class OkHttpAgent implements HttpClientAgent {
             @Override
             public void run() {
                 if (callback != null) {
-                    if (callback.onRequest(request)) {
+                    if (callback.onRequestPrepare(request)) {
                         // no need handle continue
                         return;
                     }
@@ -97,7 +97,7 @@ public class OkHttpAgent implements HttpClientAgent {
                 try {
                     response = execute(request);
                     if (callback != null) {
-                        if (callback.onResponse(response)) {
+                        if (callback.onRequestResponse(response)) {
                             // no need handle continue
                             return;
                         }

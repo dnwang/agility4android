@@ -32,6 +32,11 @@ public abstract class DataParserAdapter<T> implements IDataParser<T> {
 
     }
 
+    @Override
+    public T getResult() {
+        return null;
+    }
+
     public void release() {
         listener = null;
     }

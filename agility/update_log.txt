@@ -46,3 +46,9 @@ v4.0.0;20151014;dnwang;
 v4.0.1;20151101;dnwang;
 修复HttpAgent返回状态BUG;
 添加完整的Cache包:图片缓存框架ImageLoader,使用LruCache的磁盘缓存DiskCache
+
+v4.0.2;20151103;dnwang;
+完善DataCacheManager功能;
+将Request改为final,只能使用Builder构建;
+更名部分类;
+删除使用量极少的类;

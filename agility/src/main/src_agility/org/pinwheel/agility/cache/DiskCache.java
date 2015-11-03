@@ -110,10 +110,6 @@ public class DiskCache {
     }
 
     protected final boolean convertStream(InputStream inputStream, OutputStream outputStream) {
-        if (inputStream == null || outputStream == null) {
-            return false;
-        }
-
         boolean result = false;
         BufferedOutputStream out = null;
         BufferedInputStream in = null;
@@ -125,7 +121,7 @@ public class DiskCache {
                 out.write(buff);
             }
             result = true;
-        } catch (final IOException e) {
+        } catch (final Exception e) {
             e.printStackTrace();
             result = false;
         } finally {

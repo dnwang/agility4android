@@ -5,7 +5,7 @@ import android.view.View;
 import com.google.gson.Gson;
 
 import org.pinwheel.agility.net.Request;
-import org.pinwheel.agility.net.RequestManager;
+import org.pinwheel.agility.net.VolleyRequestHelper;
 import org.pinwheel.agility.net.parser.GsonParser;
 import org.pinwheel.demo4agility.entity.ECMobileEntity;
 
@@ -68,8 +68,8 @@ public class ServerAPITestActivity extends AbsTestActivity {
 
     @Override
     protected void onInitInCreate() {
-        RequestManager.init(getBaseContext());
-        RequestManager.debug = true;
+        VolleyRequestHelper.init(getBaseContext());
+        VolleyRequestHelper.debug = true;
     }
 
     @Override
@@ -85,7 +85,7 @@ public class ServerAPITestActivity extends AbsTestActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        RequestManager.release();
+        VolleyRequestHelper.release();
     }
 
     private void doRequest() {
@@ -94,10 +94,10 @@ public class ServerAPITestActivity extends AbsTestActivity {
         params.password = "1990219";
         Request request = new Request.Builder().url(SERVER_URL + USER_SIGNIN).addParam("json", new Gson().toJson(params)).create();
         logout(request.getUrlByMethod());
-        RequestManager.doPost(
+        VolleyRequestHelper.doPost(
                 request,
                 new GsonParser(Response.class),
-                new RequestManager.OnRequestListener<Response>() {
+                new VolleyRequestHelper.OnRequestListener<Response>() {
                     @Override
                     public void onError(Exception e) {
                         logout(e.getMessage());
@@ -109,7 +109,7 @@ public class ServerAPITestActivity extends AbsTestActivity {
                     }
                 });
 
-        RequestManager.doPost(request, new RequestManager.OnRequestListener<String>() {
+        VolleyRequestHelper.doPost(request, new VolleyRequestHelper.OnRequestListener<String>() {
             @Override
             public void onError(Exception e) {
                 logout(e.getMessage());

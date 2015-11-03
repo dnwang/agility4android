@@ -61,7 +61,7 @@ public class VolleyAgent implements HttpClientAgent {
         }
 
         OnRequestAdapter listener = request.getRequestListener();
-        if (listener != null && listener.onRequest(request)) {
+        if (listener != null && listener.onRequestPrepare(request)) {
             // no need handle continue
             return;
         }
@@ -130,7 +130,7 @@ public class VolleyAgent implements HttpClientAgent {
         @Override
         protected Response<T> parseNetworkResponse(NetworkResponse response) {
             OnRequestAdapter listener = request.getRequestListener();
-            if (listener != null && listener.onResponse(response)) {
+            if (listener != null && listener.onRequestResponse(response)) {
                 // no need handle continue
                 return Response.success(null, HttpHeaderParser.parseCacheHeaders(response));
             }

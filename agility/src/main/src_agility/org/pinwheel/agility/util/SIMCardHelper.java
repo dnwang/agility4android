@@ -15,7 +15,7 @@ public final class SIMCardHelper {
     private SIMCardHelper() {
     }
 
-    public String getNativePhoneNumber(Context context) {
+    public static String getNativePhoneNumber(Context context) {
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         if (!telephonyManager.hasIccCard()) {
             return "";
@@ -24,7 +24,7 @@ public final class SIMCardHelper {
         }
     }
 
-    public String getProvidersName(Context context) {
+    public static String getProvidersName(Context context) {
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         if (!telephonyManager.hasIccCard()) {
             return "";

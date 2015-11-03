@@ -32,30 +32,34 @@ public class SimpleCacheLoader implements CacheLoader {
 
     @Override
     public void release() {
-        memoryCache.release();
-        diskCache.release();
+        if (memoryCache != null) {
+            memoryCache.release();
+        }
+        if (diskCache != null) {
+            diskCache.release();
+        }
         memoryCache = null;
         diskCache = null;
     }
 
     @Override
-    public void setString(String key, String string) {
+    public void setObject(String key, Object obj) {
         if (memoryCache == null || diskCache == null) {
             return;
         }
-        StringEntity data = new StringEntity(string);
+        ObjectEntity data = new ObjectEntity(obj);
         memoryCache.setCache(key, data);
         diskCache.setCache(key, data.getInputStream());
     }
 
     @Override
-    public String getString(String key) {
+    public Object getObject(String key) {
         if (memoryCache == null || diskCache == null) {
             return null;
         }
         CacheEntity value = memoryCache.getCache(key);
-        if (value != null) {
-            return ((StringEntity) value).get();
+        if (value != null && value instanceof ObjectEntity) {
+            return ((ObjectEntity) value).get();
         } else {
             InputStream inputStream = diskCache.getCache(key);
             if (inputStream != null) {
@@ -85,7 +89,7 @@ public class SimpleCacheLoader implements CacheLoader {
             return null;
         }
         CacheEntity value = memoryCache.getCache(key);
-        if (value != null) {
+        if (value != null && value instanceof BitmapEntity) {
             return ((BitmapEntity) value).get();
         } else {
             InputStream inputStream = diskCache.getCache(key);

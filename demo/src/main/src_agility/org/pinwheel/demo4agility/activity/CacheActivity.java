@@ -20,10 +20,15 @@ import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
 
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.cache.CacheLoader;
+import org.pinwheel.agility.cache.DataCacheManager;
 import org.pinwheel.agility.util.BaseUtils;
-import org.pinwheel.agility.util.BitmapLoader;
+import org.pinwheel.agility.net.VolleyImageLoader;
 import org.pinwheel.demo4agility.R;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Copyright (C), 2015 <br>
@@ -145,7 +150,7 @@ public class CacheActivity extends AbsTestActivity {
 
     @Override
     protected void onInitInCreate() {
-        BitmapLoader.init(this);
+        VolleyImageLoader.init(this);
     }
 
     @Override
@@ -167,6 +172,25 @@ public class CacheActivity extends AbsTestActivity {
             }
         }
         adapter.notifyDataSetChanged();
+
+        Object obj = DataCacheManager.getInstance(this).getObject("test_cache");
+        if (obj != null) {
+            logout(obj);
+        } else {
+            Map<String, Struct> map = new HashMap<>();
+            for (int i = 0; i < 5; i++) {
+                Struct struct = new Struct();
+                struct.testInt = i;
+                struct.testString = i + "" + i;
+                map.put(struct.testString, struct);
+            }
+            DataCacheManager.getInstance(this).setObject("test_cache", map);
+        }
+    }
+
+    public static class Struct implements Serializable {
+        public int testInt;
+        public String testString;
     }
 
     private class Adapter extends SimpleArrayAdapter<String> {
@@ -178,7 +202,7 @@ public class CacheActivity extends AbsTestActivity {
 
         public Adapter(Context context) {
             //Volley init
-            BitmapLoader.init(context);
+            VolleyImageLoader.init(context);
             //ImageLoader init
             DisplayImageOptions options;
             options = new DisplayImageOptions.Builder()
@@ -232,7 +256,7 @@ public class CacheActivity extends AbsTestActivity {
 
             // By Volley
 //            NetworkImageView imageView = BaseUtils.getViewByHolder(convertView, R.id.image);
-//            BitmapLoader.getInstance().setImageFromNetwork(imageView, getItem(position));
+//            BitmapLoader.getInstance().setImage(imageView, getItem(position));
 
             return convertView;
         }

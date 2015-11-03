@@ -13,12 +13,12 @@ import android.widget.Toast;
 import org.pinwheel.agility.dialog.SimpleProgressDialog;
 import org.pinwheel.agility.dialog.SweetDialog;
 import org.pinwheel.agility.net.Request;
-import org.pinwheel.agility.net.RequestManager;
+import org.pinwheel.agility.net.VolleyRequestHelper;
 import org.pinwheel.agility.net.parser.BitmapParser;
 import org.pinwheel.agility.net.parser.FileParser;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.util.BitmapUtils;
-import org.pinwheel.agility.util.BitmapLoader;
+import org.pinwheel.agility.net.VolleyImageLoader;
 import org.pinwheel.demo4agility.R;
 import org.pinwheel.demo4agility.multithread.MultiThreadDownloader;
 
@@ -33,10 +33,10 @@ public class DownLoadActivity extends Activity {
         super.onCreate(arg0);
         this.setContentView(org.pinwheel.demo4agility.R.layout.download);
 
-        RequestManager.init(this);
-        RequestManager.debug = true;
+        VolleyRequestHelper.init(this);
+        VolleyRequestHelper.debug = true;
 
-        BitmapLoader.init(this)
+        VolleyImageLoader.init(this)
                 .setDefaultImage(R.drawable.bg_card, R.drawable.holo_ic_alerts_and_states_error_dark)
                 .setDefaultThumbnail(200, 150);
 
@@ -72,7 +72,7 @@ public class DownLoadActivity extends Activity {
         progress.show();
 
         final Request api = new Request.Builder().url(url).keepSingle(true).create();
-        RequestManager.doGet(api, new FileParser("/sdcard/temp.apk"), new RequestManager.OnRequestListener<File>() {
+        VolleyRequestHelper.doGet(api, new FileParser("/sdcard/temp.apk"), new VolleyRequestHelper.OnRequestListener<File>() {
             @Override
             public void onError(Exception e) {
                 progress.dismiss();
@@ -96,7 +96,7 @@ public class DownLoadActivity extends Activity {
         final String bitmap_path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/temp.jpg";
 //        Bitmap thumbnail = BitmapUtils.getBitmapThumbnail(bitmap_path, 200, 150);
 //        findViewById(R.id.btn).setBackgroundDrawable(new BitmapDrawable(thumbnail));
-        BitmapLoader.getInstance().setThumbnailFromNative(
+        VolleyImageLoader.getInstance().setThumbnailFromNative(
                 (ImageView) findViewById(R.id.image),
                 bitmap_path
         );
@@ -104,7 +104,7 @@ public class DownLoadActivity extends Activity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                BitmapLoader.getInstance().setImageFromNative(
+                VolleyImageLoader.getInstance().setImageFromNative(
                         (ImageView) findViewById(R.id.image),
                         bitmap_path
                 );
@@ -117,7 +117,7 @@ public class DownLoadActivity extends Activity {
         progress.show();
 
         Request api = new Request.Builder().url(url).keepSingle(true).create();
-        RequestManager.doGet(api, new BitmapParser(bitmap_path, Bitmap.CompressFormat.JPEG), new RequestManager.OnRequestListener<Bitmap>() {
+        VolleyRequestHelper.doGet(api, new BitmapParser(bitmap_path, Bitmap.CompressFormat.JPEG), new VolleyRequestHelper.OnRequestListener<Bitmap>() {
             @Override
             public void onError(Exception e) {
                 progress.dismiss();

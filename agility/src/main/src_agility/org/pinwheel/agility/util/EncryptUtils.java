@@ -1,4 +1,4 @@
-package org.pinwheel.agility.util.ex;
+package org.pinwheel.agility.util;
 
 import android.text.TextUtils;
 
@@ -18,7 +18,7 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * 加密方式工具类
  */
-public class EncryUtil {
+public final class EncryptUtils {
     /**
      * 加密Map集合中的数据，先将参数中Map集合改成TreeMap在拼成key=value形式后加密
      *

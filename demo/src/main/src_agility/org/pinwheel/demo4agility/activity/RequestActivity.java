@@ -3,14 +3,14 @@ package org.pinwheel.demo4agility.activity;
 import android.view.View;
 
 import org.pinwheel.agility.net.Request;
-import org.pinwheel.agility.net.RequestManager;
+import org.pinwheel.agility.net.VolleyRequestHelper;
 
 public class RequestActivity extends AbsTestActivity {
 
     @Override
     protected void onInitInCreate() {
-        RequestManager.init(this);
-        RequestManager.debug = true;
+        VolleyRequestHelper.init(this);
+        VolleyRequestHelper.debug = true;
     }
 
     @Override
@@ -34,13 +34,13 @@ public class RequestActivity extends AbsTestActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        RequestManager.release();
+        VolleyRequestHelper.release();
     }
 
     private void request2() {
         String requestTag = "request2";
         Request api = new Request.Builder().url("http://www.baidu.com").keepSingle(true).create();
-        RequestManager.doPost(api, new RequestManager.OnHandleTagRequestAdapter<String>(requestTag) {
+        VolleyRequestHelper.doPost(api, new VolleyRequestHelper.OnHandleTagRequestAdapter<String>(requestTag) {
             @Override
             public void onError(Exception e, Object tag) {
                 String log = "<" + tag.toString() + "> --> " + "Error\n";
@@ -61,7 +61,7 @@ public class RequestActivity extends AbsTestActivity {
         String url = "http://182.138.101.48:5001/nn_live/nn_x64/aWQ9Y2N0djEmdXJsX2MxPTIwMDAmbm5fYWs9MDEwNjM4MDgxMGFmZjVkNGJhZTZkMzMxYmEzYTA3YjI2NiZudHRsPTMmbnBpcHM9MTgyLjEzOC4xMDEuNDg6NTEwMSZuY21zaWQ9MTAwMDAxJm5ncz01NTFjZWZjYzAwMDU1NDkzOWUwYjAxYzk2N2IxNDFjYiZubl9jcD1udWxsJm5uX3VzZXJfaWQ9WVlIRDAwMDAwNzgxJm5uX2RheT0yMDE1MDQwMiZubl9iZWdpbj0xMjAwMDAmbm5fdGltZV9sZW49MzYwMCZuZHY9MS4wLjAuMC4yLlNDLUpHUy1BUEhPTkUuMC4wX1JlbGVhc2UmbmVhPSUyNm5uX2RheSUzZDIwMTUwNDAyJTI2bm5fYmVnaW4lM2QxMjAwMDAlMjZubl90aW1lX2xlbiUzZDM2MDAmbmVzPTU4N2I2ZmNkYjNjMjYzNTM5YTE0MTJkNWFkMTk4Yzdj/cctv1.m3u8";
         String requestTag = "request3";
         Request api = new Request.Builder().url(url).keepSingle(true).create();
-        RequestManager.doGet(api, new RequestManager.OnHandleTagRequestAdapter<String>(requestTag) {
+        VolleyRequestHelper.doGet(api, new VolleyRequestHelper.OnHandleTagRequestAdapter<String>(requestTag) {
             @Override
             public void onError(Exception e, Object tag) {
                 String log = "<" + tag.toString() + "> --> " + "Error\n";

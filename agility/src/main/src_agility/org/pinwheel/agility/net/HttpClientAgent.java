@@ -30,11 +30,11 @@ public interface HttpClientAgent {
      */
     abstract class OnRequestAdapter<T> {
 
-        public boolean onRequest(Request request) {
+        public boolean onRequestPrepare(Request request) {
             return false;
         }
 
-        public boolean onResponse(Object args) {
+        public boolean onRequestResponse(Object args) {
             return false;
         }
 
@@ -103,19 +103,19 @@ public interface HttpClientAgent {
         }
 
         @Override
-        public boolean onRequest(Request request) {
+        public boolean onRequestPrepare(Request request) {
             if (adapter != null) {
-                return adapter.onRequest(request);
+                return adapter.onRequestPrepare(request);
             }
-            return super.onRequest(request);
+            return super.onRequestPrepare(request);
         }
 
         @Override
-        public boolean onResponse(Object args) {
+        public boolean onRequestResponse(Object args) {
             if (adapter != null) {
-                return adapter.onResponse(args);
+                return adapter.onRequestResponse(args);
             }
-            return super.onResponse(args);
+            return super.onRequestResponse(args);
         }
 
         @Override
@@ -134,7 +134,9 @@ public interface HttpClientAgent {
             onDeliverComplete();
         }
 
-        public abstract void onDeliverComplete();
+        public void onDeliverComplete() {
+            // TODO: 11/3/15
+        }
     }
 
 }

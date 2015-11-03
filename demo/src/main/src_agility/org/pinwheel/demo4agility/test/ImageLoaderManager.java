@@ -39,9 +39,9 @@ public final class ImageLoaderManager {
     private static ImageLoader newInstance(Context context) {
         HttpClientAgent httpClientAgent;
         if (HttpClientAgentHelper.isImportOkHttp()) {
-            httpClientAgent = new OkHttpAgent();
+            httpClientAgent = new OkHttpAgent(99);
         } else {
-            httpClientAgent = new HttpConnectionAgent();
+            httpClientAgent = new HttpConnectionAgent(99);
         }
         ImageLoader imageLoader = new ImageLoader(context, httpClientAgent);
         ImageLoaderOptions options = new ImageLoaderOptions.Builder()

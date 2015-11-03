@@ -2,6 +2,7 @@ package org.pinwheel.agility.cache;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 
 import org.pinwheel.agility.util.BaseUtils;
 
@@ -30,7 +31,7 @@ public final class DataCacheManager {
 
     private DataCacheManager(Context context) {
         DiskCache diskCache = new DiskCache(
-                ImageLoaderUtils.getDiskCacheDir(context, PATH),
+                CacheUtils.getDiskCacheDir(context, PATH),
                 BaseUtils.getVersionCode(context),
                 CacheLoader.DEFAULT_MAX_DISK_CACHE);
         MemoryCache memoryCache = new MemoryCache(CacheLoader.DEFAULT_MAX_MEMORY_CACHE);
@@ -41,27 +42,53 @@ public final class DataCacheManager {
         return cacheLoader;
     }
 
-    public void release() {
-        if (cacheLoader != null) {
-            cacheLoader.release();
-            cacheLoader = null;
+    public synchronized static void release() {
+        if (instance != null) {
+            instance.cacheLoader.release();
+            instance.cacheLoader = null;
         }
         instance = null;
     }
 
-    public String getString(String key) {
+    public void setObject(String key, Object obj) {
+        if (TextUtils.isEmpty(key) || cacheLoader == null) {
+            return;
+        }
+        cacheLoader.setObject(CacheUtils.convertKey(key), obj);
+    }
+
+    public Object getObject(String key) {
         if (cacheLoader == null) {
             return null;
         }
-        return cacheLoader.getString(key);
+        return cacheLoader.getObject(CacheUtils.convertKey(key));
     }
 
+    /**
+     * {@link ImageLoader}
+     *
+     * @param key    key
+     * @param bitmap bitmap
+     */
+    @Deprecated
+    public void setBitmap(String key, Bitmap bitmap) {
+        if (TextUtils.isEmpty(key) || cacheLoader == null) {
+            return;
+        }
+        cacheLoader.setBitmap(CacheUtils.convertKey(key), bitmap);
+    }
+
+    /**
+     * {@link ImageLoader}
+     *
+     * @param key key
+     */
     @Deprecated
     public Bitmap getBitmap(String key) {
         if (cacheLoader == null) {
             return null;
         }
-        return cacheLoader.getBitmap(key);
+        return cacheLoader.getBitmap(CacheUtils.convertKey(key));
     }
 
 }

@@ -1,6 +1,8 @@
 package org.pinwheel.agility.field;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +19,12 @@ public final class FieldUtils {
 
     }
 
+    /**
+     * 获取对象的成员变量
+     *
+     * @param obj
+     * @return
+     */
     public static Map<String, String> obj2Map(Object obj) {
         Map<String, String> values = new HashMap<String, String>();
         Class cls = obj.getClass();
@@ -33,6 +41,21 @@ public final class FieldUtils {
             }
         }
         return values;
+    }
+
+    /**
+     * 获取对象的泛型类
+     *
+     * @param obj
+     * @return
+     */
+    protected final Class getGenericClass(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        Type genType = getClass().getGenericSuperclass();
+        Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
+        return (Class) params[0];
     }
 
 }
