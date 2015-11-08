@@ -10,7 +10,7 @@
         android:layout_height="64dp"
         android:layout_gravity="center"
         android:background="@android:color/holo_blue_dark"
-        android:scaleType="fitXY" />
+        android:scaleType="centerCrop" />
 
     <TextView
         android:id="@+id/desc"

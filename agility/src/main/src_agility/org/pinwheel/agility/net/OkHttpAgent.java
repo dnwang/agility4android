@@ -12,6 +12,7 @@ import org.pinwheel.agility.net.parser.IDataParser;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +32,11 @@ public class OkHttpAgent implements HttpClientAgent {
 
     private OkHttpClient client;
     private ExecutorService executor;
+
+    public OkHttpAgent(){
+        client = new OkHttpClient();
+        executor = Executors.newCachedThreadPool();
+    }
 
     public OkHttpAgent(int parallelSize) {
         client = new OkHttpClient();

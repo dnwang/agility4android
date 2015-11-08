@@ -9,6 +9,7 @@ import android.media.TimedText;
  *
  * @author dnwang
  */
+@Deprecated
 interface IMediaPlayerCallBack {
 
     public void onPrepared(Object player);

@@ -10,6 +10,7 @@ import android.net.Uri;
  *
  * @author dnwang
  */
+@Deprecated
 interface IMediaPlayer {
 
     public final static int CUSTOM_ERROR = 0x421;

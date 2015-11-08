@@ -1,5 +1,10 @@
 package org.pinwheel.agility.cache;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import org.pinwheel.agility.net.Request;
+
 /**
  * Copyright (C), 2015 <br>
  * <br>
@@ -21,7 +26,9 @@ public final class ImageLoaderOptions {
     private float scale;
     private int maxWidth;
     private int maxHeight;
+    private BitmapFactory.Options options;
 
+    private boolean ignoreCache;
     private int networkTimeOut;
 
     private ImageLoaderOptions(Builder builder) {
@@ -30,9 +37,11 @@ public final class ImageLoaderOptions {
         this.fixedWidth = builder.fixedWidth;
         this.fixedHeight = builder.fixedHeight;
         this.scale = builder.scale;
+        this.options = builder.options;
         this.maxWidth = builder.maxWidth;
         this.maxHeight = builder.maxHeight;
         this.networkTimeOut = builder.networkTimeOut;
+        this.ignoreCache = builder.ignoreCache;
     }
 
     public String getKey() {
@@ -64,6 +73,14 @@ public final class ImageLoaderOptions {
         return fixedHeight;
     }
 
+    public BitmapFactory.Options getBitmapOptions() {
+        return options;
+    }
+
+    public boolean isIgnoreCache() {
+        return ignoreCache;
+    }
+
     public int getDefaultRes() {
         return defaultRes;
     }
@@ -89,7 +106,9 @@ public final class ImageLoaderOptions {
         private float scale;
         private int maxWidth;
         private int maxHeight;
+        private BitmapFactory.Options options;
 
+        private boolean ignoreCache;
         private int networkTimeOut;
 
         public Builder() {
@@ -97,6 +116,12 @@ public final class ImageLoaderOptions {
             maxHeight = DEFAULT_MAX_HEIGHT;
             scale = 1f;
             networkTimeOut = 20;//20s
+
+            // reduce memory expenses
+            options = new BitmapFactory.Options();
+            options.inPurgeable = true;
+            options.inInputShareable = true;
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
         }
 
         public Builder fixedBound(int fixedWidth, int fixedHeight) {
@@ -112,6 +137,11 @@ public final class ImageLoaderOptions {
             return this;
         }
 
+        public Builder bitmapOptions(BitmapFactory.Options options) {
+            this.options = options;
+            return this;
+        }
+
         public Builder defaultRes(int defaultRes) {
             this.defaultRes = defaultRes;
             return this;
@@ -124,6 +154,11 @@ public final class ImageLoaderOptions {
 
         public Builder networkTimeOut(int timeOut) {
             this.networkTimeOut = Math.max(0, timeOut);
+            return this;
+        }
+
+        public Builder ignoreCache(boolean is){
+            this.ignoreCache = is;
             return this;
         }
 

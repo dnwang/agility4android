@@ -1,6 +1,7 @@
 package org.pinwheel.agility.cache;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import java.io.InputStream;
 
@@ -63,7 +64,7 @@ public class SimpleCacheLoader implements CacheLoader {
         } else {
             InputStream inputStream = diskCache.getCache(key);
             if (inputStream != null) {
-                StringEntity data = new StringEntity();
+                ObjectEntity data = new ObjectEntity();
                 data.decodeFrom(inputStream);
                 memoryCache.setCache(key, data);
                 return data.get();
@@ -96,6 +97,26 @@ public class SimpleCacheLoader implements CacheLoader {
             if (inputStream != null) {
                 BitmapEntity data = new BitmapEntity();
                 data.decodeFrom(inputStream);
+                memoryCache.setCache(key, data);
+                return data.get();
+            } else {
+                return null;
+            }
+        }
+    }
+
+    public Bitmap getBitmap(String key, BitmapFactory.Options options) {
+        if (memoryCache == null || diskCache == null) {
+            return null;
+        }
+        CacheEntity value = memoryCache.getCache(key);
+        if (value != null && value instanceof BitmapEntity) {
+            return ((BitmapEntity) value).get();
+        } else {
+            InputStream inputStream = diskCache.getCache(key);
+            if (inputStream != null) {
+                BitmapEntity data = new BitmapEntity();
+                data.decodeFrom(inputStream, options);
                 memoryCache.setCache(key, data);
                 return data.get();
             } else {

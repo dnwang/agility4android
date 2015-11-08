@@ -38,17 +38,21 @@ SweetList系列顶部横向事件处理,viewpager切换导致监听失效
 删除SweetCycleGallery,增加SweetCircularView,效果类似,自动滚动,功能更完善,性能优化
 
 v4.0.0;20151014;dnwang;
-删除Litesuites框架;
-添加HttpClientAgent,屏蔽volley,okHttp,httpConnection差异性,统一接口;
-修改Request,使用Builder模式创建;
-整理包内容,移除Litesuits框架;
+1.删除Litesuites框架;
+2.添加HttpClientAgent,屏蔽volley,okHttp,httpConnection差异性,统一接口;
+3.修改Request,使用Builder模式创建;
+4.整理包内容,移除Litesuits框架;
 
 v4.0.1;20151101;dnwang;
-修复HttpAgent返回状态BUG;
-添加完整的Cache包:图片缓存框架ImageLoader,使用LruCache的磁盘缓存DiskCache
+1.修复HttpAgent返回状态BUG;
+2.添加完整的Cache包:图片缓存框架ImageLoader,使用LruCache的磁盘缓存DiskCache
 
 v4.0.2;20151103;dnwang;
-完善DataCacheManager功能;
-将Request改为final,只能使用Builder构建;
-更名部分类;
-删除使用量极少的类;
+1.完善DataCacheManager功能;
+2.将Request改为final,只能使用Builder构建;
+3.更名部分类;
+4.删除使用量极少的类;
+
+v4.0.3;20151108;dnwang;
+1.修复DataCacheManager获取磁盘缓存bug;
+2.优化ImageLoader加载网络图片内存消耗;

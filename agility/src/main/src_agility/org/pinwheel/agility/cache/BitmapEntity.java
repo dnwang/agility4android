@@ -43,12 +43,32 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
         }
     }
 
-    protected void decodeFrom(InputStream inputStream, int width, int height) {
+    protected void decodeFrom(InputStream inputStream, BitmapFactory.Options options) {
         if (inputStream == null) {
             return;
         }
-        obj = BitmapFactory.decodeStream(inputStream);
-        if (obj != null && width > 0 && height > 0) {
+        if (options != null) {
+            obj = BitmapFactory.decodeStream(inputStream, null, options);
+        } else {
+            obj = BitmapFactory.decodeStream(inputStream);
+        }
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void decodeFrom(InputStream inputStream, BitmapFactory.Options options, int width, int height) {
+        if (inputStream == null) {
+            return;
+        }
+        if (options != null) {
+            obj = BitmapFactory.decodeStream(inputStream, null, options);
+        } else {
+            obj = BitmapFactory.decodeStream(inputStream);
+        }
+        if (obj != null && width > 0 && height > 0 && width != obj.getWidth() && height != obj.getHeight()) {
             obj = ThumbnailUtils.extractThumbnail(obj, width, height, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
         }
         try {
@@ -58,11 +78,15 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
         }
     }
 
-    protected void decodeFrom(InputStream inputStream, float scale, int maxWidth, int maxHeight) {
+    protected void decodeFrom(InputStream inputStream, BitmapFactory.Options options, float scale, int maxWidth, int maxHeight) {
         if (inputStream == null) {
             return;
         }
-        obj = BitmapFactory.decodeStream(inputStream);
+        if (options != null) {
+            obj = BitmapFactory.decodeStream(inputStream, null, options);
+        } else {
+            obj = BitmapFactory.decodeStream(inputStream);
+        }
         if (obj != null && scale > 0) {
             int scaleWidth = (int) (obj.getWidth() * scale);
             int scaleHeight = (int) (obj.getHeight() * scale);
@@ -81,7 +105,9 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
                     }
                 }
             }
-            obj = ThumbnailUtils.extractThumbnail(obj, scaleWidth, scaleHeight, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+            if (scaleWidth > 0 && scaleHeight > 0 && scaleWidth != obj.getWidth() && scaleHeight != obj.getHeight()) {
+                obj = ThumbnailUtils.extractThumbnail(obj, scaleWidth, scaleHeight, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+            }
         }
         try {
             inputStream.close();
@@ -122,9 +148,9 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
 
     protected void decodeFrom(InputStream inputStream, ImageLoaderOptions options) {
         if (options.getFixedWidth() > 0 && options.getFixedHeight() > 0) {
-            decodeFrom(inputStream, options.getFixedWidth(), options.getFixedHeight());
+            decodeFrom(inputStream, options.getBitmapOptions(), options.getFixedWidth(), options.getFixedHeight());
         } else {
-            decodeFrom(inputStream, options.getScale(), options.getMaxWidth(), options.getMaxHeight());
+            decodeFrom(inputStream, options.getBitmapOptions(), options.getScale(), options.getMaxWidth(), options.getMaxHeight());
         }
         // TODO: 11/1/15 waiting add ...
     }
