@@ -38,7 +38,7 @@ public class DiskCache {
             if (snapShot != null) {
                 return snapShot.getInputStream(0);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -59,7 +59,7 @@ public class DiskCache {
                 }
             }
             diskCache.flush(); // no need call it every times;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

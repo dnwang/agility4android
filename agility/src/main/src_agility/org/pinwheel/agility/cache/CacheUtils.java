@@ -61,34 +61,34 @@ final class CacheUtils {
         }
     }
 
-    public static void setBitmap(SoftReference<? extends View> viewReference, Bitmap bitmap) {
-        View v = viewReference.get();
-        if (v != null) {
-            if (v instanceof ImageView) {
-                ((ImageView) v).setImageBitmap(bitmap);
-            } else {
-                if (bitmap == null) {
-                    v.setBackgroundDrawable(null);
-                } else {
-                    v.setBackgroundDrawable(new BitmapDrawable(bitmap));
-                }
-            }
-        }
-    }
-
-    public static void setBitmap(SoftReference<? extends View> viewReference, int res) {
-        if (res <= 0) {
-            setBitmap(viewReference, null);
-        } else {
-            View v = viewReference.get();
-            if (v != null) {
-                if (v instanceof ImageView) {
-                    ((ImageView) v).setImageResource(res);
-                } else {
-                    v.setBackgroundResource(res);
-                }
-            }
-        }
-    }
+//    public static void setBitmap(SoftReference<? extends View> viewReference, Bitmap bitmap) {
+//        View v = viewReference.get();
+//        if (v != null) {
+//            if (v instanceof ImageView) {
+//                ((ImageView) v).setImageBitmap(bitmap);
+//            } else {
+//                if (bitmap == null) {
+//                    v.setBackgroundDrawable(null);
+//                } else {
+//                    v.setBackgroundDrawable(new BitmapDrawable(bitmap));
+//                }
+//            }
+//        }
+//    }
+//
+//    public static void setBitmap(SoftReference<? extends View> viewReference, int res) {
+//        if (res <= 0) {
+//            setBitmap(viewReference, null);
+//        } else {
+//            View v = viewReference.get();
+//            if (v != null) {
+//                if (v instanceof ImageView) {
+//                    ((ImageView) v).setImageResource(res);
+//                } else {
+//                    v.setBackgroundResource(res);
+//                }
+//            }
+//        }
+//    }
 
 }

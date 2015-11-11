@@ -2,10 +2,12 @@ package org.pinwheel.agility.cache;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ImageView;
 
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.HttpClientAgent.OnRequestAdapter;
@@ -108,14 +110,24 @@ public class ImageLoader {
     }
 
     public void setImage(View view, String url, ImageLoaderOptions options) {
-        if (view == null || TextUtils.isEmpty(url) || options == null || executor == null) {
+        if (view == null) {
             return;
         }
-        SoftReference<View> viewReference = new SoftReference<>(view);
-        // clear view
-        clearViewInTaskMap(viewReference);
-        // show default bitmap
-        CacheUtils.setBitmap(viewReference, options.getDefaultRes());
+        getBitmap(new ViewReceiver(view), url, options);
+    }
+
+    public void getBitmap(BitmapReceiver receiver, String url) {
+        getBitmap(receiver, url, defaultOptions);
+    }
+
+    public void getBitmap(BitmapReceiver receiver, String url, ImageLoaderOptions options) {
+        if (receiver == null || TextUtils.isEmpty(url) || options == null || executor == null) {
+            return;
+        }
+        // dispatch default bitmap
+        receiver.dispatch(options.getDefaultRes());
+        // clear receiver
+        clearReceiverInTaskMap(receiver);
         // convert cache key
         String key = CacheUtils.convertKey(url + options.getKey());
         // loading memory cache first
@@ -124,7 +136,7 @@ public class ImageLoader {
             if (memoryCache != null && memoryCache instanceof BitmapEntity) {
                 Bitmap bitmap = ((BitmapEntity) memoryCache).get();
                 if (bitmap != null) {
-                    CacheUtils.setBitmap(viewReference, bitmap);
+                    receiver.dispatch(bitmap);
                     return;
                 }
             }
@@ -133,13 +145,13 @@ public class ImageLoader {
         AsyncLoaderTask asyncLoader = new AsyncLoaderTask(key, url, options);
         // check task is already in queue, if not put it
         if (!checkAndPutTask(asyncLoader)) {
-            // add this view to task
-            asyncLoader.addView(viewReference);
+            // add this receiver to task
+            asyncLoader.addReceiver(receiver);
             // start new task
             executor.execute(asyncLoader);
         } else {
-            // put view to task only, no need start new task
-            addViewToTask(key, viewReference);
+            // put receiver to task only, no need start new task
+            addReceiverToTask(key, receiver);
         }
     }
 
@@ -174,34 +186,34 @@ public class ImageLoader {
     /**
      * Add view to task
      *
-     * @param key  key
-     * @param view SoftReference
+     * @param key      key
+     * @param receiver receiver
      */
-    protected void addViewToTask(String key, SoftReference<? extends View> view) {
+    protected void addReceiverToTask(String key, BitmapReceiver receiver) {
         synchronized (asyncTaskMap) {
             AsyncLoaderTask task = asyncTaskMap.get(key);
             if (task != null) {
-                task.addView(view);
+                task.addReceiver(receiver);
             }
         }
     }
 
     /**
-     * Remove view in task
+     * Remove receiver in task
      *
-     * @param view SoftReference
+     * @param receiver receiver
      */
-    protected void clearViewInTaskMap(SoftReference<? extends View> view) {
+    protected void clearReceiverInTaskMap(BitmapReceiver receiver) {
         synchronized (asyncTaskMap) {
             Collection<AsyncLoaderTask> tasks = asyncTaskMap.values();
             for (AsyncLoaderTask task : tasks) {
-                task.removeView(view);
+                task.removeReceiver(receiver);
             }
         }
     }
 
     /**
-     * Release all reference
+     * Release all task reference
      */
     public void release() {
         synchronized (asyncTaskMap) {
@@ -218,31 +230,31 @@ public class ImageLoader {
     }
 
     /**
-     * Load bitmap task
+     * Load bitmap task.
      */
     protected final class AsyncLoaderTask implements Runnable {
 
-        private HashSet<SoftReference<? extends View>> viewReferences;
+        private final HashSet<SoftReference<BitmapReceiver>> receivers;
         private String key;
         private String url;
         private ImageLoaderOptions options;
 
         public AsyncLoaderTask(String key, String url, ImageLoaderOptions options) {
-            this.viewReferences = new HashSet<>();
+            this.receivers = new HashSet<>(1);
             this.key = key;
             this.url = url;
             this.options = options;
         }
 
         /**
-         * Release all view references
+         * Release all receiver
          */
         public void release() {
-            viewReferences.clear();
+            receivers.clear();
         }
 
         /**
-         * Apply bitmap to all view
+         * Apply bitmap to all receiver
          *
          * @param bitmap bitmap
          */
@@ -250,8 +262,11 @@ public class ImageLoader {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    for (SoftReference<? extends View> viewReference : viewReferences) {
-                        CacheUtils.setBitmap(viewReference, bitmap);
+                    for (SoftReference<BitmapReceiver> reference : receivers) {
+                        BitmapReceiver receiver = reference.get();
+                        if (receiver != null) {
+                            receiver.dispatch(bitmap);
+                        }
                     }
                     // remove this task from taskMap! task is all complete
                     removeTaskAtLoadingComplete(key);
@@ -263,8 +278,11 @@ public class ImageLoader {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    for (SoftReference<? extends View> viewReference : viewReferences) {
-                        CacheUtils.setBitmap(viewReference, res);
+                    for (SoftReference<BitmapReceiver> reference : receivers) {
+                        BitmapReceiver receiver = reference.get();
+                        if (receiver != null) {
+                            receiver.dispatch(res);
+                        }
                     }
                     // remove this task from taskMap! task is all complete
                     removeTaskAtLoadingComplete(key);
@@ -273,35 +291,29 @@ public class ImageLoader {
         }
 
         /**
-         * Add view to this task
+         * Add receiver to this task
          *
-         * @param targetView view
+         * @param receiver receiver
          */
-        public void addView(SoftReference<? extends View> targetView) {
-            if (targetView.get() == null) {
-                return;
-            }
-            synchronized (asyncTaskMap) {
-                viewReferences.add(targetView);
+        public void addReceiver(BitmapReceiver receiver) {
+            synchronized (receivers) {
+                receivers.add(new SoftReference<>(receiver));
             }
         }
 
         /**
-         * Remove view from this task
+         * Remove receiver from this task
          *
-         * @param targetView view
+         * @param targetReceiver receiver
          */
-        public void removeView(SoftReference<? extends View> targetView) {
-            if (targetView.get() == null) {
-                return;
-            }
-            synchronized (asyncTaskMap) {
-                Iterator<SoftReference<? extends View>> iterator = viewReferences.iterator();
+        public void removeReceiver(BitmapReceiver targetReceiver) {
+            synchronized (receivers) {
+                Iterator<SoftReference<BitmapReceiver>> iterator = receivers.iterator();
                 while (iterator.hasNext()) {
-                    SoftReference<? extends View> viewReference = iterator.next();
-                    View v = viewReference.get();
-                    if (v != null) {
-                        if (v == targetView.get()) {
+                    SoftReference<? extends BitmapReceiver> reference = iterator.next();
+                    BitmapReceiver receiver = reference.get();
+                    if (receiver != null) {
+                        if (receiver.equals(targetReceiver)) {
                             iterator.remove();
                         }
                     } else {
@@ -363,6 +375,74 @@ public class ImageLoader {
             } else {
                 // post this task to download queue
                 getBitmapFromNetwork();
+            }
+        }
+    }
+
+    /**
+     * Bitmap receiver.
+     */
+    public interface BitmapReceiver {
+
+        void dispatch(int res);
+
+        void dispatch(Bitmap bitmap);
+
+    }
+
+    /**
+     * View receiver reference.
+     */
+    private static final class ViewReceiver implements BitmapReceiver {
+
+        private View targetView;
+
+        public ViewReceiver(View view) {
+            this.targetView = view;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            ViewReceiver that = (ViewReceiver) o;
+            return targetView == that.targetView;
+        }
+
+        @Override
+        public int hashCode() {
+            return targetView.hashCode();
+        }
+
+        @Override
+        public void dispatch(int res) {
+            if (res <= 0) {
+                dispatch(null);
+            } else {
+                if (targetView != null) {
+                    if (targetView instanceof ImageView) {
+                        ((ImageView) targetView).setImageResource(res);
+                    } else {
+                        targetView.setBackgroundResource(res);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void dispatch(Bitmap bitmap) {
+            if (targetView instanceof ImageView) {
+                ((ImageView) targetView).setImageBitmap(bitmap);
+            } else {
+                if (bitmap == null) {
+                    targetView.setBackgroundDrawable(null);
+                } else {
+                    targetView.setBackgroundDrawable(new BitmapDrawable(bitmap));
+                }
             }
         }
     }
