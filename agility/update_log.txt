@@ -56,3 +56,7 @@ v4.0.2;20151103;dnwang;
 v4.0.3;20151108;dnwang;
 1.修复DataCacheManager获取磁盘缓存bug;
 2.优化ImageLoader加载网络图片内存消耗;
+
+v4.0.4;20151118;dnwang;
+1.ImageLoader加载图片当URL为空时显示默认图;
+2.SweetCircularView手势与父控件手势冲突修复，但与子控件手势仍存在问题;

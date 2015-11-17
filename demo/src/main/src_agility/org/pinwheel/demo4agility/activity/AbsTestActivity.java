@@ -91,7 +91,7 @@ public abstract class AbsTestActivity extends Activity {
         FrameLayout container = new FrameLayout(getBaseContext());
         View v = getContentView();
         if (v != null) {
-            container.addView(getContentView());
+            container.addView(v);
         }
         container.addView(logContainer, -1, -1);
         return container;

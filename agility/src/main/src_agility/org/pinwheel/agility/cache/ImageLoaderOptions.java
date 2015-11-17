@@ -3,8 +3,6 @@ package org.pinwheel.agility.cache;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import org.pinwheel.agility.net.Request;
-
 /**
  * Copyright (C), 2015 <br>
  * <br>
@@ -15,8 +13,8 @@ import org.pinwheel.agility.net.Request;
  */
 public final class ImageLoaderOptions {
 
-    public static final int DEFAULT_MAX_WIDTH = 196;
-    public static final int DEFAULT_MAX_HEIGHT = 196;
+    public static final int DEFAULT_MAX_WIDTH = 192;
+    public static final int DEFAULT_MAX_HEIGHT = 192;
 
     private int defaultRes;
     private int errorRes;
@@ -50,6 +48,7 @@ public final class ImageLoaderOptions {
         result = 31 * result + (scale != +0.0f ? Float.floatToIntBits(scale) : 0);
         result = 31 * result + maxWidth;
         result = 31 * result + maxHeight;
+        result = 31 * result + (options == null ? 0 : options.hashCode());
         return String.valueOf(result);
     }
 
@@ -157,7 +156,7 @@ public final class ImageLoaderOptions {
             return this;
         }
 
-        public Builder ignoreCache(boolean is){
+        public Builder ignoreCache(boolean is) {
             this.ignoreCache = is;
             return this;
         }

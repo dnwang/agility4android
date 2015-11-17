@@ -1,5 +1,6 @@
 package org.pinwheel.demo4agility.activity;
 
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
+import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.view.SweetCircularView;
 
 import java.util.ArrayList;
@@ -96,7 +98,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
         gallery.setMinimumHeight(600);
         gallery.setOrientation(LinearLayout.HORIZONTAL);
 //        gallery.setOrientation(LinearLayout.VERTICAL);
-        gallery.setSensibility(0.5f);
+        gallery.setSensibility(0.2f);
         // test nested
         LinearLayout.LayoutParams gParams = new LinearLayout.LayoutParams(-1, -1);
         gParams.setMargins(0, 60, 0, 0);
@@ -148,7 +150,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
         Button func3 = new Button(this);
         func3.setText("replace");
         Button func4 = new Button(this);
-        func4.setText("reSize");
+        func4.setText("reSize 3->5");
         Button func5 = new Button(this);
         func5.setText("indent");
         funcContainer.addView(func1);
@@ -215,7 +217,15 @@ public class CycleGalleryActivity extends AbsTestActivity {
             }
         });
 
-        return container;
+        // create pager warapper
+        ViewPager viewPager = new ViewPager(this);
+        SimplePagerAdapter pagerAdapter = new SimplePagerAdapter();
+        viewPager.setAdapter(pagerAdapter);
+        Button simpleTestBtn = new Button(this);
+        simpleTestBtn.setText("Just test for pager");
+        pagerAdapter.add(simpleTestBtn);
+        pagerAdapter.add(container);
+        return viewPager;
     }
 
     @Override

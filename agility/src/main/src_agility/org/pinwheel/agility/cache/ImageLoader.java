@@ -93,7 +93,7 @@ public class ImageLoader {
     }
 
     /**
-     * Get image cache controller
+     * Get cache controller
      *
      * @return cacheLoader
      */
@@ -122,6 +122,10 @@ public class ImageLoader {
 
     public void getBitmap(BitmapReceiver receiver, String url, ImageLoaderOptions options) {
         if (receiver == null || TextUtils.isEmpty(url) || options == null || executor == null) {
+            // show error res for receiver
+            if (receiver != null && options != null) {
+                receiver.dispatch(options.getErrorRes());
+            }
             return;
         }
         // dispatch default bitmap
@@ -184,7 +188,7 @@ public class ImageLoader {
     }
 
     /**
-     * Add view to task
+     * Add receiver to task
      *
      * @param key      key
      * @param receiver receiver
@@ -234,7 +238,7 @@ public class ImageLoader {
      */
     protected final class AsyncLoaderTask implements Runnable {
 
-        private final HashSet<SoftReference<BitmapReceiver>> receivers;
+        private final HashSet<BitmapReceiver> receivers;
         private String key;
         private String url;
         private ImageLoaderOptions options;
@@ -250,7 +254,9 @@ public class ImageLoader {
          * Release all receiver
          */
         public void release() {
-            receivers.clear();
+            synchronized (receivers) {
+                receivers.clear();
+            }
         }
 
         /**
@@ -262,11 +268,8 @@ public class ImageLoader {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    for (SoftReference<BitmapReceiver> reference : receivers) {
-                        BitmapReceiver receiver = reference.get();
-                        if (receiver != null) {
-                            receiver.dispatch(bitmap);
-                        }
+                    for (BitmapReceiver receiver : receivers) {
+                        receiver.dispatch(bitmap);
                     }
                     // remove this task from taskMap! task is all complete
                     removeTaskAtLoadingComplete(key);
@@ -278,11 +281,8 @@ public class ImageLoader {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    for (SoftReference<BitmapReceiver> reference : receivers) {
-                        BitmapReceiver receiver = reference.get();
-                        if (receiver != null) {
-                            receiver.dispatch(res);
-                        }
+                    for (BitmapReceiver receiver : receivers) {
+                        receiver.dispatch(res);
                     }
                     // remove this task from taskMap! task is all complete
                     removeTaskAtLoadingComplete(key);
@@ -297,7 +297,7 @@ public class ImageLoader {
          */
         public void addReceiver(BitmapReceiver receiver) {
             synchronized (receivers) {
-                receivers.add(new SoftReference<>(receiver));
+                receivers.add(receiver);
             }
         }
 
@@ -308,15 +308,10 @@ public class ImageLoader {
          */
         public void removeReceiver(BitmapReceiver targetReceiver) {
             synchronized (receivers) {
-                Iterator<SoftReference<BitmapReceiver>> iterator = receivers.iterator();
+                Iterator<BitmapReceiver> iterator = receivers.iterator();
                 while (iterator.hasNext()) {
-                    SoftReference<? extends BitmapReceiver> reference = iterator.next();
-                    BitmapReceiver receiver = reference.get();
-                    if (receiver != null) {
-                        if (receiver.equals(targetReceiver)) {
-                            iterator.remove();
-                        }
-                    } else {
+                    BitmapReceiver receiver = iterator.next();
+                    if (receiver.equals(targetReceiver)) {
                         iterator.remove();
                     }
                 }
@@ -395,10 +390,10 @@ public class ImageLoader {
      */
     private static final class ViewReceiver implements BitmapReceiver {
 
-        private View targetView;
+        private SoftReference<View> reference;// !!
 
         public ViewReceiver(View view) {
-            this.targetView = view;
+            this.reference = new SoftReference<>(view);
         }
 
         @Override
@@ -410,12 +405,12 @@ public class ImageLoader {
                 return false;
             }
             ViewReceiver that = (ViewReceiver) o;
-            return targetView == that.targetView;
+            return reference.get() == that.reference.get();
         }
 
         @Override
         public int hashCode() {
-            return targetView.hashCode();
+            return reference.get() == null ? 0 : reference.get().hashCode();
         }
 
         @Override
@@ -423,11 +418,12 @@ public class ImageLoader {
             if (res <= 0) {
                 dispatch(null);
             } else {
-                if (targetView != null) {
-                    if (targetView instanceof ImageView) {
-                        ((ImageView) targetView).setImageResource(res);
+                View v = reference.get();
+                if (v != null) {
+                    if (v instanceof ImageView) {
+                        ((ImageView) v).setImageResource(res);
                     } else {
-                        targetView.setBackgroundResource(res);
+                        v.setBackgroundResource(res);
                     }
                 }
             }
@@ -435,13 +431,16 @@ public class ImageLoader {
 
         @Override
         public void dispatch(Bitmap bitmap) {
-            if (targetView instanceof ImageView) {
-                ((ImageView) targetView).setImageBitmap(bitmap);
-            } else {
-                if (bitmap == null) {
-                    targetView.setBackgroundDrawable(null);
+            View v = reference.get();
+            if (v != null) {
+                if (v instanceof ImageView) {
+                    ((ImageView) v).setImageBitmap(bitmap);
                 } else {
-                    targetView.setBackgroundDrawable(new BitmapDrawable(bitmap));
+                    if (bitmap == null) {
+                        v.setBackgroundDrawable(null);
+                    } else {
+                        v.setBackgroundDrawable(new BitmapDrawable(bitmap));
+                    }
                 }
             }
         }

@@ -448,28 +448,36 @@ public class SweetCircularView extends ViewGroup {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
+        boolean superState = super.dispatchTouchEvent(event);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 needIntercept = false;
                 lastPoint.set(event.getX(), event.getY());
-                return super.dispatchTouchEvent(event);
+                getParent().requestDisallowInterceptTouchEvent(true);
+                return true;// can not return superState.
             case MotionEvent.ACTION_MOVE:
                 float absXDiff = Math.abs(event.getX() - lastPoint.x);
                 float absYDiff = Math.abs(event.getY() - lastPoint.y);
-                if (orientation == LinearLayout.HORIZONTAL && absXDiff > absYDiff && absXDiff > MOVE_SLOP) {
-                    needIntercept = true;
-                } else if (orientation == LinearLayout.VERTICAL && absYDiff > absXDiff && absYDiff > MOVE_SLOP) {
-                    needIntercept = true;
-                }
-                if (needIntercept) {
-                    // intercept parent view gesture
-                    getParent().requestDisallowInterceptTouchEvent(true);
-                    // pause auto switch
-                    if (isAutoCycle) {
-                        removeCallbacks(autoCycleRunnable);
+                if (orientation == LinearLayout.HORIZONTAL) {
+                    if (absXDiff > absYDiff && absXDiff > MOVE_SLOP) {
+                        needIntercept = true;
+                    } else if (absYDiff > absXDiff && absYDiff > MOVE_SLOP) {
+                        // restore touch event in parent
+                        getParent().requestDisallowInterceptTouchEvent(false);
+                    }
+                } else if (orientation == LinearLayout.VERTICAL) {
+                    if (absYDiff > absXDiff && absYDiff > MOVE_SLOP) {
+                        needIntercept = true;
+                    } else if (absXDiff > absYDiff && absXDiff > MOVE_SLOP) {
+                        // restore touch event in parent
+                        getParent().requestDisallowInterceptTouchEvent(false);
                     }
                 }
-                return super.dispatchTouchEvent(event);
+                // pause auto switch
+                if (isAutoCycle) {
+                    removeCallbacks(autoCycleRunnable);
+                }
+                return superState;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 getParent().requestDisallowInterceptTouchEvent(false);
@@ -478,29 +486,31 @@ public class SweetCircularView extends ViewGroup {
                     removeCallbacks(autoCycleRunnable);
                     postDelayed(autoCycleRunnable, intervalOnAutoCycle);
                 }
-                return super.dispatchTouchEvent(event);
+                return superState;
             default:
-                return super.dispatchTouchEvent(event);
+                return superState;
         }
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
+        boolean superState = super.onInterceptTouchEvent(event);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                return super.onInterceptTouchEvent(event);
+                return superState;
             case MotionEvent.ACTION_MOVE:
                 return needIntercept;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                return super.onInterceptTouchEvent(event);
+                return superState;
             default:
-                return super.onInterceptTouchEvent(event);
+                return superState;
         }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        boolean superState = super.onTouchEvent(event);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 lastPoint.set(event.getX(), event.getY());
@@ -554,7 +564,7 @@ public class SweetCircularView extends ViewGroup {
                 }
                 break;
             default:
-                return super.onTouchEvent(event);
+                return superState;
         }
         return true;
     }
