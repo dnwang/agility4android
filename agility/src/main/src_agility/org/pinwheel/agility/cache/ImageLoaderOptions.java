@@ -48,7 +48,6 @@ public final class ImageLoaderOptions {
         result = 31 * result + (scale != +0.0f ? Float.floatToIntBits(scale) : 0);
         result = 31 * result + maxWidth;
         result = 31 * result + maxHeight;
-        result = 31 * result + (options == null ? 0 : options.hashCode());
         return String.valueOf(result);
     }
 
@@ -136,6 +135,7 @@ public final class ImageLoaderOptions {
             return this;
         }
 
+        @Deprecated
         public Builder bitmapOptions(BitmapFactory.Options options) {
             this.options = options;
             return this;
