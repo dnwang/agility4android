@@ -49,11 +49,11 @@ public final class FieldUtils {
      * @param obj
      * @return
      */
-    protected final Class getGenericClass(Object obj) {
+    public static Class getGenericClass(Object obj) {
         if (obj == null) {
             return null;
         }
-        Type genType = getClass().getGenericSuperclass();
+        Type genType = obj.getClass().getGenericSuperclass();
         Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
         return (Class) params[0];
     }

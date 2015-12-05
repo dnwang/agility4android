@@ -60,3 +60,6 @@ v4.0.3;20151108;dnwang;
 v4.0.4;20151118;dnwang;
 1.ImageLoader加载图片当URL为空时显示默认图;
 2.SweetCircularView手势与父控件手势冲突修复，但与子控件手势仍存在问题;
+
+v4.0.4.60;20151205;dnwang;
+1.DataCacheManager增加remove,clear等扩展方法;

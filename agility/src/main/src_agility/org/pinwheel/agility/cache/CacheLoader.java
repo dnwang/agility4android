@@ -23,6 +23,10 @@ public interface CacheLoader {
 
     public Bitmap getBitmap(String key);
 
+    public void remove(String key);
+
+    public void clear();
+
     public void release();
 
 }

@@ -6,6 +6,8 @@ import android.text.TextUtils;
 
 import org.pinwheel.agility.util.BaseUtils;
 
+import java.io.Serializable;
+
 /**
  * Copyright (C), 2015 <br>
  * <br>
@@ -54,6 +56,9 @@ public final class DataCacheManager {
         if (TextUtils.isEmpty(key) || cacheLoader == null) {
             return;
         }
+        if (obj != null && !(obj instanceof Serializable)) {
+            throw new IllegalStateException(obj.getClass().getSimpleName() + " was implemented Serializable?");
+        }
         cacheLoader.setObject(CacheUtils.convertKey(key), obj);
     }
 
@@ -62,6 +67,20 @@ public final class DataCacheManager {
             return null;
         }
         return cacheLoader.getObject(CacheUtils.convertKey(key));
+    }
+
+    public void remove(String key) {
+        if (TextUtils.isEmpty(key) || cacheLoader == null) {
+            return;
+        }
+        cacheLoader.remove(key);
+    }
+
+    public void clearAllCache() {
+        if (cacheLoader == null) {
+            return;
+        }
+        cacheLoader.clear();
     }
 
     /**

@@ -52,11 +52,15 @@ public class MemoryCache {
         return memoryCache.size();
     }
 
-    public synchronized void release() {
+    public synchronized void clear() {
         if (memoryCache != null) {
             memoryCache.evictAll();
-            memoryCache = null;
         }
+    }
+
+    public synchronized void release() {
+        clear();
+        memoryCache = null;
     }
 
 }

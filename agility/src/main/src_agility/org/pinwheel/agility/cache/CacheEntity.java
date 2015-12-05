@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author dnwang
  */
-abstract class CacheEntity<T> implements Serializable {
+public abstract class CacheEntity<T> implements Serializable {
 
     protected T obj;
 

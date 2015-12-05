@@ -2,6 +2,7 @@ package org.pinwheel.agility.cache;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.text.TextUtils;
 
 import java.io.InputStream;
 
@@ -27,8 +28,26 @@ public class SimpleCacheLoader implements CacheLoader {
         return memoryCache;
     }
 
+    public void setMemoryCache(MemoryCache memoryCache) {
+        if (memoryCache != null) {
+            if (this.memoryCache != null) {
+                this.memoryCache.release();
+            }
+            this.memoryCache = memoryCache;
+        }
+    }
+
     public DiskCache getDiskCache() {
         return diskCache;
+    }
+
+    public void setDiskCache(DiskCache diskCache) {
+        if (diskCache != null) {
+            if (this.diskCache != null) {
+                this.diskCache.release();
+            }
+            this.diskCache = diskCache;
+        }
     }
 
     @Override
@@ -125,4 +144,21 @@ public class SimpleCacheLoader implements CacheLoader {
         }
     }
 
+    @Override
+    public void remove(String key) {
+        if (memoryCache == null || diskCache == null || TextUtils.isEmpty(key)) {
+            return;
+        }
+        memoryCache.remove(key);
+        diskCache.remove(key);
+    }
+
+    @Override
+    public void clear() {
+        if (memoryCache == null || diskCache == null) {
+            return;
+        }
+        memoryCache.clear();
+        diskCache.delete();
+    }
 }
