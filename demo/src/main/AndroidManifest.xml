@@ -80,5 +80,8 @@
         <activity
             android:name="org.pinwheel.demo4agility.activity.CacheActivity"
             android:label="图片缓存 ImageLoader" />
+        <activity
+            android:name="org.pinwheel.demo4agility.activity.TestActivity"
+            android:label="DragListView" />
     </application>
 </manifest>
