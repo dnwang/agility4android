@@ -25,6 +25,14 @@ public interface Draggable {
     float RATIO_NORMAL = 2.0f;
     float RATIO_HEIGHT = 4.0f;
 
+    float WIGHT_INERTIA_LOW = 1.0f;
+    float WIGHT_INERTIA_NORMAL = 2.0f;
+    float WIGHT_INERTIA_HEIGHT = 3.0f;
+
+    float VELOCITY_SLOW = 0.4f;
+    float VELOCITY_NORMAL = 0.6f;
+    float VELOCITY_FAST = 0.8f;
+
     void hold(boolean isTopPosition, float velocity);
 
     void resetToBorder(float velocity);
@@ -47,10 +55,6 @@ public interface Draggable {
 
     int getBottomHoldDistance();
 
-    void setRatio(int ratio);
-
-    float getRatio();
-
     void setState(int state);
 
     int getState();
@@ -70,10 +74,8 @@ public interface Draggable {
      * @author dnwang
      */
     interface OnDragListener {
-
         void onDragStateChanged(int position, int state);
 
         void onDragging(float distance, float offset);
-
     }
 }

@@ -18,7 +18,6 @@ public final class DragHelper implements Draggable {
 
     private int topHoldDistance;
     private int bottomHoldDistance;
-    private float ratio;
     private int orientation;
     private int currentPosition;
     private int currentState;
@@ -32,7 +31,6 @@ public final class DragHelper implements Draggable {
         this.mover = mover;
         this.topHoldDistance = 0;
         this.bottomHoldDistance = 0;
-        this.ratio = RATIO_NORMAL;
         this.orientation = LinearLayout.VERTICAL;
         this.currentPosition = EDGE_NONE;
         this.currentState = STATE_NONE;
@@ -86,9 +84,9 @@ public final class DragHelper implements Draggable {
         if (distance == 0 || (!hasBottomHold() && !hasTopHold())) {
             return false;
         }
-        if (distance > 0 && hasTopHold()) {
+        if (distance > 0 && distance > getTopHoldDistance()) {
             return true;
-        } else if (distance < 0 && hasBottomHold()) {
+        } else if (distance < 0 && distance < -getBottomHoldDistance()) {
             return true;
         } else {
             return false;
@@ -195,17 +193,7 @@ public final class DragHelper implements Draggable {
 
     @Override
     public int getBottomHoldDistance() {
-        return this.topHoldDistance;
-    }
-
-    @Override
-    public final void setRatio(int ratio) {
-        this.ratio = Math.max(0, ratio);
-    }
-
-    @Override
-    public final float getRatio() {
-        return ratio;
+        return this.bottomHoldDistance;
     }
 
     @Override
