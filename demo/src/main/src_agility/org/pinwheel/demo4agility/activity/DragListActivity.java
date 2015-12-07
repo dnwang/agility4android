@@ -8,11 +8,16 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.util.UIUtils;
-import org.pinwheel.demo4agility.drag.DragListView;
-import org.pinwheel.demo4agility.drag.Draggable;
+import org.pinwheel.agility.view.drag.DragListView;
+import org.pinwheel.agility.view.drag.Draggable;
 
 import java.util.ArrayList;
 
@@ -62,7 +67,6 @@ public class DragListActivity extends AbsTestActivity implements AdapterView.OnI
                 Log.d("OnSwipeListener", "onSwipe() distance:[" + distance + "], offset:[" + offset + "]");
             }
         });
-
 
         return list;
     }

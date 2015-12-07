@@ -1,10 +1,11 @@
-package org.pinwheel.demo4agility.drag;
+package org.pinwheel.agility.view.drag;
 
 import android.content.Context;
 import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ListView;
+
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -16,6 +17,8 @@ import org.pinwheel.agility.util.UIUtils;
  * @author dnwang
  */
 public class DragListView extends ListView implements Draggable {
+
+    private static final int INERTIA_SLOP = 5;
 
     private int maxInertiaDistance; // 惯性越界最大距离
     private float restVelocity; // 复位速度
@@ -50,24 +53,20 @@ public class DragListView extends ListView implements Draggable {
     private void init() {
         this.maxInertiaDistance = UIUtils.dip2px(getContext(), 48);
         this.restVelocity = VELOCITY_NORMAL;
-        this.inertiaVelocity = VELOCITY_FAST;
-        this.inertiaWeight = WIGHT_INERTIA_NORMAL;
+        this.inertiaVelocity = VELOCITY_NORMAL;
+        this.inertiaWeight = WIGHT_INERTIA_LOW;
         this.ratio = RATIO_NORMAL;
         this.dragHelper = new DragHelper(mover);
+        // 必须设置此属性,否则对overScrollBy调用次数产生影响
         this.setOverScrollMode(OVER_SCROLL_NEVER);
-    }
-
-    @Deprecated
-    @Override
-    public void setOnItemLongClickListener(OnItemLongClickListener l) {
-        super.setOnItemLongClickListener(l);
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                isTouchSwipe = false; // 暂时没用
+                // 清除 手动拖动 状态
+                isTouchDragging = false;
                 lastPoint.set(event.getRawX(), event.getRawY());
                 if (dragHelper.isHolding()) {
                     // 正在Hold时,点击应该rest,并且无事件响应
@@ -91,11 +90,13 @@ public class DragListView extends ListView implements Draggable {
             case MotionEvent.ACTION_MOVE:
                 // BEGIN;计算当前手势偏移距离
                 final float yDiff = event.getRawY() - lastPoint.y;
-                final float absYDiff = Math.abs(yDiff);
+//                final float xDiff = event.getRawX() - lastPoint.x;
+//                final float absYDiff = Math.abs(yDiff);
+//                final float absXDiff = Math.abs(xDiff);
                 lastPoint.set(event.getRawX(), event.getRawY());
                 // END;计算当前手势偏移距离
 
-                if (isTouchSwipe && dragHelper.isDragging()) {
+                if (isTouchDragging && dragHelper.isDragging()) {
                     // 是手动越界拖动 并且 状态已经定义为 滑动
                     final float oldDy = getDistance();
 
@@ -104,6 +105,11 @@ public class DragListView extends ListView implements Draggable {
                     if (oldDy * yDiff < 0) {
                         // 与之前的滑动发现 逆向,说明是 "下拉中上拉"/"上拉中下拉"
                         offset = yDiff;
+                        // 如果即将产生的偏移大于 目前拖动的总距离, 那移动的距离不能超过总距离（当超过时，后续的判断会将滑动出现bug）
+                        final float absOldDy = Math.abs(oldDy);
+                        if (Math.abs(yDiff) > absOldDy) {
+                            offset = (yDiff > 0 ? absOldDy : -absOldDy);
+                        }
                     } else {
                         // 已经滑动总距离 与 即将滑动的距离 同向,说明是滑动的延续,需要计算阻尼
                         offset = yDiff / (Math.abs(oldDy) / 100 + ratio);
@@ -112,9 +118,18 @@ public class DragListView extends ListView implements Draggable {
 
                     // 提前计算新的总距离,并且判断新距离时候可以被应用,若达到边界需要响应 list 本身的滚动
                     final float newDy = oldDy + offset;
-                    if ((Math.abs(newDy) < 1.0f) || (newDy * oldDy < 0)) { // 下一个距离 和 当前距离 反向 也 视为 到边界
+                    // 下一个距离 和 当前距离 反向 都视为到边界
+                    if ((Math.abs(newDy) < 1.0f && Math.abs(oldDy) > 1.0f) || (newDy * oldDy < 0)) {
+                        // 即将放弃滑动而响应list事件,将还未滑到边界的部分清0
+                        move(-oldDy);
+                        // 滑动到边界时将状态置为NONE
+                        setState(STATE_NONE);
                         // 即将滑到 边界位置,此时应该响应 list 本身的滑动事件
-                        return super.onTouchEvent(event);
+                        // 这里注意调用顺序,1-2-3;2在1之后是保证overScrollBy函数中第一句判断起效,因为调用super之后回响应到overScrollBy,而恰好这次调用应该被屏蔽
+                        // 3是保证返回super的响应状态
+                        boolean superState = super.onTouchEvent(event); // (1)
+                        isTouchDragging = false; // (2)
+                        return superState; // (3)
                     } else {
                         // 应用新的距离,产生滑动
                         move(offset);
@@ -126,7 +141,7 @@ public class DragListView extends ListView implements Draggable {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_OUTSIDE:
-                if (isTouchSwipe && dragHelper.isDragging()) {
+                if (isTouchDragging && dragHelper.isDragging()) {
                     // 手动拖动 释放
                     if (dragHelper.isOverHoldPosition()) {
                         switch (getState()) {
@@ -144,7 +159,8 @@ public class DragListView extends ListView implements Draggable {
                         resetToBorder(restVelocity);
                     }
                 }
-                isTouchSwipe = false;
+                // 清除 手动拖动 状态
+                isTouchDragging = false;
                 return super.onTouchEvent(event);
             default:
                 return super.onTouchEvent(event);
@@ -152,26 +168,30 @@ public class DragListView extends ListView implements Draggable {
     }
 
     private final PointF lastPoint = new PointF();
-    private boolean isTouchSwipe;
+    private boolean isTouchDragging;
 
     @Override
     protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean isTouchEvent) {
+        if (isTouchDragging) {
+            // 当在“下拉中上拉”/“上拉中下拉”并成功手动到边界时,overScrollBy会重复调用一次,此时应该屏蔽
+            return false;
+        }
         int absDeltaY = Math.abs(deltaY);
         if (absDeltaY <= 0) {
             return false;
         }
-        isTouchSwipe = isTouchEvent;
+        isTouchDragging = isTouchEvent;
         // 通过deltaY判断是下拉还是上拉,设置好越界状态,在onTouchEvent中需要用到
-        if (!dragHelper.isDragging()) {
-            // 添加判断，确保不重复设置状态，重复通知
-            setState(deltaY > 0 ? Draggable.STATE_DRAGGING_BOTTOM : Draggable.STATE_DRAGGING_TOP);
+        if (STATE_NONE == getState()) {
+            // 添加判断,确保不重复设置状态,重复通知
+            setState(deltaY > 0 ? STATE_DRAGGING_BOTTOM : STATE_DRAGGING_TOP);
         }
         // 无论是手动越界 还是 惯性越界 都说明有边界触发,并且deltaY值越大 越界效果越强
         if (isTouchEvent) {
             // 手动拖动越界 在toucheEvent中处理
         } else {
             deltaY /= inertiaWeight;
-            if (Math.abs(deltaY) > 10) {
+            if (Math.abs(deltaY) > INERTIA_SLOP) {
                 // 惯性越界在这里根据 deltaY的值 计算自动滑动的距离
                 // 惯性越界 需要最大限制,某些时候系统会返回很大的值,此时需要屏蔽
                 deltaY = deltaY < 0 ? Math.max(-maxInertiaDistance, deltaY) : Math.min(deltaY, maxInertiaDistance);
@@ -286,6 +306,7 @@ public class DragListView extends ListView implements Draggable {
         return dragHelper.getState();
     }
 
+    @Deprecated
     @Override
     public void setPosition(int position) {
         dragHelper.setPosition(position);

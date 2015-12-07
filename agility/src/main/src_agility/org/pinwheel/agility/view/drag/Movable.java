@@ -1,4 +1,4 @@
-package org.pinwheel.demo4agility.drag;
+package org.pinwheel.agility.view.drag;
 
 /**
  * Copyright (C), 2015 <br>

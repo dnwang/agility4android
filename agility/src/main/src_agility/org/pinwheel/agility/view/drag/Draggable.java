@@ -1,4 +1,4 @@
-package org.pinwheel.demo4agility.drag;
+package org.pinwheel.agility.view.drag;
 
 /**
  * Copyright (C), 2015 <br>
@@ -29,9 +29,9 @@ public interface Draggable {
     float WIGHT_INERTIA_NORMAL = 2.0f;
     float WIGHT_INERTIA_HEIGHT = 3.0f;
 
-    float VELOCITY_SLOW = 0.4f;
-    float VELOCITY_NORMAL = 0.6f;
-    float VELOCITY_FAST = 0.8f;
+    float VELOCITY_SLOW = 0.2f;
+    float VELOCITY_NORMAL = 0.4f;
+    float VELOCITY_FAST = 0.6f;
 
     void hold(boolean isTopPosition, float velocity);
 
@@ -78,4 +78,5 @@ public interface Draggable {
 
         void onDragging(float distance, float offset);
     }
+
 }

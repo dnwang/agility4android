@@ -1,4 +1,4 @@
-package org.pinwheel.demo4agility.drag;
+package org.pinwheel.agility.view.drag;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -198,6 +198,17 @@ public final class DragHelper implements Draggable {
 
     @Override
     public final void setState(int state) {
+        switch (state) {
+            case STATE_NONE:
+                setPosition(EDGE_NONE);
+                break;
+            case STATE_DRAGGING_TOP:
+                setPosition(EDGE_TOP);
+                break;
+            case STATE_DRAGGING_BOTTOM:
+                setPosition(EDGE_BOTTOM);
+                break;
+        }
         this.currentState = state;
         if (listener != null) {
             listener.onDragStateChanged(currentPosition, currentState);
@@ -209,12 +220,10 @@ public final class DragHelper implements Draggable {
         return currentState;
     }
 
+    @Deprecated
     @Override
     public final void setPosition(int position) {
         this.currentPosition = position;
-        if (listener != null) {
-            listener.onDragStateChanged(currentPosition, currentState);
-        }
     }
 
     @Override
