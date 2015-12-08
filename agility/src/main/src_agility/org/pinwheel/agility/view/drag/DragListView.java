@@ -5,7 +5,6 @@ import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ListView;
-
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -52,7 +51,7 @@ public class DragListView extends ListView implements Draggable {
 
     private void init() {
         this.maxInertiaDistance = UIUtils.dip2px(getContext(), 48);
-        this.restVelocity = VELOCITY_NORMAL;
+        this.restVelocity = VELOCITY_FAST;
         this.inertiaVelocity = VELOCITY_NORMAL;
         this.inertiaWeight = WIGHT_INERTIA_LOW;
         this.ratio = RATIO_NORMAL;
@@ -65,8 +64,7 @@ public class DragListView extends ListView implements Draggable {
     public boolean dispatchTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                // 清除 手动拖动 状态
-                isTouchDragging = false;
+                // 必须在dispatchTouchEvent记录DOWN位置,点击header时才有效
                 lastPoint.set(event.getRawX(), event.getRawY());
                 if (dragHelper.isHolding()) {
                     // 正在Hold时,点击应该rest,并且无事件响应
@@ -83,10 +81,15 @@ public class DragListView extends ListView implements Draggable {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        final int state = getState();
+        final float oldDy = getDistance();
+        final float absOldDy = Math.abs(oldDy);
+
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                // 将DOWN的处理放置dispatchTouchEvent中,点击header时才有效
-                return super.onTouchEvent(event);
+                final boolean downSuperState = super.onTouchEvent(event);
+                isTouchDragging = false;
+                return downSuperState;
             case MotionEvent.ACTION_MOVE:
                 // BEGIN;计算当前手势偏移距离
                 final float yDiff = event.getRawY() - lastPoint.y;
@@ -96,17 +99,14 @@ public class DragListView extends ListView implements Draggable {
                 lastPoint.set(event.getRawX(), event.getRawY());
                 // END;计算当前手势偏移距离
 
-                if (isTouchDragging && dragHelper.isDragging()) {
-                    // 是手动越界拖动 并且 状态已经定义为 滑动
-                    final float oldDy = getDistance();
-
+                // 是手动越界拖动
+                if (isTouchDragging) {
                     // BEGIN;计算真实需要滑动的距离
                     float offset;
                     if (oldDy * yDiff < 0) {
                         // 与之前的滑动发现 逆向,说明是 "下拉中上拉"/"上拉中下拉"
                         offset = yDiff;
                         // 如果即将产生的偏移大于 目前拖动的总距离, 那移动的距离不能超过总距离（当超过时，后续的判断会将滑动出现bug）
-                        final float absOldDy = Math.abs(oldDy);
                         if (Math.abs(yDiff) > absOldDy) {
                             offset = (yDiff > 0 ? absOldDy : -absOldDy);
                         }
@@ -119,7 +119,7 @@ public class DragListView extends ListView implements Draggable {
                     // 提前计算新的总距离,并且判断新距离时候可以被应用,若达到边界需要响应 list 本身的滚动
                     final float newDy = oldDy + offset;
                     // 下一个距离 和 当前距离 反向 都视为到边界
-                    if ((Math.abs(newDy) < 1.0f && Math.abs(oldDy) > 1.0f) || (newDy * oldDy < 0)) {
+                    if ((Math.abs(newDy) < 1.0f && absOldDy > 0) || (newDy * oldDy < 0 && absOldDy > 0)) {
                         // 即将放弃滑动而响应list事件,将还未滑到边界的部分清0
                         move(-oldDy);
                         // 滑动到边界时将状态置为NONE
@@ -127,9 +127,9 @@ public class DragListView extends ListView implements Draggable {
                         // 即将滑到 边界位置,此时应该响应 list 本身的滑动事件
                         // 这里注意调用顺序,1-2-3;2在1之后是保证overScrollBy函数中第一句判断起效,因为调用super之后回响应到overScrollBy,而恰好这次调用应该被屏蔽
                         // 3是保证返回super的响应状态
-                        boolean superState = super.onTouchEvent(event); // (1)
+                        final boolean moveSuperState = super.onTouchEvent(event); // (1)
                         isTouchDragging = false; // (2)
-                        return superState; // (3)
+                        return moveSuperState; // (3)
                     } else {
                         // 应用新的距离,产生滑动
                         move(offset);
@@ -141,10 +141,10 @@ public class DragListView extends ListView implements Draggable {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_OUTSIDE:
-                if (isTouchDragging && dragHelper.isDragging()) {
+                if (isTouchDragging && absOldDy > 0) {
                     // 手动拖动 释放
-                    if (dragHelper.isOverHoldPosition()) {
-                        switch (getState()) {
+                    if (isOverHoldPosition()) {
+                        switch (state) {
                             case STATE_DRAGGING_TOP:
                                 hold(true, restVelocity);
                                 break;
@@ -160,8 +160,9 @@ public class DragListView extends ListView implements Draggable {
                     }
                 }
                 // 清除 手动拖动 状态
+                final boolean cancelSuperState = super.onTouchEvent(event);
                 isTouchDragging = false;
-                return super.onTouchEvent(event);
+                return cancelSuperState;
             default:
                 return super.onTouchEvent(event);
         }
@@ -172,8 +173,7 @@ public class DragListView extends ListView implements Draggable {
 
     @Override
     protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean isTouchEvent) {
-        if (isTouchDragging) {
-            // 当在“下拉中上拉”/“上拉中下拉”并成功手动到边界时,overScrollBy会重复调用一次,此时应该屏蔽
+        if (isTouchDragging || Math.abs((int) getDistance()) > 0) {
             return false;
         }
         int absDeltaY = Math.abs(deltaY);
@@ -239,6 +239,11 @@ public class DragListView extends ListView implements Draggable {
 
     public float getRatio() {
         return ratio;
+    }
+
+    @Override
+    public boolean isOverHoldPosition() {
+        return dragHelper.isOverHoldPosition();
     }
 
     @Override

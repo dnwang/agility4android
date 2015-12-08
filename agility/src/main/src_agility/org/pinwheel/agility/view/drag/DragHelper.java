@@ -76,10 +76,12 @@ public final class DragHelper implements Draggable {
     }
 
     public final boolean isHolding() {
-        return getState() == STATE_HOLD;
+        final int state = getState();
+        return state == STATE_HOLD || state == STATE_RESTING_TO_HOLD;
     }
 
-    public final boolean isOverHoldPosition() {
+    @Override
+    public boolean isOverHoldPosition() {
         float distance = getDistance();
         if (distance == 0 || (!hasBottomHold() && !hasTopHold())) {
             return false;

@@ -55,6 +55,8 @@ public interface Draggable {
 
     int getBottomHoldDistance();
 
+    boolean isOverHoldPosition();
+
     void setState(int state);
 
     int getState();

@@ -8,22 +8,18 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.widget.*;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.util.UIUtils;
-import org.pinwheel.agility.view.drag.DragListView;
+import org.pinwheel.agility.view.drag.DragGridView;
+import org.pinwheel.agility.view.drag.DragScrollView;
 import org.pinwheel.agility.view.drag.Draggable;
 
 import java.util.ArrayList;
 
-public class DragListActivity extends AbsTestActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
+public class DragViewActivity extends AbsTestActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
-    private static final int SIZE = 30;
+    private static final int SIZE = 60;
 
     private ArrayAdapter<String> adapter;
 
@@ -43,20 +39,26 @@ public class DragListActivity extends AbsTestActivity implements AdapterView.OnI
 
     @Override
     protected View getContentView() {
-        DragListView list = new DragListView(this);
+//        DragListView dragView = new DragListView(this);
+//        DragGridView dragView = new DragGridView(this);
+//        dragView.setNumColumns(3);
+        DragScrollView dragView = createScrollView();
+
+        dragView.setBackgroundColor(Color.BLACK);
 
         ArrayList<String> data = new ArrayList<>(SIZE);
         for (int index = 0; index < SIZE; index++) {
             data.add(index + ", " + index + ", " + index);
         }
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1, data);
-        list.setOnItemClickListener(this);
-        list.setOnItemLongClickListener(this);
-        initHeader(list);
+//        dragView.setOnItemClickListener(this);
+//        dragView.setOnItemLongClickListener(this);
+//        initHeader(list);
+//        dragView.setAdapter(this.adapter);
 
-        list.setHoldDistance(UIUtils.dip2px(this, 84), UIUtils.dip2px(this, 64));
+        dragView.setHoldDistance(UIUtils.dip2px(this, 84), UIUtils.dip2px(this, 64));
 
-        list.setOnDragListener(new Draggable.OnDragListener() {
+        dragView.setOnDragListener(new Draggable.OnDragListener() {
             @Override
             public void onDragStateChanged(int position, int state) {
                 Log.d("OnSwipeListener", "onSwipeStateChanged() position:[" + convertPosition(position) + "], state:[" + convertState(state) + "]");
@@ -68,7 +70,7 @@ public class DragListActivity extends AbsTestActivity implements AdapterView.OnI
             }
         });
 
-        return list;
+        return dragView;
     }
 
     private void initHeader(ListView list) {
@@ -119,6 +121,26 @@ public class DragListActivity extends AbsTestActivity implements AdapterView.OnI
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         Toast.makeText(this, "Long: " + position, Toast.LENGTH_SHORT).show();
         return false;
+    }
+
+    private DragScrollView createScrollView() {
+        DragScrollView dragScrollView = new DragScrollView(this);
+        LinearLayout group = new LinearLayout(this);
+        group.setOrientation(LinearLayout.VERTICAL);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, UIUtils.dip2px(this, 1500));
+        Button button = new Button(this);
+        button.setText("Test Button in DragScrollView.");
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(), "Clicked", Toast.LENGTH_SHORT).show();
+            }
+        });
+        group.addView(button, params);
+
+        dragScrollView.addView(group);
+        return dragScrollView;
     }
 
     private String convertState(int state) {
