@@ -14,16 +14,17 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.util.BaseUtils;
-import org.pinwheel.agility.view.SweetListView;
+import org.pinwheel.agility.view.drag.DragListView;
 
 public class LauncherActivity extends Activity implements ListView.OnItemClickListener {
 
     @Override
     protected void onCreate(Bundle arg0) {
         super.onCreate(arg0);
-        ListView list = new SweetListView(getApplicationContext());
+        ListView list = new DragListView(getApplicationContext());
         LauncherAdapter adapter = new LauncherAdapter(getApplicationContext());
         list.setAdapter(adapter);
         list.setOnItemClickListener(this);

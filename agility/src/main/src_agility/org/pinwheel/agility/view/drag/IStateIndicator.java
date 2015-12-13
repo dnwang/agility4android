@@ -8,8 +8,7 @@ package org.pinwheel.agility.view.drag;
  *
  * @author dnwang
  */
-abstract class Movable {
+public interface IStateIndicator extends Draggable.OnDragListener {
 
-    public abstract void move(float offset);
 
 }

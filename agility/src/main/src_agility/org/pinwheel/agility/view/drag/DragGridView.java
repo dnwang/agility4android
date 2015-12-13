@@ -328,4 +328,13 @@ public class DragGridView extends GridView implements Draggable {
         return dragHelper.getDistance();
     }
 
+    @Override
+    public void addStateIndicator(IStateIndicator stateIndicator) {
+        dragHelper.addStateIndicator(stateIndicator);
+    }
+
+    @Override
+    public void removeStateIndicator(IStateIndicator stateIndicator) {
+        dragHelper.addStateIndicator(stateIndicator);
+    }
 }

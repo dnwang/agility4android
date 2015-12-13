@@ -6,6 +6,9 @@ import android.animation.ValueAnimator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.LinearLayout;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Copyright (C), 2015 <br>
  * <br>
@@ -14,7 +17,7 @@ import android.widget.LinearLayout;
  *
  * @author dnwang
  */
-public final class DragHelper implements Draggable {
+class DragHelper implements Draggable {
 
     private int topHoldDistance;
     private int bottomHoldDistance;
@@ -22,6 +25,7 @@ public final class DragHelper implements Draggable {
     private int currentPosition;
     private int currentState;
     private OnDragListener listener;
+    private List<IStateIndicator> stateIndicators;
     private Movable mover;
 
     private float distance;
@@ -37,11 +41,11 @@ public final class DragHelper implements Draggable {
         this.distance = 0;
     }
 
-    private void setDistance(float distance) {
+    private void setDistance(final float distance) {
         this.distance = distance;
     }
 
-    private void autoMove(float distance, long duration, AnimatorListenerAdapter adapter) {
+    private void autoMove(float distance, final long duration, AnimatorListenerAdapter adapter) {
         if (mover != null && distance != 0) {
             stopMove();
             animator = ValueAnimator.ofFloat(0, distance);
@@ -96,7 +100,7 @@ public final class DragHelper implements Draggable {
     }
 
     @Override
-    public final void hold(boolean isTopPosition, float velocity) {
+    public final void hold(final boolean isTopPosition, final float velocity) {
         float newDy = 0;
         if (isTopPosition && hasTopHold()) {
             newDy = getTopHoldDistance();
@@ -121,8 +125,8 @@ public final class DragHelper implements Draggable {
     }
 
     @Override
-    public final void resetToBorder(float velocity) {
-        float offset = getDistance();
+    public final void resetToBorder(final float velocity) {
+        final float offset = getDistance();
         autoMove(-offset, (long) (Math.abs(offset) / velocity), new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
@@ -138,8 +142,13 @@ public final class DragHelper implements Draggable {
     }
 
     @Override
-    public final void inertial(int distance, final float velocity) {
+    public final void inertial(final int distance, final float velocity) {
         autoMove(distance, (long) (Math.abs(distance) / velocity), new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                setState(STATE_INERTIAL);
+            }
+
             @Override
             public void onAnimationEnd(Animator animation) {
                 resetToBorder(velocity);
@@ -148,14 +157,19 @@ public final class DragHelper implements Draggable {
     }
 
     @Override
-    public final void move(float offset) {
+    public final void move(final float offset) {
         if (mover != null && offset != 0) {
-            float oldDy = getDistance();
-            float newDy = oldDy + offset;
+            final float oldDy = getDistance();
+            final float newDy = oldDy + offset;
             setDistance(newDy);
             mover.move(newDy);
             if (listener != null) {
-                listener.onDragging(newDy, offset);
+                listener.onDragging(this, newDy, offset);
+            }
+            if (stateIndicators != null && stateIndicators.size() > 0) {
+                for (IStateIndicator stateIndicator : stateIndicators) {
+                    stateIndicator.onDragging(this, newDy, offset);
+                }
             }
         }
     }
@@ -173,7 +187,7 @@ public final class DragHelper implements Draggable {
     }
 
     @Override
-    public final void setOrientation(int orientation) {
+    public final void setOrientation(final int orientation) {
         this.orientation = orientation == LinearLayout.VERTICAL ? orientation : LinearLayout.HORIZONTAL;
     }
 
@@ -183,7 +197,7 @@ public final class DragHelper implements Draggable {
     }
 
     @Override
-    public final void setHoldDistance(int dTop, int dBottom) {
+    public final void setHoldDistance(final int dTop, final int dBottom) {
         this.topHoldDistance = Math.max(0, dTop);
         this.bottomHoldDistance = Math.max(0, dBottom);
     }
@@ -199,7 +213,7 @@ public final class DragHelper implements Draggable {
     }
 
     @Override
-    public final void setState(int state) {
+    public final void setState(final int state) {
         switch (state) {
             case STATE_NONE:
                 setPosition(EDGE_NONE);
@@ -213,7 +227,12 @@ public final class DragHelper implements Draggable {
         }
         this.currentState = state;
         if (listener != null) {
-            listener.onDragStateChanged(currentPosition, currentState);
+            listener.onDragStateChanged(this, currentPosition, currentState);
+        }
+        if (stateIndicators != null && stateIndicators.size() > 0) {
+            for (IStateIndicator stateIndicator : stateIndicators) {
+                stateIndicator.onDragStateChanged(this, currentPosition, currentState);
+            }
         }
     }
 
@@ -238,4 +257,22 @@ public final class DragHelper implements Draggable {
         return this.distance;
     }
 
+    @Override
+    public final void addStateIndicator(IStateIndicator stateIndicator) {
+        if (stateIndicator == null) {
+            return;
+        }
+        if (stateIndicators == null) {
+            stateIndicators = new ArrayList<>(2);
+        }
+        stateIndicators.add(stateIndicator);
+    }
+
+    @Override
+    public final void removeStateIndicator(IStateIndicator stateIndicator) {
+        if (stateIndicator == null || stateIndicators == null) {
+            return;
+        }
+        stateIndicators.remove(stateIndicator);
+    }
 }

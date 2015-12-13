@@ -16,6 +16,7 @@ public interface Draggable {
     int STATE_DRAGGING_BOTTOM = 111;
     int STATE_RESTING_TO_HOLD = 120;
     int STATE_RESTING_TO_BORDER = 121;
+    int STATE_INERTIAL = 130;
 
     int EDGE_NONE = 200;
     int EDGE_TOP = 201;
@@ -67,6 +68,10 @@ public interface Draggable {
 
     float getDistance();
 
+    void addStateIndicator(IStateIndicator stateIndicator);
+
+    void removeStateIndicator(IStateIndicator stateIndicator);
+
     /**
      * Copyright (C), 2015 <br>
      * <br>
@@ -76,9 +81,9 @@ public interface Draggable {
      * @author dnwang
      */
     interface OnDragListener {
-        void onDragStateChanged(int position, int state);
+        void onDragStateChanged(Draggable draggable, int position, int state);
 
-        void onDragging(float distance, float offset);
+        void onDragging(Draggable draggable,float distance, float offset);
     }
 
 }
