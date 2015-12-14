@@ -38,7 +38,7 @@ public interface Draggable {
 
     void resetToBorder(float velocity);
 
-    void inertial(int distance, float velocity);
+    void inertial(int distance, float inertialVelocity, float restVelocity);
 
     void move(float offset);
 

@@ -142,8 +142,8 @@ class DragHelper implements Draggable {
     }
 
     @Override
-    public final void inertial(final int distance, final float velocity) {
-        autoMove(distance, (long) (Math.abs(distance) / velocity), new AnimatorListenerAdapter() {
+    public final void inertial(final int distance,final float inertialVelocity, final float restVelocity) {
+        autoMove(distance, (long) (Math.abs(distance) / inertialVelocity), new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
                 setState(STATE_INERTIAL);
@@ -151,7 +151,7 @@ class DragHelper implements Draggable {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                resetToBorder(velocity);
+                resetToBorder(restVelocity);
             }
         });
     }

@@ -22,8 +22,9 @@ public class DragScrollView extends ScrollView implements Draggable {
     private static final int INERTIA_SLOP = 5;
 
     private int maxInertiaDistance; // 惯性越界最大距离
-    private float restVelocity; // 复位速度
+    private float resetVelocity; // 复位速度
     private float inertiaVelocity; // 越界效果速度
+    private float inertiaResetVelocity;
     private float inertiaWeight; // 越界效果权重
     private float ratio; // 拖动阻尼 基数
 
@@ -55,9 +56,10 @@ public class DragScrollView extends ScrollView implements Draggable {
     }
 
     private void init() {
-        this.maxInertiaDistance = UIUtils.dip2px(getContext(), 48);
-        this.restVelocity = VELOCITY_FAST;
-        this.inertiaVelocity = VELOCITY_NORMAL;
+        this.maxInertiaDistance = UIUtils.dip2px(getContext(), 64);
+        this.resetVelocity = VELOCITY_FAST;
+        this.inertiaVelocity = VELOCITY_FAST;
+        this.inertiaResetVelocity = VELOCITY_NORMAL;
         this.inertiaWeight = WIGHT_INERTIA_LOW;
         this.ratio = RATIO_NORMAL;
         this.dragHelper = new DragHelper(mover);
@@ -144,17 +146,17 @@ public class DragScrollView extends ScrollView implements Draggable {
                     if (isOverHoldPosition()) {
                         switch (state) {
                             case STATE_DRAGGING_TOP:
-                                hold(true, restVelocity);
+                                hold(true, resetVelocity);
                                 break;
                             case STATE_DRAGGING_BOTTOM:
-                                hold(false, restVelocity);
+                                hold(false, resetVelocity);
                                 break;
                             default:
-                                resetToBorder(restVelocity);
+                                resetToBorder(resetVelocity);
                                 break;
                         }
                     } else {
-                        resetToBorder(restVelocity);
+                        resetToBorder(resetVelocity);
                     }
                 }
                 return super.onTouchEvent(event);
@@ -192,11 +194,11 @@ public class DragScrollView extends ScrollView implements Draggable {
     @Override
     protected void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
         super.onOverScrolled(scrollX, scrollY, clampedX, clampedY);
-        if (clampedY && !isTouchEvent) {
+        if (clampedY && !isTouchEvent && maxInertiaDistance > 0) {
             deltaY /= inertiaWeight;
             if (Math.abs(deltaY) > INERTIA_SLOP) {
                 deltaY = deltaY < 0 ? Math.max(-maxInertiaDistance, deltaY) : Math.min(deltaY, maxInertiaDistance);
-                inertial(-deltaY, inertiaVelocity);
+                inertial(-deltaY, inertiaVelocity, inertiaResetVelocity);
             }
         }
     }
@@ -209,12 +211,12 @@ public class DragScrollView extends ScrollView implements Draggable {
         this.maxInertiaDistance = Math.max(0, maxInertiaDistance);
     }
 
-    public float getRestVelocity() {
-        return restVelocity;
+    public float getResetVelocity() {
+        return resetVelocity;
     }
 
-    public void setRestVelocity(float restVelocity) {
-        this.restVelocity = Math.max(0, restVelocity);
+    public void setResetVelocity(float resetVelocity) {
+        this.resetVelocity = Math.max(0, resetVelocity);
     }
 
     public float getInertiaVelocity() {
@@ -257,8 +259,8 @@ public class DragScrollView extends ScrollView implements Draggable {
     }
 
     @Override
-    public void inertial(int distance, float velocity) {
-        dragHelper.inertial(distance, velocity);
+    public void inertial(int distance, float inertialVelocity, float resetVelocity) {
+        dragHelper.inertial(distance, inertialVelocity, resetVelocity);
     }
 
     @Override

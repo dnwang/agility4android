@@ -8,11 +8,10 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_gravity="center|top"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="18dp" />
 
     <org.pinwheel.agility.view.drag.DragScrollView
         android:id="@+id/draggable"
-        android:padding="12dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

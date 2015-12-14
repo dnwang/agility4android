@@ -57,7 +57,7 @@ public class DragViewActivity extends Activity implements AdapterView.OnItemClic
 //        dragView.setAdapter(this.adapter);
 
         dragView.addStateIndicator((SimpleStateIndicator) findViewById(R.id.top_indicator));
-        dragView.setHoldDistance(UIUtils.dip2px(this, 84), UIUtils.dip2px(this, 64));
+        dragView.setHoldDistance(UIUtils.dip2px(this, 64), UIUtils.dip2px(this, 64));
 
         dragView.setOnDragListener(new Draggable.OnDragListener() {
             @Override

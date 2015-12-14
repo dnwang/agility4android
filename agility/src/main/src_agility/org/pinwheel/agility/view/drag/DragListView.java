@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ListView;
+
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -20,8 +21,9 @@ public class DragListView extends ListView implements Draggable {
     private static final int INERTIA_SLOP = 5;
 
     private int maxInertiaDistance; // 惯性越界最大距离
-    private float restVelocity; // 复位速度
+    private float resetVelocity; // 复位速度
     private float inertiaVelocity; // 越界效果速度
+    private float inertiaResetVelocity;
     private float inertiaWeight; // 越界效果权重
     private float ratio; // 拖动阻尼 基数
 
@@ -50,9 +52,10 @@ public class DragListView extends ListView implements Draggable {
     }
 
     private void init() {
-        this.maxInertiaDistance = UIUtils.dip2px(getContext(), 48);
-        this.restVelocity = VELOCITY_FAST;
-        this.inertiaVelocity = VELOCITY_NORMAL;
+        this.maxInertiaDistance = UIUtils.dip2px(getContext(), 64);
+        this.resetVelocity = VELOCITY_FAST;
+        this.inertiaVelocity = VELOCITY_FAST;
+        this.inertiaResetVelocity = VELOCITY_NORMAL;
         this.inertiaWeight = WIGHT_INERTIA_LOW;
         this.ratio = RATIO_NORMAL;
         this.dragHelper = new DragHelper(mover);
@@ -68,7 +71,7 @@ public class DragListView extends ListView implements Draggable {
                 lastPoint.set(event.getRawX(), event.getRawY());
                 if (dragHelper.isHolding()) {
                     // 正在Hold时,点击应该rest,并且无事件响应
-                    resetToBorder(restVelocity);
+                    resetToBorder(resetVelocity);
                     return false;
                 } else {
                     super.dispatchTouchEvent(event);
@@ -146,17 +149,17 @@ public class DragListView extends ListView implements Draggable {
                     if (isOverHoldPosition()) {
                         switch (state) {
                             case STATE_DRAGGING_TOP:
-                                hold(true, restVelocity);
+                                hold(true, resetVelocity);
                                 break;
                             case STATE_DRAGGING_BOTTOM:
-                                hold(false, restVelocity);
+                                hold(false, resetVelocity);
                                 break;
                             default:
-                                resetToBorder(restVelocity);
+                                resetToBorder(resetVelocity);
                                 break;
                         }
                     } else {
-                        resetToBorder(restVelocity);
+                        resetToBorder(resetVelocity);
                     }
                 }
                 // 清除 手动拖动 状态
@@ -189,13 +192,13 @@ public class DragListView extends ListView implements Draggable {
         // 无论是手动越界 还是 惯性越界 都说明有边界触发,并且deltaY值越大 越界效果越强
         if (isTouchEvent) {
             // 手动拖动越界 在toucheEvent中处理
-        } else {
+        } else if (maxInertiaDistance > 0) {
             deltaY /= inertiaWeight;
             if (Math.abs(deltaY) > INERTIA_SLOP) {
                 // 惯性越界在这里根据 deltaY的值 计算自动滑动的距离
                 // 惯性越界 需要最大限制,某些时候系统会返回很大的值,此时需要屏蔽
                 deltaY = deltaY < 0 ? Math.max(-maxInertiaDistance, deltaY) : Math.min(deltaY, maxInertiaDistance);
-                inertial(-deltaY, inertiaVelocity);
+                inertial(-deltaY, inertiaVelocity, inertiaResetVelocity);
             }
         }
         return false;
@@ -209,12 +212,12 @@ public class DragListView extends ListView implements Draggable {
         this.maxInertiaDistance = Math.max(0, maxInertiaDistance);
     }
 
-    public float getRestVelocity() {
-        return restVelocity;
+    public float getResetVelocity() {
+        return resetVelocity;
     }
 
-    public void setRestVelocity(float restVelocity) {
-        this.restVelocity = Math.max(0, restVelocity);
+    public void setResetVelocity(float resetVelocity) {
+        this.resetVelocity = Math.max(0, resetVelocity);
     }
 
     public float getInertiaVelocity() {
@@ -257,8 +260,8 @@ public class DragListView extends ListView implements Draggable {
     }
 
     @Override
-    public void inertial(int distance, float velocity) {
-        dragHelper.inertial(distance, velocity);
+    public void inertial(int distance, float inertialVelocity, float resetVelocity) {
+        dragHelper.inertial(distance, inertialVelocity, resetVelocity);
     }
 
     @Override

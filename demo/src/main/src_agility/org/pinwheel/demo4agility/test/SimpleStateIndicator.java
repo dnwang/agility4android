@@ -1,13 +1,13 @@
 package org.pinwheel.demo4agility.test;
 
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.Color;
 import android.util.AttributeSet;
-import android.widget.ImageView;
+import android.widget.FrameLayout;
 
+import org.pinwheel.agility.view.ProgressCircular;
 import org.pinwheel.agility.view.drag.Draggable;
 import org.pinwheel.agility.view.drag.IStateIndicator;
-import org.pinwheel.demo4agility.R;
 
 /**
  * Copyright (C), 2015 <br>
@@ -17,7 +17,9 @@ import org.pinwheel.demo4agility.R;
  *
  * @author dnwang
  */
-public class SimpleStateIndicator extends ImageView implements IStateIndicator {
+public class SimpleStateIndicator extends FrameLayout implements IStateIndicator {
+
+    private ProgressCircular progressCircular;
 
     public SimpleStateIndicator(Context context) {
         super(context);
@@ -35,25 +37,28 @@ public class SimpleStateIndicator extends ImageView implements IStateIndicator {
     }
 
     private void init() {
-        setBackgroundDrawable(new ColorDrawable());
+        progressCircular = new ProgressCircular(getContext());
+        progressCircular.setBarColor(Color.WHITE);
+        progressCircular.setProgress(0);
+        addView(progressCircular);
     }
 
     protected void onReset(Draggable draggable) {
-        setImageResource(R.drawable.swipe_ic_arrow_down);
+        setTranslationY(-draggable.getTopHoldDistance());
+        progressCircular.setProgress(0);
     }
 
     protected void onHold(Draggable draggable) {
-        setImageResource(R.drawable.swipe_ic_loading);
+        progressCircular.spin();
     }
 
     protected void onMove(Draggable draggable, final float distance, final float offset) {
         final int position = draggable.getPosition();
         if (position == Draggable.EDGE_TOP) {
-            if (distance > draggable.getTopHoldDistance()) {
-                setRotation(180);
-            } else {
-                setRotation(0);
-            }
+            final float percent = Math.abs(distance) / draggable.getTopHoldDistance();
+            setTranslationY(getTranslationY() + offset);
+            progressCircular.setProgress(Math.min(percent, 1));
+
         } else if (position == Draggable.EDGE_BOTTOM) {
 
         }
