@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
-
 import org.pinwheel.agility.view.ProgressCircular;
 import org.pinwheel.agility.view.drag.Draggable;
 import org.pinwheel.agility.view.drag.IStateIndicator;
@@ -38,7 +37,7 @@ public class SimpleStateIndicator extends FrameLayout implements IStateIndicator
 
     private void init() {
         progressCircular = new ProgressCircular(getContext());
-        progressCircular.setBarColor(Color.WHITE);
+        progressCircular.setBarColor(Color.GRAY);
         progressCircular.setProgress(0);
         addView(progressCircular);
     }
@@ -54,11 +53,16 @@ public class SimpleStateIndicator extends FrameLayout implements IStateIndicator
 
     protected void onMove(Draggable draggable, final float distance, final float offset) {
         final int position = draggable.getPosition();
-        if (position == Draggable.EDGE_TOP) {
-            final float percent = Math.abs(distance) / draggable.getTopHoldDistance();
-            setTranslationY(getTranslationY() + offset);
-            progressCircular.setProgress(Math.min(percent, 1));
+        final int topHoldDy = draggable.getTopHoldDistance();
 
+        if (position == Draggable.EDGE_TOP) {
+            if ((distance * offset > 0) || (distance * offset < 0 && Math.abs(distance + offset) < topHoldDy)) {
+                final float currentOffsetY = getTranslationY() + offset;
+                setTranslationY(Math.min(currentOffsetY, 0));
+            }
+
+            final float percent = 1 - Math.abs(getTranslationY()) / topHoldDy;
+            progressCircular.setProgress(Math.min(percent, 1));
         } else if (position == Draggable.EDGE_BOTTOM) {
 
         }

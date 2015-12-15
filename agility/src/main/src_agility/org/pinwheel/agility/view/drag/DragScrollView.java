@@ -6,7 +6,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
-
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -21,12 +20,12 @@ public class DragScrollView extends ScrollView implements Draggable {
 
     private static final int INERTIA_SLOP = 5;
 
-    private int maxInertiaDistance; // 惯性越界最大距离
-    private float resetVelocity; // 复位速度
-    private float inertiaVelocity; // 越界效果速度
+    private int maxInertiaDistance;
+    private float resetVelocity;
+    private float inertiaVelocity;
     private float inertiaResetVelocity;
-    private float inertiaWeight; // 越界效果权重
-    private float ratio; // 拖动阻尼 基数
+    private float inertiaWeight;
+    private float ratio;
 
     private DragHelper dragHelper;
 
@@ -63,7 +62,6 @@ public class DragScrollView extends ScrollView implements Draggable {
         this.inertiaWeight = WIGHT_INERTIA_LOW;
         this.ratio = RATIO_NORMAL;
         this.dragHelper = new DragHelper(mover);
-        // 必须设置此属性,否则对overScrollBy调用次数产生影响
         this.setOverScrollMode(OVER_SCROLL_NEVER);
     }
 
@@ -73,6 +71,7 @@ public class DragScrollView extends ScrollView implements Draggable {
             case MotionEvent.ACTION_DOWN:
                 lastPoint.set(event.getRawX(), event.getRawY());
                 if (dragHelper.isHolding()) {
+//                    resetToBorder(resetVelocity);
                     return true;
                 } else {
                     return super.dispatchTouchEvent(event);
@@ -128,7 +127,7 @@ public class DragScrollView extends ScrollView implements Draggable {
                     }
 
                     final float newDy = oldDy + offset;
-                    if ((Math.abs(newDy) < 1.0f && absOldDy > 0) || (newDy * oldDy < 0 && absOldDy > 0)) {
+                    if (state != STATE_NONE && ((Math.abs(newDy) < 1.0f && absOldDy > 0) || (newDy * oldDy < 0 && absOldDy > 0))) {
                         move(-oldDy);
                         setState(STATE_NONE);
                         return super.onTouchEvent(event);
@@ -194,7 +193,7 @@ public class DragScrollView extends ScrollView implements Draggable {
     @Override
     protected void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
         super.onOverScrolled(scrollX, scrollY, clampedX, clampedY);
-        if (clampedY && !isTouchEvent && maxInertiaDistance > 0) {
+        if (Math.abs((int) getDistance()) == 0 && clampedY && !isTouchEvent && maxInertiaDistance > 0) {
             deltaY /= inertiaWeight;
             if (Math.abs(deltaY) > INERTIA_SLOP) {
                 deltaY = deltaY < 0 ? Math.max(-maxInertiaDistance, deltaY) : Math.min(deltaY, maxInertiaDistance);
@@ -338,4 +337,5 @@ public class DragScrollView extends ScrollView implements Draggable {
     public void removeStateIndicator(IStateIndicator stateIndicator) {
         dragHelper.addStateIndicator(stateIndicator);
     }
+
 }
