@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -18,15 +19,14 @@ import android.widget.Toast;
 
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.util.UIUtils;
+import org.pinwheel.agility.view.drag.BaseDragIndicator;
 import org.pinwheel.agility.view.drag.Draggable;
 import org.pinwheel.demo4agility.R;
-import org.pinwheel.demo4agility.test.SimpleStateIndicator;
+import org.pinwheel.demo4agility.test.HeaderDragIndicator;
 
 import java.util.ArrayList;
 
 public class DragViewActivity extends Activity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
-
-    private static final int SIZE = 60;
 
     private ArrayAdapter<String> adapter;
 
@@ -43,31 +43,22 @@ public class DragViewActivity extends Activity implements AdapterView.OnItemClic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.drag_view);
-
         Draggable dragView = (Draggable) findViewById(R.id.draggable);
 
-//        ArrayList<String> data = new ArrayList<>(SIZE);
-//        for (int index = 0; index < SIZE; index++) {
-//            data.add(index + ", " + index + ", " + index);
-//        }
-//        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1, data);
-//        dragView.setOnItemClickListener(this);
-//        dragView.setOnItemLongClickListener(this);
-//        initHeader(list);
-//        dragView.setAdapter(this.adapter);
-
-        dragView.addStateIndicator((SimpleStateIndicator) findViewById(R.id.top_indicator));
-        dragView.setHoldDistance(UIUtils.dip2px(this, 64), UIUtils.dip2px(this, 64));
+        BaseDragIndicator indicator = (HeaderDragIndicator) findViewById(R.id.header_indicator);
+        indicator.bindDraggable(dragView);
+        dragView.addIndicator(indicator);
+        dragView.setHoldDistance(UIUtils.dip2px(this, 52), UIUtils.dip2px(this, 52));
 
         dragView.setOnDragListener(new Draggable.OnDragListener() {
             @Override
             public void onDragStateChanged(Draggable draggable, int position, int state) {
-                Log.d("OnSwipeListener", "onSwipeStateChanged() position:[" + convertPosition(position) + "], state:[" + convertState(state) + "]");
+                Log.d("OnDragListener", "onDragStateChanged() position:[" + convertPosition(position) + "], state:[" + convertState(state) + "]");
             }
 
             @Override
             public void onDragging(Draggable draggable, float distance, float offset) {
-                Log.d("OnSwipeListener", "onSwipe() distance:[" + distance + "], offset:[" + offset + "]");
+                Log.d("OnDragListener", "onDragging() distance:[" + distance + "], offset:[" + offset + "]");
             }
         });
     }
@@ -104,6 +95,18 @@ public class DragViewActivity extends Activity implements AdapterView.OnItemClic
                 headerPager.setLayoutParams(params);
             }
         }, 1000);
+    }
+
+    private void initListAdapter(AbsListView absListView) {
+        final int size = 60;
+        ArrayList<String> data = new ArrayList<>(size);
+        for (int index = 0; index < size; index++) {
+            data.add(index + ", " + index + ", " + index);
+        }
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1, data);
+        absListView.setOnItemClickListener(this);
+        absListView.setOnItemLongClickListener(this);
+        absListView.setAdapter(adapter);
     }
 
     @Override

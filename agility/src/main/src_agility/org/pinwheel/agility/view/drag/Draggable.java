@@ -68,9 +68,7 @@ public interface Draggable {
 
     float getDistance();
 
-    void addStateIndicator(IStateIndicator stateIndicator);
-
-    void removeStateIndicator(IStateIndicator stateIndicator);
+    void addIndicator(Indicator indicator);
 
     /**
      * Copyright (C), 2015 <br>

@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
+
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -329,13 +330,8 @@ public class DragScrollView extends ScrollView implements Draggable {
     }
 
     @Override
-    public void addStateIndicator(IStateIndicator stateIndicator) {
-        dragHelper.addStateIndicator(stateIndicator);
-    }
-
-    @Override
-    public void removeStateIndicator(IStateIndicator stateIndicator) {
-        dragHelper.addStateIndicator(stateIndicator);
+    public void addIndicator(Indicator indicator) {
+        dragHelper.addIndicator(indicator);
     }
 
 }

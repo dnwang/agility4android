@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.GridView;
+
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -303,13 +304,8 @@ public class DragGridView extends GridView implements Draggable {
     }
 
     @Override
-    public void addStateIndicator(IStateIndicator stateIndicator) {
-        dragHelper.addStateIndicator(stateIndicator);
-    }
-
-    @Override
-    public void removeStateIndicator(IStateIndicator stateIndicator) {
-        dragHelper.addStateIndicator(stateIndicator);
+    public void addIndicator(Indicator indicator) {
+        dragHelper.addIndicator(indicator);
     }
 
 }

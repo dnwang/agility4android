@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <org.pinwheel.demo4agility.test.SimpleStateIndicator
-        android:id="@+id/top_indicator"
+    <org.pinwheel.demo4agility.test.HeaderDragIndicator
+        android:id="@+id/header_indicator"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_gravity="center|top"

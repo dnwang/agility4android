@@ -25,7 +25,7 @@ class DragHelper implements Draggable {
     private int currentPosition;
     private int currentState;
     private OnDragListener listener;
-    private List<IStateIndicator> stateIndicators;
+    private List<IndicatorEventConverter> indicators;
     private Movable mover;
 
     private float distance;
@@ -166,9 +166,9 @@ class DragHelper implements Draggable {
             if (listener != null) {
                 listener.onDragging(this, newDy, offset);
             }
-            if (stateIndicators != null && stateIndicators.size() > 0) {
-                for (IStateIndicator stateIndicator : stateIndicators) {
-                    stateIndicator.onDragging(this, newDy, offset);
+            if (indicators != null && indicators.size() > 0) {
+                for (IndicatorEventConverter eventConverter : indicators) {
+                    eventConverter.onDragging(this, newDy, offset);
                 }
             }
         }
@@ -229,9 +229,9 @@ class DragHelper implements Draggable {
         if (listener != null) {
             listener.onDragStateChanged(this, currentPosition, currentState);
         }
-        if (stateIndicators != null && stateIndicators.size() > 0) {
-            for (IStateIndicator stateIndicator : stateIndicators) {
-                stateIndicator.onDragStateChanged(this, currentPosition, currentState);
+        if (indicators != null && indicators.size() > 0) {
+            for (IndicatorEventConverter eventConverter : indicators) {
+                eventConverter.onDragStateChanged(this, currentPosition, currentState);
             }
         }
     }
@@ -258,21 +258,14 @@ class DragHelper implements Draggable {
     }
 
     @Override
-    public final void addStateIndicator(IStateIndicator stateIndicator) {
-        if (stateIndicator == null) {
+    public final void addIndicator(Indicator indicator) {
+        if (indicator == null) {
             return;
         }
-        if (stateIndicators == null) {
-            stateIndicators = new ArrayList<>(2);
+        if (indicators == null) {
+            indicators = new ArrayList<>(2);
         }
-        stateIndicators.add(stateIndicator);
+        indicators.add(new IndicatorEventConverter(indicator));
     }
 
-    @Override
-    public final void removeStateIndicator(IStateIndicator stateIndicator) {
-        if (stateIndicator == null || stateIndicators == null) {
-            return;
-        }
-        stateIndicators.remove(stateIndicator);
-    }
 }
