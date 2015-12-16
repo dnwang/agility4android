@@ -24,8 +24,7 @@ class DragHelper implements Draggable {
     private int orientation;
     private int currentPosition;
     private int currentState;
-    private OnDragListener listener;
-    private List<IndicatorEventConverter> indicators;
+    private List<OnDragListener> onDragListeners;
     private Movable mover;
 
     private float distance;
@@ -142,7 +141,7 @@ class DragHelper implements Draggable {
     }
 
     @Override
-    public final void inertial(final int distance,final float inertialVelocity, final float restVelocity) {
+    public final void inertial(final int distance, final float inertialVelocity, final float restVelocity) {
         autoMove(distance, (long) (Math.abs(distance) / inertialVelocity), new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
@@ -163,12 +162,9 @@ class DragHelper implements Draggable {
             final float newDy = oldDy + offset;
             setDistance(newDy);
             mover.move(newDy);
-            if (listener != null) {
-                listener.onDragging(this, newDy, offset);
-            }
-            if (indicators != null && indicators.size() > 0) {
-                for (IndicatorEventConverter eventConverter : indicators) {
-                    eventConverter.onDragging(this, newDy, offset);
+            if (onDragListeners != null && onDragListeners.size() > 0) {
+                for (OnDragListener listener : onDragListeners) {
+                    listener.onDragging(this, newDy, offset);
                 }
             }
         }
@@ -182,8 +178,24 @@ class DragHelper implements Draggable {
     }
 
     @Override
-    public final void setOnDragListener(OnDragListener listener) {
-        this.listener = listener;
+    public final void addOnDragListener(OnDragListener listener) {
+        if (listener == null) {
+            return;
+        }
+        if (onDragListeners == null) {
+            onDragListeners = new ArrayList<>(3);// header,footer,callback
+        }
+        onDragListeners.add(listener);
+    }
+
+    @Override
+    public void removeOnDragListener(OnDragListener listener) {
+        if (listener == null) {
+            return;
+        }
+        if (onDragListeners != null) {
+            onDragListeners.remove(listener);
+        }
     }
 
     @Override
@@ -226,12 +238,9 @@ class DragHelper implements Draggable {
                 break;
         }
         this.currentState = state;
-        if (listener != null) {
-            listener.onDragStateChanged(this, currentPosition, currentState);
-        }
-        if (indicators != null && indicators.size() > 0) {
-            for (IndicatorEventConverter eventConverter : indicators) {
-                eventConverter.onDragStateChanged(this, currentPosition, currentState);
+        if (onDragListeners != null && onDragListeners.size() > 0) {
+            for (OnDragListener listener : onDragListeners) {
+                listener.onDragStateChanged(this, currentPosition, currentState);
             }
         }
     }
@@ -257,15 +266,37 @@ class DragHelper implements Draggable {
         return this.distance;
     }
 
-    @Override
-    public final void addIndicator(Indicator indicator) {
-        if (indicator == null) {
-            return;
+
+    protected static String convertState(int state) {
+        switch (state) {
+            case Draggable.STATE_NONE:
+                return "NONE";
+            case Draggable.STATE_HOLD:
+                return "HOLD";
+            case Draggable.STATE_INERTIAL:
+                return "INERTIAL";
+            case Draggable.STATE_DRAGGING_TOP:
+                return "DRAGGING_TOP";
+            case Draggable.STATE_DRAGGING_BOTTOM:
+                return "DRAGGING_BOTTOM";
+            case Draggable.STATE_RESTING_TO_HOLD:
+                return "RESTING_TO_HOLD";
+            case Draggable.STATE_RESTING_TO_BORDER:
+                return "RESTING_TO_BORDER";
         }
-        if (indicators == null) {
-            indicators = new ArrayList<>(2);
+        return "";
+    }
+
+    protected static String convertPosition(int position) {
+        switch (position) {
+            case Draggable.EDGE_NONE:
+                return "NONE";
+            case Draggable.EDGE_TOP:
+                return "TOP";
+            case Draggable.EDGE_BOTTOM:
+                return "BOTTOM";
         }
-        indicators.add(new IndicatorEventConverter(indicator));
+        return "";
     }
 
 }

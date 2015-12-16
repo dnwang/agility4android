@@ -1,30 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
-    <org.pinwheel.demo4agility.test.HeaderDragIndicator
-        android:id="@+id/header_indicator"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_gravity="center|top"
-        android:layout_marginTop="18dp" />
-
-    <org.pinwheel.agility.view.drag.DragScrollView
-        android:id="@+id/draggable"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
+    <!-- Refresh Wrapper-->
+    <org.pinwheel.agility.view.drag.DragRefreshWrapper
+            android:id="@+id/drag_wrapper"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <Button
+        <!-- Draggable View-->
+        <org.pinwheel.agility.view.drag.DragScrollView
+                android:id="@+id/drag_view"
                 android:layout_width="match_parent"
-                android:layout_height="1000dp"
-                android:text="test button in DragScrollView" />
+                android:layout_height="match_parent">
 
-        </LinearLayout>
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-    </org.pinwheel.agility.view.drag.DragScrollView>
+                <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="1000dp"
+                        android:text="test button in DragScrollView"/>
+
+            </LinearLayout>
+        </org.pinwheel.agility.view.drag.DragScrollView>
+    </org.pinwheel.agility.view.drag.DragRefreshWrapper>
+
 </FrameLayout>

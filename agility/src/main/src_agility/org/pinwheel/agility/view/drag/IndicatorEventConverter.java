@@ -12,7 +12,14 @@ final class IndicatorEventConverter implements Draggable.OnDragListener {
 
     private Indicator indicator;
 
-    public IndicatorEventConverter(Indicator indicator) {
+    public IndicatorEventConverter(){
+    }
+
+    public IndicatorEventConverter(Indicator indicator){
+        this.indicator = indicator;
+    }
+
+    public void setIndicator(Indicator indicator) {
         this.indicator = indicator;
     }
 

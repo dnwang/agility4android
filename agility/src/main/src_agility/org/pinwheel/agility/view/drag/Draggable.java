@@ -44,7 +44,9 @@ public interface Draggable {
 
     void stopMove();
 
-    void setOnDragListener(OnDragListener listener);
+    void addOnDragListener(OnDragListener listener);
+
+    void removeOnDragListener(OnDragListener listener);
 
     void setOrientation(int orientation);
 
@@ -67,8 +69,6 @@ public interface Draggable {
     int getPosition();
 
     float getDistance();
-
-    void addIndicator(Indicator indicator);
 
     /**
      * Copyright (C), 2015 <br>

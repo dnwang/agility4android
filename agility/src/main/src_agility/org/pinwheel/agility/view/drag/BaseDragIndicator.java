@@ -46,15 +46,6 @@ public abstract class BaseDragIndicator extends FrameLayout implements Indicator
     }
 
     @Override
-    public void onMove(float distance, float offset) {
-        final int topHoldDy = draggable.getTopHoldDistance();
-        if ((distance * offset > 0) || (distance * offset < 0 && Math.abs(distance + offset) < topHoldDy)) {
-            final float currentOffsetY = getTranslationY() + offset;
-            setTranslationY(Math.min(currentOffsetY, 0));
-        }
-    }
-
-    @Override
     public void onHold() {
         setState(Draggable.STATE_HOLD);
     }
@@ -62,7 +53,6 @@ public abstract class BaseDragIndicator extends FrameLayout implements Indicator
     @Override
     public void reset() {
         setState(Draggable.STATE_NONE);
-        setTranslationY(-draggable.getTopHoldDistance());
     }
 
     @Override

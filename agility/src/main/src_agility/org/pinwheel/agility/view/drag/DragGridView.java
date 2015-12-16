@@ -5,7 +5,6 @@ import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.GridView;
-
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -248,8 +247,13 @@ public class DragGridView extends GridView implements Draggable {
     }
 
     @Override
-    public void setOnDragListener(Draggable.OnDragListener listener) {
-        dragHelper.setOnDragListener(listener);
+    public void addOnDragListener(Draggable.OnDragListener listener) {
+        dragHelper.addOnDragListener(listener);
+    }
+
+    @Override
+    public void removeOnDragListener(Draggable.OnDragListener listener) {
+        dragHelper.removeOnDragListener(listener);
     }
 
     @Override
@@ -301,11 +305,6 @@ public class DragGridView extends GridView implements Draggable {
     @Override
     public float getDistance() {
         return dragHelper.getDistance();
-    }
-
-    @Override
-    public void addIndicator(Indicator indicator) {
-        dragHelper.addIndicator(indicator);
     }
 
 }

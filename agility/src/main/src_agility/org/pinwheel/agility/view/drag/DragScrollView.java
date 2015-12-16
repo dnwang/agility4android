@@ -6,7 +6,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
-
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -274,8 +273,13 @@ public class DragScrollView extends ScrollView implements Draggable {
     }
 
     @Override
-    public void setOnDragListener(Draggable.OnDragListener listener) {
-        dragHelper.setOnDragListener(listener);
+    public void addOnDragListener(Draggable.OnDragListener listener) {
+        dragHelper.addOnDragListener(listener);
+    }
+
+    @Override
+    public void removeOnDragListener(Draggable.OnDragListener listener) {
+        dragHelper.removeOnDragListener(listener);
     }
 
     @Override
@@ -327,11 +331,6 @@ public class DragScrollView extends ScrollView implements Draggable {
     @Override
     public float getDistance() {
         return dragHelper.getDistance();
-    }
-
-    @Override
-    public void addIndicator(Indicator indicator) {
-        dragHelper.addIndicator(indicator);
     }
 
 }

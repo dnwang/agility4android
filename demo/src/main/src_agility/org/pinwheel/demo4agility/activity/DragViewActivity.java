@@ -6,23 +6,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.widget.*;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
-import org.pinwheel.agility.util.UIUtils;
-import org.pinwheel.agility.view.drag.BaseDragIndicator;
 import org.pinwheel.agility.view.drag.Draggable;
 import org.pinwheel.demo4agility.R;
-import org.pinwheel.demo4agility.test.HeaderDragIndicator;
 
 import java.util.ArrayList;
 
@@ -43,24 +33,7 @@ public class DragViewActivity extends Activity implements AdapterView.OnItemClic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.drag_view);
-        Draggable dragView = (Draggable) findViewById(R.id.draggable);
-
-        BaseDragIndicator indicator = (HeaderDragIndicator) findViewById(R.id.header_indicator);
-        indicator.bindDraggable(dragView);
-        dragView.addIndicator(indicator);
-        dragView.setHoldDistance(UIUtils.dip2px(this, 52), UIUtils.dip2px(this, 52));
-
-        dragView.setOnDragListener(new Draggable.OnDragListener() {
-            @Override
-            public void onDragStateChanged(Draggable draggable, int position, int state) {
-                Log.d("OnDragListener", "onDragStateChanged() position:[" + convertPosition(position) + "], state:[" + convertState(state) + "]");
-            }
-
-            @Override
-            public void onDragging(Draggable draggable, float distance, float offset) {
-                Log.d("OnDragListener", "onDragging() distance:[" + distance + "], offset:[" + offset + "]");
-            }
-        });
+        Draggable dragView = (Draggable) findViewById(R.id.drag_view);
     }
 
     private void initHeader(ListView list) {
@@ -118,38 +91,6 @@ public class DragViewActivity extends Activity implements AdapterView.OnItemClic
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         Toast.makeText(this, "Long: " + position, Toast.LENGTH_SHORT).show();
         return false;
-    }
-
-    private String convertState(int state) {
-        switch (state) {
-            case Draggable.STATE_NONE:
-                return "NONE";
-            case Draggable.STATE_HOLD:
-                return "HOLD";
-            case Draggable.STATE_INERTIAL:
-                return "INERTIAL";
-            case Draggable.STATE_DRAGGING_TOP:
-                return "DRAGGING_TOP";
-            case Draggable.STATE_DRAGGING_BOTTOM:
-                return "DRAGGING_BOTTOM";
-            case Draggable.STATE_RESTING_TO_HOLD:
-                return "RESTING_TO_HOLD";
-            case Draggable.STATE_RESTING_TO_BORDER:
-                return "RESTING_TO_BORDER";
-        }
-        return "";
-    }
-
-    private String convertPosition(int position) {
-        switch (position) {
-            case Draggable.EDGE_NONE:
-                return "NONE";
-            case Draggable.EDGE_TOP:
-                return "TOP";
-            case Draggable.EDGE_BOTTOM:
-                return "BOTTOM";
-        }
-        return "";
     }
 
 }

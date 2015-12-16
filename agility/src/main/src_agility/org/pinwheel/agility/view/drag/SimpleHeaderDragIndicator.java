@@ -1,11 +1,12 @@
-package org.pinwheel.demo4agility.test;
+package org.pinwheel.agility.view.drag;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
-
+import android.view.Gravity;
+import android.widget.FrameLayout;
+import org.pinwheel.agility.util.UIUtils;
 import org.pinwheel.agility.view.ProgressCircular;
-import org.pinwheel.agility.view.drag.BaseDragIndicator;
 
 /**
  * Copyright (C), 2015 <br>
@@ -15,21 +16,21 @@ import org.pinwheel.agility.view.drag.BaseDragIndicator;
  *
  * @author dnwang
  */
-public class HeaderDragIndicator extends BaseDragIndicator {
+class SimpleHeaderDragIndicator extends BaseDragIndicator {
 
     private ProgressCircular progressCircular;
 
-    public HeaderDragIndicator(Context context) {
+    public SimpleHeaderDragIndicator(Context context) {
         super(context);
         this.init();
     }
 
-    public HeaderDragIndicator(Context context, AttributeSet attrs) {
+    public SimpleHeaderDragIndicator(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.init();
     }
 
-    public HeaderDragIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
+    public SimpleHeaderDragIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.init();
     }
@@ -38,20 +39,22 @@ public class HeaderDragIndicator extends BaseDragIndicator {
         progressCircular = new ProgressCircular(getContext());
         progressCircular.setBarColor(Color.GRAY);
         progressCircular.setProgress(0);
-        addView(progressCircular);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-2, -2);
+        params.gravity = Gravity.CENTER;
+        int dp8 = UIUtils.dip2px(getContext(), 8);
+        params.setMargins(dp8, dp8, dp8, dp8);
+        addView(progressCircular, params);
     }
 
     @Override
     public void onMove(float distance, float offset) {
-        super.onMove(distance, offset);
-
         if (isHolding()) {
             return;
         }
         final int topHoldDy = getDraggable().getTopHoldDistance();
-
-        final float percent = 1 - Math.abs(getTranslationY()) / topHoldDy;
-        progressCircular.setProgress(Math.min(percent, 1));
+        final float percent = Math.min(Math.abs(distance), topHoldDy) / topHoldDy;
+        progressCircular.setProgress(percent);
+        progressCircular.setAlpha(percent);
     }
 
     @Override
@@ -64,6 +67,7 @@ public class HeaderDragIndicator extends BaseDragIndicator {
     public void reset() {
         super.reset();
         progressCircular.setProgress(0);
+        progressCircular.setAlpha(0);
     }
 
 }
