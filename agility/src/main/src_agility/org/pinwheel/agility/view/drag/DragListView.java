@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ListView;
+
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -18,13 +19,6 @@ import org.pinwheel.agility.util.UIUtils;
 public class DragListView extends ListView implements Draggable {
 
     private static final int INERTIA_SLOP = 5;
-
-    private int maxInertiaDistance; // 惯性越界最大距离
-    private float resetVelocity; // 复位速度
-    private float inertiaVelocity; // 越界效果速度
-    private float inertiaResetVelocity;
-    private float inertiaWeight; // 越界效果权重
-    private float ratio; // 拖动阻尼 基数
 
     private DragHelper dragHelper;
 
@@ -51,15 +45,10 @@ public class DragListView extends ListView implements Draggable {
     }
 
     private void init() {
-        this.maxInertiaDistance = UIUtils.dip2px(getContext(), 64);
-        this.resetVelocity = VELOCITY_FAST;
-        this.inertiaVelocity = VELOCITY_FAST;
-        this.inertiaResetVelocity = VELOCITY_NORMAL;
-        this.inertiaWeight = WIGHT_INERTIA_LOW;
-        this.ratio = RATIO_NORMAL;
         this.dragHelper = new DragHelper(mover);
         // 必须设置此属性,否则对overScrollBy调用次数产生影响
         this.setOverScrollMode(OVER_SCROLL_NEVER);
+        this.setMaxInertiaDistance(UIUtils.dip2px(getContext(), 48));
     }
 
     @Override
@@ -70,7 +59,7 @@ public class DragListView extends ListView implements Draggable {
                 lastPoint.set(event.getRawX(), event.getRawY());
                 if (dragHelper.isHolding()) {
                     // 正在Hold时,点击应该rest,并且无事件响应
-                    resetToBorder(resetVelocity);
+                    resetToBorder();
                     return false;
                 } else {
                     super.dispatchTouchEvent(event);
@@ -114,7 +103,7 @@ public class DragListView extends ListView implements Draggable {
                         }
                     } else {
                         // 已经滑动总距离 与 即将滑动的距离 同向,说明是滑动的延续,需要计算阻尼
-                        offset = yDiff / (Math.abs(oldDy) / 100 + ratio);
+                        offset = yDiff / (Math.abs(oldDy) / 100 + getRatio());
                     }
                     // END;计算真实需要滑动的距离
 
@@ -148,17 +137,17 @@ public class DragListView extends ListView implements Draggable {
                     if (isOverHoldPosition()) {
                         switch (state) {
                             case STATE_DRAGGING_TOP:
-                                hold(true, resetVelocity);
+                                hold(true);
                                 break;
                             case STATE_DRAGGING_BOTTOM:
-                                hold(false, resetVelocity);
+                                hold(false);
                                 break;
                             default:
-                                resetToBorder(resetVelocity);
+                                resetToBorder();
                                 break;
                         }
                     } else {
-                        resetToBorder(resetVelocity);
+                        resetToBorder();
                     }
                 }
                 // 清除 手动拖动 状态
@@ -191,56 +180,79 @@ public class DragListView extends ListView implements Draggable {
         // 无论是手动越界 还是 惯性越界 都说明有边界触发,并且deltaY值越大 越界效果越强
         if (isTouchEvent) {
             // 手动拖动越界 在toucheEvent中处理
-        } else if (maxInertiaDistance > 0) {
-            deltaY /= inertiaWeight;
-            if (Math.abs(deltaY) > INERTIA_SLOP) {
-                // 惯性越界在这里根据 deltaY的值 计算自动滑动的距离
-                // 惯性越界 需要最大限制,某些时候系统会返回很大的值,此时需要屏蔽
-                deltaY = deltaY < 0 ? Math.max(-maxInertiaDistance, deltaY) : Math.min(deltaY, maxInertiaDistance);
-                inertial(-deltaY, inertiaVelocity, inertiaResetVelocity);
+        } else {
+            final int maxInertiaDistance = getMaxInertiaDistance();
+            if (maxInertiaDistance > 0) {
+                deltaY /= getInertiaWeight();
+                if (Math.abs(deltaY) > INERTIA_SLOP) {
+                    // 惯性越界在这里根据 deltaY的值 计算自动滑动的距离
+                    // 惯性越界 需要最大限制,某些时候系统会返回很大的值,此时需要屏蔽
+                    deltaY = deltaY < 0 ? Math.max(-maxInertiaDistance, deltaY) : Math.min(deltaY, maxInertiaDistance);
+                    inertial(-deltaY);
+                }
             }
         }
         return false;
     }
 
+    @Override
     public int getMaxInertiaDistance() {
-        return maxInertiaDistance;
+        return dragHelper.getMaxInertiaDistance();
     }
 
+    @Override
     public void setMaxInertiaDistance(int maxInertiaDistance) {
-        this.maxInertiaDistance = Math.max(0, maxInertiaDistance);
+        dragHelper.setMaxInertiaDistance(maxInertiaDistance);
     }
 
+    @Override
     public float getResetVelocity() {
-        return resetVelocity;
+        return dragHelper.getResetVelocity();
     }
 
+    @Override
     public void setResetVelocity(float resetVelocity) {
-        this.resetVelocity = Math.max(0, resetVelocity);
+        dragHelper.setResetVelocity(resetVelocity);
     }
 
+    @Override
     public float getInertiaVelocity() {
-        return inertiaVelocity;
+        return dragHelper.getInertiaVelocity();
     }
 
+    @Override
     public void setInertiaVelocity(float inertiaVelocity) {
-        this.inertiaVelocity = Math.max(0, inertiaVelocity);
+        dragHelper.setInertiaVelocity(inertiaVelocity);
     }
 
+    @Override
     public float getInertiaWeight() {
-        return inertiaWeight;
+        return dragHelper.getInertiaWeight();
     }
 
+    @Override
     public void setInertiaWeight(float inertiaWeight) {
-        this.inertiaWeight = Math.max(0, inertiaWeight);
+        dragHelper.setInertiaWeight(inertiaWeight);
     }
 
+    @Override
+    public float getInertiaResetVelocity() {
+        return dragHelper.getInertiaResetVelocity();
+    }
+
+    @Override
+    public void setInertiaResetVelocity(float inertiaResetVelocity) {
+        dragHelper.setInertiaResetVelocity(inertiaResetVelocity);
+    }
+
+    @Override
     public void setRatio(int ratio) {
-        this.ratio = Math.max(0, ratio);
+        dragHelper.setRatio(ratio);
     }
 
+    @Override
     public float getRatio() {
-        return ratio;
+        return dragHelper.getRatio();
     }
 
     @Override
@@ -249,18 +261,19 @@ public class DragListView extends ListView implements Draggable {
     }
 
     @Override
-    public void hold(boolean isTopPosition, float velocity) {
-        dragHelper.hold(isTopPosition, velocity);
+    public void hold(boolean isTopPosition) {
+        setSelection(isTopPosition ? 0 : (getAdapter() == null ? 0 : getAdapter().getCount() - 1));
+        dragHelper.hold(isTopPosition);
     }
 
     @Override
-    public void resetToBorder(float velocity) {
-        dragHelper.resetToBorder(velocity);
+    public void resetToBorder() {
+        dragHelper.resetToBorder();
     }
 
     @Override
-    public void inertial(int distance, float inertialVelocity, float resetVelocity) {
-        dragHelper.inertial(distance, inertialVelocity, resetVelocity);
+    public void inertial(int distance) {
+        dragHelper.inertial(distance);
     }
 
     @Override

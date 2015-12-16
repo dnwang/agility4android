@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.FrameLayout;
+
 import org.pinwheel.agility.util.UIUtils;
 import org.pinwheel.agility.view.ProgressCircular;
 
@@ -16,21 +17,21 @@ import org.pinwheel.agility.view.ProgressCircular;
  *
  * @author dnwang
  */
-class SimpleHeaderDragIndicator extends BaseDragIndicator {
+class SimpleHeaderIndicator extends BaseDragIndicator {
 
     private ProgressCircular progressCircular;
 
-    public SimpleHeaderDragIndicator(Context context) {
+    public SimpleHeaderIndicator(Context context) {
         super(context);
         this.init();
     }
 
-    public SimpleHeaderDragIndicator(Context context, AttributeSet attrs) {
+    public SimpleHeaderIndicator(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.init();
     }
 
-    public SimpleHeaderDragIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
+    public SimpleHeaderIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.init();
     }
@@ -48,7 +49,7 @@ class SimpleHeaderDragIndicator extends BaseDragIndicator {
 
     @Override
     public void onMove(float distance, float offset) {
-        if (isHolding()) {
+        if (isHolding() || getDraggable().getPosition() != Draggable.EDGE_TOP) {
             return;
         }
         final int topHoldDy = getDraggable().getTopHoldDistance();

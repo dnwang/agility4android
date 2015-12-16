@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.GridView;
+
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -18,13 +19,6 @@ import org.pinwheel.agility.util.UIUtils;
 public class DragGridView extends GridView implements Draggable {
 
     private static final int INERTIA_SLOP = 5;
-
-    private int maxInertiaDistance;
-    private float resetVelocity;
-    private float inertiaVelocity;
-    private float inertiaResetVelocity;
-    private float inertiaWeight;
-    private float ratio;
 
     private DragHelper dragHelper;
 
@@ -51,14 +45,9 @@ public class DragGridView extends GridView implements Draggable {
     }
 
     private void init() {
-        this.maxInertiaDistance = UIUtils.dip2px(getContext(), 48);
-        this.resetVelocity = VELOCITY_FAST;
-        this.inertiaVelocity = VELOCITY_FAST;
-        this.inertiaResetVelocity = VELOCITY_NORMAL;
-        this.inertiaWeight = WIGHT_INERTIA_LOW;
-        this.ratio = RATIO_NORMAL;
         this.dragHelper = new DragHelper(mover);
         this.setOverScrollMode(OVER_SCROLL_NEVER);
+        this.setMaxInertiaDistance(UIUtils.dip2px(getContext(), 48));
     }
 
     @Override
@@ -67,7 +56,7 @@ public class DragGridView extends GridView implements Draggable {
             case MotionEvent.ACTION_DOWN:
                 lastPoint.set(event.getRawX(), event.getRawY());
                 if (dragHelper.isHolding()) {
-                    resetToBorder(resetVelocity);
+                    resetToBorder();
                     return false;
                 } else {
                     super.dispatchTouchEvent(event);
@@ -104,7 +93,7 @@ public class DragGridView extends GridView implements Draggable {
                             offset = (yDiff > 0 ? absOldDy : -absOldDy);
                         }
                     } else {
-                        offset = yDiff / (Math.abs(oldDy) / 100 + ratio);
+                        offset = yDiff / (Math.abs(oldDy) / 100 + getRatio());
                     }
 
                     final float newDy = oldDy + offset;
@@ -128,17 +117,17 @@ public class DragGridView extends GridView implements Draggable {
                     if (isOverHoldPosition()) {
                         switch (state) {
                             case STATE_DRAGGING_TOP:
-                                hold(true, resetVelocity);
+                                hold(true);
                                 break;
                             case STATE_DRAGGING_BOTTOM:
-                                hold(false, resetVelocity);
+                                hold(false);
                                 break;
                             default:
-                                resetToBorder(resetVelocity);
+                                resetToBorder();
                                 break;
                         }
                     } else {
-                        resetToBorder(resetVelocity);
+                        resetToBorder();
                     }
                 }
                 final boolean cancelSuperState = super.onTouchEvent(event);
@@ -166,54 +155,78 @@ public class DragGridView extends GridView implements Draggable {
             setState(deltaY > 0 ? STATE_DRAGGING_BOTTOM : STATE_DRAGGING_TOP);
         }
         if (isTouchEvent) {
-        } else if (maxInertiaDistance > 0) {
-            deltaY /= inertiaWeight;
-            if (Math.abs(deltaY) > INERTIA_SLOP) {
-                deltaY = deltaY < 0 ? Math.max(-maxInertiaDistance, deltaY) : Math.min(deltaY, maxInertiaDistance);
-                inertial(-deltaY, inertiaVelocity, inertiaResetVelocity);
+            // nothing to do
+        } else {
+            final int maxInertiaDistance = getMaxInertiaDistance();
+            if (maxInertiaDistance > 0) {
+                deltaY /= getInertiaWeight();
+                if (Math.abs(deltaY) > INERTIA_SLOP) {
+                    deltaY = deltaY < 0 ? Math.max(-maxInertiaDistance, deltaY) : Math.min(deltaY, maxInertiaDistance);
+                    inertial(-deltaY);
+                }
             }
         }
         return false;
     }
 
+    @Override
     public int getMaxInertiaDistance() {
-        return maxInertiaDistance;
+        return dragHelper.getMaxInertiaDistance();
     }
 
+    @Override
     public void setMaxInertiaDistance(int maxInertiaDistance) {
-        this.maxInertiaDistance = Math.max(0, maxInertiaDistance);
+        dragHelper.setMaxInertiaDistance(maxInertiaDistance);
     }
 
+    @Override
     public float getResetVelocity() {
-        return resetVelocity;
+        return dragHelper.getResetVelocity();
     }
 
+    @Override
     public void setResetVelocity(float resetVelocity) {
-        this.resetVelocity = Math.max(0, resetVelocity);
+        dragHelper.setResetVelocity(resetVelocity);
     }
 
+    @Override
     public float getInertiaVelocity() {
-        return inertiaVelocity;
+        return dragHelper.getInertiaVelocity();
     }
 
+    @Override
     public void setInertiaVelocity(float inertiaVelocity) {
-        this.inertiaVelocity = Math.max(0, inertiaVelocity);
+        dragHelper.setInertiaVelocity(inertiaVelocity);
     }
 
+    @Override
     public float getInertiaWeight() {
-        return inertiaWeight;
+        return dragHelper.getInertiaWeight();
     }
 
+    @Override
     public void setInertiaWeight(float inertiaWeight) {
-        this.inertiaWeight = Math.max(0, inertiaWeight);
+        dragHelper.setInertiaWeight(inertiaWeight);
     }
 
+    @Override
+    public float getInertiaResetVelocity() {
+        return dragHelper.getInertiaResetVelocity();
+    }
+
+    @Override
+    public void setInertiaResetVelocity(float inertiaResetVelocity) {
+        dragHelper.setInertiaResetVelocity(inertiaResetVelocity);
+    }
+
+    @Override
     public void setRatio(int ratio) {
-        this.ratio = Math.max(0, ratio);
+        dragHelper.setRatio(ratio);
     }
 
+    @Override
     public float getRatio() {
-        return ratio;
+        return dragHelper.getRatio();
     }
 
     @Override
@@ -222,18 +235,19 @@ public class DragGridView extends GridView implements Draggable {
     }
 
     @Override
-    public void hold(boolean isTopPosition, float velocity) {
-        dragHelper.hold(isTopPosition, velocity);
+    public void hold(boolean isTopPosition) {
+        setSelection(isTopPosition ? 0 : (getAdapter() == null ? 0 : getAdapter().getCount() - 1));
+        dragHelper.hold(isTopPosition);
     }
 
     @Override
-    public void resetToBorder(float velocity) {
-        dragHelper.resetToBorder(velocity);
+    public void resetToBorder() {
+        dragHelper.resetToBorder();
     }
 
     @Override
-    public void inertial(int distance, float inertialVelocity, float resetVelocity) {
-        dragHelper.inertial(distance, inertialVelocity, resetVelocity);
+    public void inertial(int distance) {
+        dragHelper.inertial(distance);
     }
 
     @Override

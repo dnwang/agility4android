@@ -2,7 +2,6 @@ package org.pinwheel.agility.view.drag;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -39,12 +38,12 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
     }
 
     private void init() {
-        footerIndicator = new SimpleHeaderDragIndicator(getContext());
+        footerIndicator = new SimpleFooterIndicator(getContext());
         FrameLayout.LayoutParams footerParams = new FrameLayout.LayoutParams(-1, -2);
         footerParams.gravity = Gravity.BOTTOM;
         addView(footerIndicator, 0, footerParams);// index
 
-        headerIndicator = new SimpleHeaderDragIndicator(getContext());
+        headerIndicator = new SimpleHeaderIndicator(getContext());
         FrameLayout.LayoutParams headerParams = new FrameLayout.LayoutParams(-1, -2);
         headerParams.gravity = Gravity.TOP;
         addView(headerIndicator, 0, headerParams);// index
@@ -63,13 +62,9 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
         if (draggable == null) {
             throw new IllegalStateException(getClass().getSimpleName() + " must contains draggable view.");
         }
-
         headerIndicator.bindDraggable(draggable);
         footerIndicator.bindDraggable(draggable);
-
         draggable.addOnDragListener(this);
-        draggable.addOnDragListener(new IndicatorEventConverter(headerIndicator));
-        draggable.addOnDragListener(new IndicatorEventConverter(footerIndicator));
         draggable.setHoldDistance(headerIndicator.getMeasuredHeight(), footerIndicator.getMeasuredHeight());
     }
 
@@ -86,14 +81,28 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
 
     @Override
     public void onDragStateChanged(Draggable draggable, int position, int state) {
-        // TODO denan.wang; 2015/12/16;  convert event to OnRefreshListener
-        Log.d("OnDragListener", "onDragStateChanged() position:[" + DragHelper.convertPosition(position) + "], state:[" + DragHelper.convertState(state) + "]");
+//        Log.d("OnDragListener", "onDragStateChanged() position:[" + DragHelper.convertPosition(position) + "], state:[" + DragHelper.convertState(state) + "]");
+        if (state == Draggable.STATE_HOLD) {
+            if (position == Draggable.EDGE_TOP) {
+                headerIndicator.onHold();
+                if (listener != null) {
+                    listener.onRefresh();
+                }
+            } else if (position == Draggable.EDGE_BOTTOM) {
+                footerIndicator.onHold();
+                if (listener != null) {
+                    listener.onLoad();
+                }
+            }
+        }
     }
 
     @Override
     public void onDragging(Draggable draggable, float distance, float offset) {
-        // TODO denan.wang; 2015/12/16;  convert event to OnRefreshListener
-        Log.d("OnDragListener", "onDragging() distance:[" + distance + "], offset:[" + offset + "]");
+        if (draggable.getPosition() != Draggable.EDGE_NONE) {
+            headerIndicator.onMove(distance, offset);
+            footerIndicator.onMove(distance, offset);
+        }
     }
 
     public void setOnRefreshListener(OnRefreshListener listener) {
@@ -106,15 +115,17 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
 //    }
 
     public void doRefresh() {
-
+        draggable.hold(true);
     }
 
     public void onRefreshComplete() {
-
+        headerIndicator.reset();
+        draggable.resetToBorder();
     }
 
     public void onLoadComplete() {
-
+        footerIndicator.reset();
+        draggable.resetToBorder();
     }
 
     public interface OnRefreshListener {

@@ -19,16 +19,22 @@ import java.util.List;
  */
 class DragHelper implements Draggable {
 
-    private int topHoldDistance;
-    private int bottomHoldDistance;
-    private int orientation;
-    private int currentPosition;
-    private int currentState;
-    private List<OnDragListener> onDragListeners;
-    private Movable mover;
+    private int topHoldDistance;//顶部悬停距离
+    private int bottomHoldDistance;//顶部悬停距离
+    private int orientation;//反向
+    private int currentPosition;//越界位置
+    private int currentState;//当前状态
+    private int maxInertiaDistance;//最大越界距离
+    private float resetVelocity;//手动释放返回速度
+    private float inertiaVelocity;//越界速度
+    private float inertiaResetVelocity;//越界返回速度
+    private float inertiaWeight;//越界权重
+    private float ratio;//阻尼系数
+    private List<OnDragListener> onDragListeners;//拖动回调
+    private Movable mover;//视图移动控制
 
-    private float distance;
-    private ValueAnimator animator;
+    private float distance;//当前滑动距离
+    private ValueAnimator animator;//自动滑动属性动画
 
     public DragHelper(Movable mover) {
         this.mover = mover;
@@ -38,13 +44,19 @@ class DragHelper implements Draggable {
         this.currentPosition = EDGE_NONE;
         this.currentState = STATE_NONE;
         this.distance = 0;
+        this.maxInertiaDistance = 0;
+        this.resetVelocity = VELOCITY_FAST;
+        this.inertiaVelocity = VELOCITY_FAST;
+        this.inertiaResetVelocity = VELOCITY_NORMAL;
+        this.inertiaWeight = WIGHT_INERTIA_LOW;
+        this.ratio = RATIO_NORMAL;
     }
 
     private void setDistance(final float distance) {
         this.distance = distance;
     }
 
-    private void autoMove(float distance, final long duration, AnimatorListenerAdapter adapter) {
+    protected void autoMove(float distance, final long duration, AnimatorListenerAdapter adapter) {
         if (mover != null && distance != 0) {
             stopMove();
             animator = ValueAnimator.ofFloat(0, distance);
@@ -65,20 +77,20 @@ class DragHelper implements Draggable {
         }
     }
 
-    public final boolean hasTopHold() {
+    public boolean hasTopHold() {
         return this.topHoldDistance > 0;
     }
 
-    public final boolean hasBottomHold() {
+    public boolean hasBottomHold() {
         return this.bottomHoldDistance > 0;
     }
 
-    public final boolean isDragging() {
+    public boolean isDragging() {
         final int state = getState();
         return state == STATE_DRAGGING_TOP || state == STATE_DRAGGING_BOTTOM;
     }
 
-    public final boolean isHolding() {
+    public boolean isHolding() {
         final int state = getState();
         return state == STATE_HOLD || state == STATE_RESTING_TO_HOLD;
     }
@@ -99,7 +111,7 @@ class DragHelper implements Draggable {
     }
 
     @Override
-    public final void hold(final boolean isTopPosition, final float velocity) {
+    public void hold(final boolean isTopPosition) {
         float newDy = 0;
         if (isTopPosition && hasTopHold()) {
             newDy = getTopHoldDistance();
@@ -109,7 +121,7 @@ class DragHelper implements Draggable {
 
         if (newDy != 0) {
             final float offset = newDy - getDistance();
-            autoMove(offset, (long) (Math.abs(offset) / velocity), new AnimatorListenerAdapter() {
+            autoMove(offset, (long) (Math.abs(offset) / getResetVelocity()), new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationStart(Animator animation) {
                     setState(STATE_RESTING_TO_HOLD);
@@ -123,10 +135,9 @@ class DragHelper implements Draggable {
         }
     }
 
-    @Override
-    public final void resetToBorder(final float velocity) {
+    protected void resetToBorder(final float resetVelocity) {
         final float offset = getDistance();
-        autoMove(-offset, (long) (Math.abs(offset) / velocity), new AnimatorListenerAdapter() {
+        autoMove(-offset, (long) (Math.abs(offset) / resetVelocity), new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
                 setState(STATE_RESTING_TO_BORDER);
@@ -136,13 +147,17 @@ class DragHelper implements Draggable {
             public void onAnimationEnd(Animator animation) {
                 setState(STATE_NONE);
             }
-
         });
     }
 
     @Override
-    public final void inertial(final int distance, final float inertialVelocity, final float restVelocity) {
-        autoMove(distance, (long) (Math.abs(distance) / inertialVelocity), new AnimatorListenerAdapter() {
+    public void resetToBorder() {
+        resetToBorder(getResetVelocity());
+    }
+
+    @Override
+    public void inertial(final int distance) {
+        autoMove(distance, (long) (Math.abs(distance) / getInertiaVelocity()), new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
                 setState(STATE_INERTIAL);
@@ -150,13 +165,13 @@ class DragHelper implements Draggable {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                resetToBorder(restVelocity);
+                resetToBorder(inertiaResetVelocity);
             }
         });
     }
 
     @Override
-    public final void move(final float offset) {
+    public void move(final float offset) {
         if (mover != null && offset != 0) {
             final float oldDy = getDistance();
             final float newDy = oldDy + offset;
@@ -171,14 +186,14 @@ class DragHelper implements Draggable {
     }
 
     @Override
-    public final void stopMove() {
+    public void stopMove() {
         if (mover != null && animator != null) {
             animator.cancel();
         }
     }
 
     @Override
-    public final void addOnDragListener(OnDragListener listener) {
+    public void addOnDragListener(OnDragListener listener) {
         if (listener == null) {
             return;
         }
@@ -199,17 +214,17 @@ class DragHelper implements Draggable {
     }
 
     @Override
-    public final void setOrientation(final int orientation) {
+    public void setOrientation(final int orientation) {
         this.orientation = orientation == LinearLayout.VERTICAL ? orientation : LinearLayout.HORIZONTAL;
     }
 
     @Override
-    public final int getOrientation() {
+    public int getOrientation() {
         return this.orientation;
     }
 
     @Override
-    public final void setHoldDistance(final int dTop, final int dBottom) {
+    public void setHoldDistance(final int dTop, final int dBottom) {
         this.topHoldDistance = Math.max(0, dTop);
         this.bottomHoldDistance = Math.max(0, dBottom);
     }
@@ -225,7 +240,7 @@ class DragHelper implements Draggable {
     }
 
     @Override
-    public final void setState(final int state) {
+    public void setState(final int state) {
         switch (state) {
             case STATE_NONE:
                 setPosition(EDGE_NONE);
@@ -246,26 +261,85 @@ class DragHelper implements Draggable {
     }
 
     @Override
-    public final int getState() {
+    public int getState() {
         return currentState;
     }
 
     @Deprecated
     @Override
-    public final void setPosition(int position) {
+    public void setPosition(int position) {
         this.currentPosition = position;
     }
 
     @Override
-    public final int getPosition() {
+    public int getPosition() {
         return currentPosition;
     }
 
     @Override
-    public final float getDistance() {
+    public float getDistance() {
         return this.distance;
     }
 
+    @Override
+    public int getMaxInertiaDistance() {
+        return maxInertiaDistance;
+    }
+
+    @Override
+    public void setMaxInertiaDistance(int maxInertiaDistance) {
+        this.maxInertiaDistance = Math.max(0, maxInertiaDistance);
+    }
+
+    @Override
+    public float getResetVelocity() {
+        return resetVelocity;
+    }
+
+    @Override
+    public void setResetVelocity(float resetVelocity) {
+        this.resetVelocity = Math.max(0, resetVelocity);
+    }
+
+    @Override
+    public float getInertiaVelocity() {
+        return inertiaVelocity;
+    }
+
+    @Override
+    public void setInertiaVelocity(float inertiaVelocity) {
+        this.inertiaVelocity = Math.max(0, inertiaVelocity);
+    }
+
+    @Override
+    public float getInertiaWeight() {
+        return inertiaWeight;
+    }
+
+    @Override
+    public void setInertiaWeight(float inertiaWeight) {
+        this.inertiaWeight = Math.max(0, inertiaWeight);
+    }
+
+    @Override
+    public float getInertiaResetVelocity() {
+        return inertiaResetVelocity;
+    }
+
+    @Override
+    public void setInertiaResetVelocity(float inertiaResetVelocity) {
+        this.inertiaResetVelocity = inertiaResetVelocity;
+    }
+
+    @Override
+    public void setRatio(int ratio) {
+        this.ratio = Math.max(0, ratio);
+    }
+
+    @Override
+    public float getRatio() {
+        return ratio;
+    }
 
     protected static String convertState(int state) {
         switch (state) {
