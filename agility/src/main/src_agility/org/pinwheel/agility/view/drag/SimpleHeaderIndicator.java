@@ -1,11 +1,12 @@
 package org.pinwheel.agility.view.drag;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
-
 import org.pinwheel.agility.util.UIUtils;
 import org.pinwheel.agility.view.ProgressCircular;
 
@@ -18,6 +19,8 @@ import org.pinwheel.agility.view.ProgressCircular;
  * @author dnwang
  */
 class SimpleHeaderIndicator extends BaseDragIndicator {
+
+    private static final long DURATION = 500l;
 
     private ProgressCircular progressCircular;
 
@@ -54,6 +57,8 @@ class SimpleHeaderIndicator extends BaseDragIndicator {
         }
         final int topHoldDy = getDraggable().getTopHoldDistance();
         final float percent = Math.min(Math.abs(distance), topHoldDy) / topHoldDy;
+        progressCircular.setScaleX(percent);
+        progressCircular.setScaleY(percent);
         progressCircular.setProgress(percent);
         progressCircular.setAlpha(percent);
     }
@@ -67,8 +72,20 @@ class SimpleHeaderIndicator extends BaseDragIndicator {
     @Override
     public void reset() {
         super.reset();
-        progressCircular.setProgress(0);
-        progressCircular.setAlpha(0);
+        ValueAnimator animator = ValueAnimator.ofFloat(1.0f, 0.0f);
+        animator.setDuration(DURATION);
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float currentValue = (Float) animation.getAnimatedValue();
+                progressCircular.setProgress(currentValue);
+                progressCircular.setAlpha(currentValue);
+                progressCircular.setScaleX(currentValue);
+                progressCircular.setScaleY(currentValue);
+            }
+        });
+        animator.start();
     }
 
 }

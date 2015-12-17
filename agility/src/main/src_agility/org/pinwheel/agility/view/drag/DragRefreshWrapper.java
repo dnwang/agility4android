@@ -81,14 +81,13 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
 
     @Override
     public void onDragStateChanged(Draggable draggable, int position, int state) {
-//        Log.d("OnDragListener", "onDragStateChanged() position:[" + DragHelper.convertPosition(position) + "], state:[" + DragHelper.convertState(state) + "]");
         if (state == Draggable.STATE_HOLD) {
-            if (position == Draggable.EDGE_TOP) {
+            if (position == Draggable.EDGE_TOP && !headerIndicator.isHolding()) {
                 headerIndicator.onHold();
                 if (listener != null) {
                     listener.onRefresh();
                 }
-            } else if (position == Draggable.EDGE_BOTTOM) {
+            } else if (position == Draggable.EDGE_BOTTOM && !footerIndicator.isHolding()) {
                 footerIndicator.onHold();
                 if (listener != null) {
                     listener.onLoad();

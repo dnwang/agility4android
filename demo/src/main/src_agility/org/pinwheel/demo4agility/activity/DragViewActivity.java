@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.Gravity;
@@ -11,7 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
-import org.pinwheel.agility.view.drag.Draggable;
+import org.pinwheel.agility.view.drag.DragRefreshWrapper;
 import org.pinwheel.demo4agility.R;
 
 import java.util.ArrayList;
@@ -33,7 +34,28 @@ public class DragViewActivity extends Activity implements AdapterView.OnItemClic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.drag_view);
-        Draggable dragView = (Draggable) findViewById(R.id.drag_view);
+        final DragRefreshWrapper dragRefreshWrapper = (DragRefreshWrapper) findViewById(R.id.drag_wrapper);
+        dragRefreshWrapper.setOnRefreshListener(new DragRefreshWrapper.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                delay(3000l, new Runnable() {
+                    @Override
+                    public void run() {
+                        dragRefreshWrapper.onRefreshComplete();
+                    }
+                });
+            }
+
+            @Override
+            public void onLoad() {
+                delay(1000l, new Runnable() {
+                    @Override
+                    public void run() {
+                        dragRefreshWrapper.onLoadComplete();
+                    }
+                });
+            }
+        });
     }
 
     private void initHeader(ListView list) {
@@ -80,6 +102,10 @@ public class DragViewActivity extends Activity implements AdapterView.OnItemClic
         absListView.setOnItemClickListener(this);
         absListView.setOnItemLongClickListener(this);
         absListView.setAdapter(adapter);
+    }
+
+    private void delay(long delay, Runnable runnable) {
+        new Handler(Looper.getMainLooper()).postDelayed(runnable, delay);
     }
 
     @Override
