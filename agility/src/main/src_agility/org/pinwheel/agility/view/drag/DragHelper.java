@@ -47,7 +47,7 @@ class DragHelper implements Draggable {
         this.maxInertiaDistance = 0;
         this.resetVelocity = VELOCITY_FAST;
         this.inertiaVelocity = VELOCITY_FAST;
-        this.inertiaResetVelocity = VELOCITY_NORMAL;
+        this.inertiaResetVelocity = VELOCITY_SLOW;
         this.inertiaWeight = WIGHT_INERTIA_LOW;
         this.ratio = RATIO_NORMAL;
     }
@@ -252,10 +252,13 @@ class DragHelper implements Draggable {
                 setPosition(EDGE_BOTTOM);
                 break;
         }
+        final int oldState = currentState;
         this.currentState = state;
-        if (onDragListeners != null && onDragListeners.size() > 0) {
-            for (OnDragListener listener : onDragListeners) {
-                listener.onDragStateChanged(this, currentPosition, currentState);
+        if (oldState != currentState) {
+            if (onDragListeners != null && onDragListeners.size() > 0) {
+                for (OnDragListener listener : onDragListeners) {
+                    listener.onDragStateChanged(this, currentPosition, currentState);
+                }
             }
         }
     }

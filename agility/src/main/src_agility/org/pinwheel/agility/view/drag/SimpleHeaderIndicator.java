@@ -7,6 +7,7 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
+
 import org.pinwheel.agility.util.UIUtils;
 import org.pinwheel.agility.view.ProgressCircular;
 
@@ -42,7 +43,6 @@ class SimpleHeaderIndicator extends BaseDragIndicator {
     private void init() {
         progressCircular = new ProgressCircular(getContext());
         progressCircular.setBarColor(Color.GRAY);
-        progressCircular.setProgress(0);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-2, -2);
         params.gravity = Gravity.CENTER;
         int dp8 = UIUtils.dip2px(getContext(), 8);
@@ -57,10 +57,13 @@ class SimpleHeaderIndicator extends BaseDragIndicator {
         }
         final int topHoldDy = getDraggable().getTopHoldDistance();
         final float percent = Math.min(Math.abs(distance), topHoldDy) / topHoldDy;
-        progressCircular.setScaleX(percent);
-        progressCircular.setScaleY(percent);
+
+        setTranslationY(-getMeasuredHeight() * (1 - percent));
+
         progressCircular.setProgress(percent);
         progressCircular.setAlpha(percent);
+        progressCircular.setScaleX(percent);
+        progressCircular.setScaleY(percent);
     }
 
     @Override
@@ -78,11 +81,14 @@ class SimpleHeaderIndicator extends BaseDragIndicator {
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                float currentValue = (Float) animation.getAnimatedValue();
-                progressCircular.setProgress(currentValue);
-                progressCircular.setAlpha(currentValue);
-                progressCircular.setScaleX(currentValue);
-                progressCircular.setScaleY(currentValue);
+                final float percent = (Float) animation.getAnimatedValue();
+
+                setTranslationY(-getMeasuredHeight() * (1 - percent));
+
+                progressCircular.setProgress(percent);
+                progressCircular.setAlpha(percent);
+                progressCircular.setScaleX(percent);
+                progressCircular.setScaleY(percent);
             }
         });
         animator.start();

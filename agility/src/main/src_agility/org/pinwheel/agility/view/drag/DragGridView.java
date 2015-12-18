@@ -97,7 +97,7 @@ public class DragGridView extends GridView implements Draggable {
                     }
 
                     final float newDy = oldDy + offset;
-                    if (state != STATE_NONE && ((Math.abs(newDy) < 1.0f && absOldDy > 0) || (newDy * oldDy < 0 && absOldDy > 0))) {
+                    if ((newDy == 0 && absOldDy > 0) || (newDy * oldDy < 0 && absOldDy > 0)) {
                         move(-oldDy);
                         setState(STATE_NONE);
                         final boolean moveSuperState = super.onTouchEvent(event);

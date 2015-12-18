@@ -110,7 +110,7 @@ public class DragListView extends ListView implements Draggable {
                     // 提前计算新的总距离,并且判断新距离时候可以被应用,若达到边界需要响应 list 本身的滚动
                     final float newDy = oldDy + offset;
                     // 下一个距离 和 当前距离 反向 都视为到边界
-                    if (state != STATE_NONE && ((Math.abs(newDy) < 1.0f && absOldDy > 0) || (newDy * oldDy < 0 && absOldDy > 0))) {
+                    if ((newDy == 0 && absOldDy > 0) || (newDy * oldDy < 0 && absOldDy > 0)) {
                         // 即将放弃滑动而响应list事件,将还未滑到边界的部分清0
                         move(-oldDy);
                         // 滑动到边界时将状态置为NONE
