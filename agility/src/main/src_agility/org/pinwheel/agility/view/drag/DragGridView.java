@@ -18,8 +18,6 @@ import org.pinwheel.agility.util.UIUtils;
  */
 public class DragGridView extends GridView implements Draggable {
 
-    private static final int INERTIA_SLOP = 5;
-
     private DragHelper dragHelper;
 
     private final Movable mover = new Movable() {
@@ -160,7 +158,7 @@ public class DragGridView extends GridView implements Draggable {
             final int maxInertiaDistance = getMaxInertiaDistance();
             if (maxInertiaDistance > 0) {
                 deltaY /= getInertiaWeight();
-                if (Math.abs(deltaY) > INERTIA_SLOP) {
+                if (Math.abs(deltaY) > UIUtils.dip2px(getContext(), 12)) {
                     deltaY = deltaY < 0 ? Math.max(-maxInertiaDistance, deltaY) : Math.min(deltaY, maxInertiaDistance);
                     inertial(-deltaY);
                 }

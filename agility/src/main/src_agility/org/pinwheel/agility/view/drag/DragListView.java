@@ -18,8 +18,6 @@ import org.pinwheel.agility.util.UIUtils;
  */
 public class DragListView extends ListView implements Draggable {
 
-    private static final int INERTIA_SLOP = 5;
-
     private DragHelper dragHelper;
 
     private final Movable mover = new Movable() {
@@ -184,7 +182,7 @@ public class DragListView extends ListView implements Draggable {
             final int maxInertiaDistance = getMaxInertiaDistance();
             if (maxInertiaDistance > 0) {
                 deltaY /= getInertiaWeight();
-                if (Math.abs(deltaY) > INERTIA_SLOP) {
+                if (Math.abs(deltaY) > UIUtils.dip2px(getContext(), 12)) {
                     // 惯性越界在这里根据 deltaY的值 计算自动滑动的距离
                     // 惯性越界 需要最大限制,某些时候系统会返回很大的值,此时需要屏蔽
                     deltaY = deltaY < 0 ? Math.max(-maxInertiaDistance, deltaY) : Math.min(deltaY, maxInertiaDistance);

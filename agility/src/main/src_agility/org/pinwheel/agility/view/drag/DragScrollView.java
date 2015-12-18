@@ -19,8 +19,6 @@ import org.pinwheel.agility.util.UIUtils;
  */
 public class DragScrollView extends ScrollView implements Draggable {
 
-    private static final int INERTIA_SLOP = 5;
-
     private DragHelper dragHelper;
 
     private final Movable mover = new Movable() {
@@ -185,7 +183,7 @@ public class DragScrollView extends ScrollView implements Draggable {
         final int maxInertiaDistance = getMaxInertiaDistance();
         if (Math.abs((int) getDistance()) == 0 && clampedY && !isTouchEvent && maxInertiaDistance > 0) {
             deltaY /= getInertiaWeight();
-            if (Math.abs(deltaY) > INERTIA_SLOP) {
+            if (Math.abs(deltaY) > UIUtils.dip2px(getContext(), 12)) {
                 deltaY = deltaY < 0 ? Math.max(-maxInertiaDistance, deltaY) : Math.min(deltaY, maxInertiaDistance);
                 inertial(-deltaY);
             }
