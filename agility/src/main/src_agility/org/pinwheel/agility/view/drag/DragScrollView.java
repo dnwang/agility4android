@@ -86,7 +86,7 @@ public class DragScrollView extends ScrollView implements Draggable {
                 final boolean isArrivedTop = isArrivedTop();
                 final boolean isArrivedBottom = isArrivedBottom();
 
-                if (isArrivedTop || isArrivedBottom) {
+                if ((dragHelper.isDragging() || state == STATE_NONE) && (isArrivedTop || isArrivedBottom)) {
                     // BEGIN;顶／底 越界 状态设置
                     if (isArrivedTop && (int) absOldDy == 0) {
                         if (yDiff < 0) {
@@ -114,7 +114,7 @@ public class DragScrollView extends ScrollView implements Draggable {
                     }
 
                     final float newDy = oldDy + offset;
-                    if (state != STATE_NONE && ((Math.abs(newDy) < 1.0f && absOldDy > 0) || (newDy * oldDy < 0 && absOldDy > 0))) {
+                    if ((newDy == 0 && absOldDy > 0) || (newDy * oldDy < 0 && absOldDy > 0)) {
                         move(-oldDy);
                         setState(STATE_NONE);
                         return super.onTouchEvent(event);
@@ -184,6 +184,7 @@ public class DragScrollView extends ScrollView implements Draggable {
         if (Math.abs((int) getDistance()) == 0 && clampedY && !isTouchEvent && maxInertiaDistance > 0) {
             deltaY /= getInertiaWeight();
             if (Math.abs(deltaY) > UIUtils.dip2px(getContext(), 12)) {
+                setPosition(deltaY > 0 ? EDGE_BOTTOM : EDGE_TOP);
                 deltaY = deltaY < 0 ? Math.max(-maxInertiaDistance, deltaY) : Math.min(deltaY, maxInertiaDistance);
                 inertial(-deltaY);
             }

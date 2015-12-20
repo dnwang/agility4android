@@ -5,8 +5,8 @@ android {
     buildToolsVersion '23.0.2'
     defaultConfig {
         minSdkVersion 14
-        versionCode 60
-        versionName '4.0.4.60'
+        versionCode 61
+        versionName '4.0.5.61'
     }
     buildTypes {
         release {
@@ -17,9 +17,9 @@ android {
     sourceSets {
         main {
             java.srcDirs = [
-                    'src/main/src_agility',
+                    'src/main/src_agility'
 //                    'src/main/src_litesuits',
-                    'src/main/src_photoview'
+//                    'src/main/src_photoview'
             ]
         }
     }

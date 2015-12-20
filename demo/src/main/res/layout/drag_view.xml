@@ -1,31 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <!-- Refresh Wrapper-->
     <org.pinwheel.agility.view.drag.DragRefreshWrapper
-            android:id="@+id/drag_wrapper"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        android:id="@+id/drag_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <!-- Draggable View-->
-        <org.pinwheel.agility.view.drag.DragScrollView
-                android:id="@+id/drag_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+        <org.pinwheel.agility.view.drag.DragListView
+            android:id="@+id/drag_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-            <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+        <!--<org.pinwheel.agility.view.drag.DragScrollView-->
+        <!--android:id="@+id/drag_view"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent">-->
 
-                <Button
-                        android:layout_width="match_parent"
-                        android:layout_height="1000dp"
-                        android:text="test button in DragScrollView"/>
+        <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:orientation="vertical">-->
 
-            </LinearLayout>
-        </org.pinwheel.agility.view.drag.DragScrollView>
+        <!--<Button-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="1000dp"-->
+        <!--android:text="1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20" />-->
+
+        <!--</LinearLayout>-->
+        <!--</org.pinwheel.agility.view.drag.DragScrollView>-->
     </org.pinwheel.agility.view.drag.DragRefreshWrapper>
 
 </FrameLayout>

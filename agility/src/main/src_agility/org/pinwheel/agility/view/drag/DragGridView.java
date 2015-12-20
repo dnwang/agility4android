@@ -149,11 +149,9 @@ public class DragGridView extends GridView implements Draggable {
             return false;
         }
         isTouchDragging = isTouchEvent;
-        if (STATE_NONE == getState()) {
-            setState(deltaY > 0 ? STATE_DRAGGING_BOTTOM : STATE_DRAGGING_TOP);
-        }
+        setPosition(deltaY > 0 ? EDGE_BOTTOM : EDGE_TOP);
         if (isTouchEvent) {
-            // nothing to do
+            setState(deltaY > 0 ? STATE_DRAGGING_BOTTOM : STATE_DRAGGING_TOP);
         } else {
             final int maxInertiaDistance = getMaxInertiaDistance();
             if (maxInertiaDistance > 0) {

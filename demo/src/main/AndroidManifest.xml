@@ -47,9 +47,6 @@
             android:name="org.pinwheel.demo4agility.activity.DialogActivity"
             android:label="SweetDialog" />
         <activity
-            android:name="org.pinwheel.demo4agility.activity.HeaderGridViewActivity"
-            android:label="带Header的Grid" />
-        <activity
             android:name="org.pinwheel.demo4agility.activity.CustomViewActivity"
             android:label="自定义点击区域响应" />
         <activity
@@ -82,6 +79,6 @@
             android:label="图片缓存 ImageLoader" />
         <activity
             android:name=".activity.DragViewActivity"
-            android:label="DragListView" />
+            android:label="拖动刷新系列控件(List,Grid,Scroll)" />
     </application>
 </manifest>

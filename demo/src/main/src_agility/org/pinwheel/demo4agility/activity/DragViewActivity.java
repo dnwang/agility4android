@@ -10,7 +10,13 @@ import android.support.v4.view.ViewPager;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.view.drag.DragRefreshWrapper;
 import org.pinwheel.demo4agility.R;
@@ -34,6 +40,11 @@ public class DragViewActivity extends Activity implements AdapterView.OnItemClic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.drag_view);
+
+        final AbsListView dragView = (AbsListView) findViewById(R.id.drag_view);
+        initAdapter(dragView);
+        initHeader((ListView) dragView);
+
         final DragRefreshWrapper dragRefreshWrapper = (DragRefreshWrapper) findViewById(R.id.drag_wrapper);
         dragRefreshWrapper.setOnRefreshListener(new DragRefreshWrapper.OnRefreshListener() {
             @Override
@@ -47,7 +58,7 @@ public class DragViewActivity extends Activity implements AdapterView.OnItemClic
             }
 
             @Override
-            public void onLoad() {
+            public void onLoadMore() {
                 delay(1000l, new Runnable() {
                     @Override
                     public void run() {
@@ -92,8 +103,8 @@ public class DragViewActivity extends Activity implements AdapterView.OnItemClic
         }, 1000);
     }
 
-    private void initListAdapter(AbsListView absListView) {
-        final int size = 60;
+    private void initAdapter(AbsListView absListView) {
+        final int size = 30;
         ArrayList<String> data = new ArrayList<>(size);
         for (int index = 0; index < size; index++) {
             data.add(index + ", " + index + ", " + index);

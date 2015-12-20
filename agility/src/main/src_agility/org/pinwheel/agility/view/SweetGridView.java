@@ -14,14 +14,14 @@ import android.widget.GridView;
 import java.util.ArrayList;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2014/9/29 21:27
- * @description
  */
+@Deprecated
 public class SweetGridView extends GridView implements Swipeable, GestureDetector.OnGestureListener {
 
     private boolean inSwipe;// 是否正在滑动中

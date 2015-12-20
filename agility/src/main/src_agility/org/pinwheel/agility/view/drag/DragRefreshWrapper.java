@@ -39,14 +39,9 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
 
     private void init() {
         footerIndicator = new SimpleFooterIndicator(getContext());
-        FrameLayout.LayoutParams footerParams = new FrameLayout.LayoutParams(-1, -2);
-        footerParams.gravity = Gravity.BOTTOM;
-        addView(footerIndicator, 0, footerParams);// index
 
-        headerIndicator = new SimpleHeaderIndicator(getContext());
-        FrameLayout.LayoutParams headerParams = new FrameLayout.LayoutParams(-1, -2);
-        headerParams.gravity = Gravity.TOP;
-        addView(headerIndicator, 0, headerParams);// index
+        resetFooterIndicator(new SimpleFooterIndicator(getContext()));
+        resetHeaderIndicator(new SimpleHeaderIndicator(getContext()));
 
         getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -66,6 +61,32 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
         footerIndicator.bindDraggable(draggable);
         draggable.addOnDragListener(this);
         draggable.setHoldDistance(headerIndicator.getMeasuredHeight(), footerIndicator.getMeasuredHeight());
+    }
+
+    private void resetHeaderIndicator(BaseDragIndicator indicator) {
+        if (indicator == null) {
+            return;
+        }
+        if (headerIndicator != null) {
+            removeView(headerIndicator);
+        }
+        headerIndicator = indicator;
+        FrameLayout.LayoutParams headerParams = new FrameLayout.LayoutParams(-1, -2);
+        headerParams.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+        addView(headerIndicator, 0, headerParams);
+    }
+
+    private void resetFooterIndicator(BaseDragIndicator indicator) {
+        if (indicator == null) {
+            return;
+        }
+        if (footerIndicator != null) {
+            removeView(footerIndicator);
+        }
+        footerIndicator = indicator;
+        FrameLayout.LayoutParams footerParams = new FrameLayout.LayoutParams(-1, -2);
+        footerParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+        addView(footerIndicator, 0, footerParams);
     }
 
     private Draggable findDraggable() {
@@ -90,7 +111,7 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
             } else if (position == Draggable.EDGE_BOTTOM && !footerIndicator.isHolding()) {
                 footerIndicator.onHold();
                 if (listener != null) {
-                    listener.onLoad();
+                    listener.onLoadMore();
                 }
             }
         }
@@ -98,7 +119,8 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
 
     @Override
     public void onDragging(Draggable draggable, float distance, float offset) {
-        if (draggable.getPosition() != Draggable.EDGE_NONE) {
+        final int position = draggable.getPosition();
+        if (position != Draggable.EDGE_NONE) {
             headerIndicator.onMove(distance, offset);
             footerIndicator.onMove(distance, offset);
         }
@@ -108,10 +130,15 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
         this.listener = listener;
     }
 
-//    public void setHeaderIndicator(BaseDragIndicator indicator) {
-//    }
-//    public void setFooterIndicator(BaseDragIndicator indicator) {
-//    }
+    public void setHeaderIndicator(BaseDragIndicator indicator) {
+        resetHeaderIndicator(indicator);
+        headerIndicator.bindDraggable(draggable);
+    }
+
+    public void setFooterIndicator(BaseDragIndicator indicator) {
+        resetFooterIndicator(indicator);
+        footerIndicator.bindDraggable(draggable);
+    }
 
     public void doRefresh() {
         draggable.hold(true);
@@ -130,7 +157,7 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
     public interface OnRefreshListener {
         void onRefresh();
 
-        void onLoad();
+        void onLoadMore();
     }
 
 }

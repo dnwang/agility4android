@@ -171,13 +171,11 @@ public class DragListView extends ListView implements Draggable {
         }
         isTouchDragging = isTouchEvent;
         // 通过deltaY判断是下拉还是上拉,设置好越界状态,在onTouchEvent中需要用到
-        if (STATE_NONE == getState()) {
-            // 添加判断,确保不重复设置状态,重复通知
-            setState(deltaY > 0 ? STATE_DRAGGING_BOTTOM : STATE_DRAGGING_TOP);
-        }
+        setPosition(deltaY > 0 ? EDGE_BOTTOM : EDGE_TOP);
         // 无论是手动越界 还是 惯性越界 都说明有边界触发,并且deltaY值越大 越界效果越强
         if (isTouchEvent) {
             // 手动拖动越界 在toucheEvent中处理
+            setState(deltaY > 0 ? STATE_DRAGGING_BOTTOM : STATE_DRAGGING_TOP);
         } else {
             final int maxInertiaDistance = getMaxInertiaDistance();
             if (maxInertiaDistance > 0) {

@@ -11,6 +11,7 @@ import android.view.View;
  * @date 2014/9/29 21:28
  * @description
  */
+@Deprecated
 interface Swipeable {
 
     public static final int RATIO_LOWx2 = 0x01;

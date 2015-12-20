@@ -1,15 +1,12 @@
 package org.pinwheel.agility.view.drag;
 
-import android.animation.ValueAnimator;
 import android.content.Context;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.FrameLayout;
+import android.view.ViewTreeObserver;
 
 import org.pinwheel.agility.util.UIUtils;
-import org.pinwheel.agility.view.ProgressCircular;
+import org.pinwheel.agility.view.SweetProgress;
 
 /**
  * Copyright (C), 2015 <br>
@@ -21,9 +18,7 @@ import org.pinwheel.agility.view.ProgressCircular;
  */
 class SimpleHeaderIndicator extends BaseDragIndicator {
 
-    private static final long DURATION = 500l;
-
-    private ProgressCircular progressCircular;
+    private SweetProgress progress;
 
     public SimpleHeaderIndicator(Context context) {
         super(context);
@@ -41,57 +36,55 @@ class SimpleHeaderIndicator extends BaseDragIndicator {
     }
 
     private void init() {
-        progressCircular = new ProgressCircular(getContext());
-        progressCircular.setBarColor(Color.GRAY);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-2, -2);
+        progress = new SweetProgress(getContext());
+        final int edges = UIUtils.dip2px(getContext(), 32);
+        LayoutParams params = new LayoutParams(edges, edges);
         params.gravity = Gravity.CENTER;
-        int dp8 = UIUtils.dip2px(getContext(), 8);
-        params.setMargins(dp8, dp8, dp8, dp8);
-        addView(progressCircular, params);
+        final int margin = UIUtils.dip2px(getContext(), 8);
+        params.setMargins(0, margin, 0, margin);
+        addView(progress, params);
+
+        getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                moveTo(0);
+                getViewTreeObserver().removeGlobalOnLayoutListener(this);
+            }
+        });
     }
 
     @Override
     public void onMove(float distance, float offset) {
-        if (isHolding() || getDraggable().getPosition() != Draggable.EDGE_TOP) {
+        final int position = getDraggable().getPosition();
+        final int state = getDraggable().getState();
+        if (position != Draggable.EDGE_TOP || state == Draggable.STATE_INERTIAL) {
             return;
         }
-        final int topHoldDy = getDraggable().getTopHoldDistance();
-        final float percent = Math.min(Math.abs(distance), topHoldDy) / topHoldDy;
+        final int height = getMeasuredHeight();
+        final float percent = Math.min(Math.abs(distance), height) / height;
 
-        setTranslationY(-getMeasuredHeight() * (1 - percent));
-
-        progressCircular.setProgress(percent);
-        progressCircular.setAlpha(percent);
-        progressCircular.setScaleX(percent);
-        progressCircular.setScaleY(percent);
+        moveTo(percent);
     }
 
     @Override
     public void onHold() {
         super.onHold();
-        progressCircular.spin();
+        progress.spin();
     }
 
     @Override
     public void reset() {
         super.reset();
-        ValueAnimator animator = ValueAnimator.ofFloat(1.0f, 0.0f);
-        animator.setDuration(DURATION);
-        animator.setInterpolator(new DecelerateInterpolator());
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                final float percent = (Float) animation.getAnimatedValue();
+        if (getDraggable().getState() == Draggable.STATE_NONE) {
+            moveTo(0);
+        }
+    }
 
-                setTranslationY(-getMeasuredHeight() * (1 - percent));
-
-                progressCircular.setProgress(percent);
-                progressCircular.setAlpha(percent);
-                progressCircular.setScaleX(percent);
-                progressCircular.setScaleY(percent);
-            }
-        });
-        animator.start();
+    private void moveTo(float percent) {
+        setTranslationY(-getMeasuredHeight() * (1 - percent));
+        if (!isHolding()) {
+            progress.setProgress(percent);
+        }
     }
 
 }
