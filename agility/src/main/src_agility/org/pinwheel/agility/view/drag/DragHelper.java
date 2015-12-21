@@ -47,7 +47,7 @@ class DragHelper implements Draggable {
         this.maxInertiaDistance = 0;
         this.resetVelocity = VELOCITY_FAST;
         this.inertiaVelocity = VELOCITY_FAST;
-        this.inertiaResetVelocity = VELOCITY_SLOW;
+        this.inertiaResetVelocity = VELOCITY_NORMAL;
         this.inertiaWeight = WIGHT_INERTIA_LOW;
         this.ratio = RATIO_NORMAL;
     }

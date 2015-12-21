@@ -59,6 +59,8 @@ public class DragListView extends ListView implements Draggable {
                     // 正在Hold时,点击应该rest,并且无事件响应
                     resetToBorder();
                     return false;
+                } else if (getState() == STATE_INERTIAL) {
+                    return false;
                 } else {
                     super.dispatchTouchEvent(event);
                     return true;

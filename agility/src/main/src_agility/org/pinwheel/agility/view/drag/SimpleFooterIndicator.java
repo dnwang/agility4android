@@ -56,8 +56,8 @@ class SimpleFooterIndicator extends BaseDragIndicator {
     @Override
     public void onMove(float distance, float offset) {
         final int position = getDraggable().getPosition();
-        final int state = getDraggable().getState();
-        if (position != Draggable.EDGE_BOTTOM || state == Draggable.STATE_INERTIAL) {
+//        final int state = getDraggable().getState();
+        if (position != Draggable.EDGE_BOTTOM) {
             return;
         }
         final int height = getMeasuredHeight();

@@ -119,11 +119,9 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
 
     @Override
     public void onDragging(Draggable draggable, float distance, float offset) {
-        final int position = draggable.getPosition();
-        if (position != Draggable.EDGE_NONE) {
-            headerIndicator.onMove(distance, offset);
-            footerIndicator.onMove(distance, offset);
-        }
+//        final int position = draggable.getPosition();
+        headerIndicator.onMove(distance, offset);
+        footerIndicator.onMove(distance, offset);
     }
 
     public void setOnRefreshListener(OnRefreshListener listener) {

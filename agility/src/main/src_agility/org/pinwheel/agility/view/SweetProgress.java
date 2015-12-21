@@ -14,9 +14,6 @@ import android.view.View;
 
 import org.pinwheel.agility.util.UIUtils;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 /**
  * Copyright (C), 2015 <br>
  * <br>
@@ -32,7 +29,8 @@ public class SweetProgress extends View {
     private float percent;
     private float angleOffset;
     private float currentOffset;
-    private Timer spinTimer;
+    //    private Timer spinTimer;
+    private boolean isStarted;
 
     private Point center;
     private Paint paint;
@@ -41,6 +39,20 @@ public class SweetProgress extends View {
     private int innerRadius;
 
     private int pointWidth;
+
+    private Runnable loop = new Runnable() {
+        @Override
+        public void run() {
+            currentOffset += angleOffset;
+            if (currentOffset > 359) {
+                currentOffset = 0;
+            }
+            invalidate();
+            if (isShown()) {
+                postDelayed(this, INTERVAL);
+            }
+        }
+    };
 
     public SweetProgress(Context context) {
         super(context);
@@ -136,52 +148,57 @@ public class SweetProgress extends View {
     }
 
     public final void spin() {
-        // state sync
-        post(new Runnable() {
-            @Override
-            public void run() {
-                start();
-            }
-        });
+//        // state sync
+//        post(new Runnable() {
+//            @Override
+//            public void run() {
+//                start();
+//            }
+//        });
+
+        percent = -1;
+        removeCallbacks(loop);
+        post(loop);
     }
 
     public final void cancel() {
-        // state sync
-        post(new Runnable() {
-            @Override
-            public void run() {
-                stop();
-            }
-        });
+//        // state sync
+//        post(new Runnable() {
+//            @Override
+//            public void run() {
+//                stop();
+//            }
+//        });
+        removeCallbacks(loop);
     }
 
-    @Deprecated
-    private void start() {
-        if (spinTimer != null) {
-            return;
-        }
-        percent = -1;
-        spinTimer = new Timer();
-        spinTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                currentOffset += angleOffset;
-                if (currentOffset > 359) {
-                    currentOffset = 0;
-                }
-                postInvalidate();
-            }
-        }, 0, INTERVAL);
-    }
-
-    @Deprecated
-    private void stop() {
-        if (spinTimer == null) {
-            return;
-        }
-        spinTimer.cancel();
-        spinTimer = null;
-    }
+//    @Deprecated
+//    private void start() {
+//        if (spinTimer != null) {
+//            return;
+//        }
+//        percent = -1;
+//        spinTimer = new Timer();
+//        spinTimer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                currentOffset += angleOffset;
+//                if (currentOffset > 359) {
+//                    currentOffset = 0;
+//                }
+//                postInvalidate();
+//            }
+//        }, 0, INTERVAL);
+//    }
+//
+//    @Deprecated
+//    private void stop() {
+//        if (spinTimer == null) {
+//            return;
+//        }
+//        spinTimer.cancel();
+//        spinTimer = null;
+//    }
 
     @Override
     public void draw(Canvas canvas) {
@@ -200,7 +217,8 @@ public class SweetProgress extends View {
             canvas.save();
             canvas.rotate(angle, center.x, center.y);
             RectF rectF = new RectF(center.x - pointWidth / 2, center.y - outerRadius, center.x + pointWidth / 2, center.y - innerRadius);
-            canvas.drawOval(rectF, paint);
+//            canvas.drawOval(rectF, paint);
+            canvas.drawRoundRect(rectF, 5, 5, paint);
             canvas.restore();
         }
     }

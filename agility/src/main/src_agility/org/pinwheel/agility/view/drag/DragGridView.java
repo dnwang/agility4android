@@ -56,6 +56,8 @@ public class DragGridView extends GridView implements Draggable {
                 if (dragHelper.isHolding()) {
                     resetToBorder();
                     return false;
+                } else if (getState() == STATE_INERTIAL) {
+                    return false;
                 } else {
                     super.dispatchTouchEvent(event);
                     return true;

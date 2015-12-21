@@ -56,8 +56,8 @@ class SimpleHeaderIndicator extends BaseDragIndicator {
     @Override
     public void onMove(float distance, float offset) {
         final int position = getDraggable().getPosition();
-        final int state = getDraggable().getState();
-        if (position != Draggable.EDGE_TOP || state == Draggable.STATE_INERTIAL) {
+//        final int state = getDraggable().getState();
+        if (position != Draggable.EDGE_TOP) {
             return;
         }
         final int height = getMeasuredHeight();
