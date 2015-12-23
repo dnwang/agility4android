@@ -165,7 +165,13 @@ class DragHelper implements Draggable {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                resetToBorder(inertiaResetVelocity);
+                final float offset = getDistance();
+                autoMove(-offset, (long) (Math.abs(offset) / inertiaResetVelocity), new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        setState(STATE_NONE);
+                    }
+                });
             }
         });
     }

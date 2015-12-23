@@ -46,23 +46,27 @@ public class DragViewActivity extends Activity implements AdapterView.OnItemClic
         initHeader((ListView) dragView);
 
         final DragRefreshWrapper dragRefreshWrapper = (DragRefreshWrapper) findViewById(R.id.drag_wrapper);
+        dragRefreshWrapper.getHeaderIndicator().setBackgroundColor(Color.RED);
+//        dragRefreshWrapper.setFooterVisibility(false);
         dragRefreshWrapper.setOnRefreshListener(new DragRefreshWrapper.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                delay(3000l, new Runnable() {
+                delay(3000, new Runnable() {
                     @Override
                     public void run() {
                         dragRefreshWrapper.onRefreshComplete();
+                        adapter.insert("Im refresh", 0);
                     }
                 });
             }
 
             @Override
             public void onLoadMore() {
-                delay(1000l, new Runnable() {
+                delay(1000, new Runnable() {
                     @Override
                     public void run() {
                         dragRefreshWrapper.onLoadComplete();
+                        adapter.add("Im added");
                     }
                 });
             }

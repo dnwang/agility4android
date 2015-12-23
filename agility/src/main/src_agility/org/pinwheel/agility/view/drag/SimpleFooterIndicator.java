@@ -54,10 +54,21 @@ class SimpleFooterIndicator extends BaseDragIndicator {
     }
 
     @Override
+    public void setVisibility(int visibility) {
+        super.setVisibility(visibility);
+        progress.setVisibility(visibility);
+    }
+
+    @Override
+    public void setBackgroundColor(int color) {
+        progress.setBackgroundColor(color);
+    }
+
+    @Override
     public void onMove(float distance, float offset) {
         final int position = getDraggable().getPosition();
-//        final int state = getDraggable().getState();
-        if (position != Draggable.EDGE_BOTTOM) {
+        final int state = getDraggable().getState();
+        if (position != Draggable.EDGE_BOTTOM || state == Draggable.STATE_INERTIAL) {
             return;
         }
         final int height = getMeasuredHeight();
@@ -75,9 +86,6 @@ class SimpleFooterIndicator extends BaseDragIndicator {
     @Override
     public void reset() {
         super.reset();
-        if (getDraggable().getState() == Draggable.STATE_NONE) {
-            moveTo(0);
-        }
     }
 
     private void moveTo(float percent) {

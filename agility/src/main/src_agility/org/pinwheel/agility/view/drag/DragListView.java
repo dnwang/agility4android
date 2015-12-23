@@ -18,6 +18,8 @@ import org.pinwheel.agility.util.UIUtils;
  */
 public class DragListView extends ListView implements Draggable {
 
+    private static final int DEFAULT_MAX_INERTIA = 48;
+
     private DragHelper dragHelper;
 
     private final Movable mover = new Movable() {
@@ -44,9 +46,23 @@ public class DragListView extends ListView implements Draggable {
 
     private void init() {
         this.dragHelper = new DragHelper(mover);
-        // 必须设置此属性,否则对overScrollBy调用次数产生影响
-        this.setOverScrollMode(OVER_SCROLL_NEVER);
-        this.setMaxInertiaDistance(UIUtils.dip2px(getContext(), 48));
+        this.setOverScrollMode(getOverScrollMode());
+//        // 必须设置此属性,否则对overScrollBy调用次数产生影响
+//        super.setOverScrollMode(OVER_SCROLL_NEVER);
+    }
+
+    @Override
+    public void setOverScrollMode(int mode) {
+        if (dragHelper == null) {
+            super.setOverScrollMode(mode);
+            return;
+        }
+        if (mode == OVER_SCROLL_NEVER) {
+            setMaxInertiaDistance(0);
+        } else {
+            setMaxInertiaDistance(UIUtils.dip2px(getContext(), DEFAULT_MAX_INERTIA));
+        }
+        super.setOverScrollMode(OVER_SCROLL_NEVER);
     }
 
     @Override

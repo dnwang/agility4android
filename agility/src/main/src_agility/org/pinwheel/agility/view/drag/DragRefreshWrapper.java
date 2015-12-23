@@ -133,9 +133,25 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
         headerIndicator.bindDraggable(draggable);
     }
 
+    public BaseDragIndicator getHeaderIndicator() {
+        return headerIndicator;
+    }
+
     public void setFooterIndicator(BaseDragIndicator indicator) {
         resetFooterIndicator(indicator);
         footerIndicator.bindDraggable(draggable);
+    }
+
+    public BaseDragIndicator getFooterIndicator() {
+        return footerIndicator;
+    }
+
+    public void setHeaderVisibility(boolean isVisible) {
+        headerIndicator.setVisibility(isVisible ? VISIBLE : INVISIBLE);
+    }
+
+    public void setFooterVisibility(boolean isVisible) {
+        footerIndicator.setVisibility(isVisible ? VISIBLE : INVISIBLE);
     }
 
     public void doRefresh() {
