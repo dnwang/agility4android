@@ -12,8 +12,9 @@ import android.graphics.Bitmap;
  */
 public interface CacheLoader {
 
-    public static final int DEFAULT_MAX_DISK_CACHE = 64 * 1024 * 1024;//64M
-    public static final int DEFAULT_MAX_MEMORY_CACHE = 6 * 1024 * 1024;//6M
+    public static final int DEFAULT_MAX_DISK_CACHE = 128 * 1024 * 1024;//128M
+//    public static final int DEFAULT_MAX_MEMORY_CACHE = 12 * 1024 * 1024;//12M
+    public static final int DEFAULT_MAX_MEMORY_CACHE = (int) (Runtime.getRuntime().maxMemory() / 8);
 
     public void setObject(String key, Object obj);
 

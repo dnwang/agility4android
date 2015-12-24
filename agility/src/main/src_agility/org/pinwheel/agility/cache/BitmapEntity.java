@@ -2,15 +2,10 @@ package org.pinwheel.agility.cache;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.widget.ImageView;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * Copyright (C), 2015 <br>
@@ -22,12 +17,29 @@ import java.io.InputStream;
  */
 final class BitmapEntity extends CacheEntity<Bitmap> {
 
-    public BitmapEntity() {
-        super();
-    }
+    private boolean lowMemoryMode;
 
     public BitmapEntity(Bitmap bitmap) {
+        this(bitmap, false);
+    }
+
+    public BitmapEntity(boolean lowMemoryMode) {
+        this(null, lowMemoryMode);
+    }
+
+    public BitmapEntity(Bitmap bitmap, boolean lowMemoryMode) {
         super(bitmap);
+        this.lowMemoryMode = lowMemoryMode;
+    }
+
+    private BitmapFactory.Options getOptions() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        if (lowMemoryMode) {
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            options.inPurgeable = true;
+            options.inInputShareable = true;
+        }
+        return options;
     }
 
     @Override
@@ -35,7 +47,7 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
         if (inputStream == null) {
             return;
         }
-        obj = BitmapFactory.decodeStream(inputStream);
+        obj = BitmapFactory.decodeStream(inputStream, null, getOptions());
         try {
             inputStream.close();
         } catch (IOException e) {
@@ -43,116 +55,68 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
         }
     }
 
-    protected void decodeFrom(InputStream inputStream, BitmapFactory.Options options) {
-        if (inputStream == null) {
-            return;
-        }
-        if (options != null) {
-            obj = BitmapFactory.decodeStream(inputStream, null, options);
-        } else {
-            obj = BitmapFactory.decodeStream(inputStream);
-        }
-        try {
-            inputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    /**
+     * According fixed bound
+     */
+    @Deprecated
+    protected void decodeStreamByFixedBound(InputStream inputStream, int fixedWidth, int fixedHeight) {
+        // FIXME
+        decodeStreamByMaxBound(inputStream, fixedWidth, fixedHeight);
     }
 
-    protected void decodeFrom(InputStream inputStream, BitmapFactory.Options options, int width, int height) {
-        if (inputStream == null) {
-            return;
-        }
-        if (options != null) {
-            obj = BitmapFactory.decodeStream(inputStream, null, options);
-        } else {
-            obj = BitmapFactory.decodeStream(inputStream);
-        }
-        if (obj != null && width > 0 && height > 0 && width != obj.getWidth() && height != obj.getHeight()) {
-            obj = ThumbnailUtils.extractThumbnail(obj, width, height, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
-        }
-        try {
-            inputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    protected void decodeFrom(InputStream inputStream, BitmapFactory.Options options, float scale, int maxWidth, int maxHeight) {
-        if (inputStream == null) {
-            return;
-        }
-        if (options != null) {
-            obj = BitmapFactory.decodeStream(inputStream, null, options);
-        } else {
-            obj = BitmapFactory.decodeStream(inputStream);
-        }
-        if (obj != null && scale > 0) {
-            int scaleWidth = (int) (obj.getWidth() * scale);
-            int scaleHeight = (int) (obj.getHeight() * scale);
-            if (maxWidth > 0 && maxHeight > 0) {
-                if (scaleWidth < scaleHeight) {
-                    if (scaleWidth > maxWidth) {
-                        float s = maxWidth * 1.0f / scaleWidth;
-                        scaleWidth = (int) (s * scaleWidth);
-                        scaleHeight = (int) (s * scaleHeight);
-                    }
-                } else {
-                    if (scaleHeight > maxHeight) {
-                        float s = maxHeight * 1.0f / scaleHeight;
-                        scaleWidth = (int) (s * scaleWidth);
-                        scaleHeight = (int) (s * scaleHeight);
-                    }
-                }
-            }
-            if (scaleWidth > 0 && scaleHeight > 0 && scaleWidth != obj.getWidth() && scaleHeight != obj.getHeight()) {
-                obj = ThumbnailUtils.extractThumbnail(obj, scaleWidth, scaleHeight, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
-            }
-        }
-        try {
-            inputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    protected void decodeFrom(InputStream inputStream, ImageView.ScaleType scaleType, int maxWidth, int maxHeight) {
-        if (inputStream == null || scaleType == null || maxWidth < 0 || maxHeight < 0) {
-            return;
-        }
+    /**
+     * According max bound, auto resize
+     */
+    protected void decodeStreamByMaxBound(InputStream inputStream, int maxWidth, int maxHeight) {
         byte[] bytes = stream2Byte(inputStream);
-        if (bytes == null) {
+        if (bytes == null || bytes.length == 0) {
             return;
         }
-        BitmapFactory.Options decodeOptions = new BitmapFactory.Options();
-        // If we have to resize this image, first get the natural bounds.
-        decodeOptions.inJustDecodeBounds = true;
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, decodeOptions);
-        int actualWidth = decodeOptions.outWidth;
-        int actualHeight = decodeOptions.outHeight;
-        // Then compute the dimensions we would ideally like to decode to.
-        int desiredWidth = getResizedDimension(maxWidth, maxHeight, actualWidth, actualHeight, scaleType);
-        int desiredHeight = getResizedDimension(maxHeight, maxWidth, actualHeight, actualWidth, scaleType);
-        // Decode to the nearest power of two scaling factor.
-        decodeOptions.inJustDecodeBounds = false;
-        decodeOptions.inSampleSize = findBestSampleSize(actualWidth, actualHeight, desiredWidth, desiredHeight);
-        Bitmap tempBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, decodeOptions);
-        // If necessary, scale down to the maximal acceptable size.
-        if (tempBitmap != null && desiredWidth > 0 && desiredHeight > 0 && (tempBitmap.getWidth() > desiredWidth || tempBitmap.getHeight() > desiredHeight)) {
-            obj = Bitmap.createScaledBitmap(tempBitmap, desiredWidth, desiredHeight, true);
-            tempBitmap.recycle();
-        } else {
-            obj = tempBitmap;
-        }
+        BitmapFactory.Options options = getOptions();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        options.inSampleSize = findSampleSize(options.outWidth, options.outHeight, maxWidth, maxHeight);
+        options.inJustDecodeBounds = false;
+        obj = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
     }
+
+//    @Deprecated
+//    protected void decodeFrom(InputStream inputStream, ImageView.ScaleType scaleType, int maxWidth, int maxHeight) {
+//        if (inputStream == null || scaleType == null || maxWidth < 0 || maxHeight < 0) {
+//            return;
+//        }
+//        byte[] bytes = stream2Byte(inputStream);
+//        if (bytes == null) {
+//            return;
+//        }
+//        BitmapFactory.Options decodeOptions = new BitmapFactory.Options();
+//        // If we have to resize this image, first get the natural bounds.
+//        decodeOptions.inJustDecodeBounds = true;
+//        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, decodeOptions);
+//        int actualWidth = decodeOptions.outWidth;
+//        int actualHeight = decodeOptions.outHeight;
+//        // Then compute the dimensions we would ideally like to decode to.
+//        int desiredWidth = getResizedDimension(maxWidth, maxHeight, actualWidth, actualHeight, scaleType);
+//        int desiredHeight = getResizedDimension(maxHeight, maxWidth, actualHeight, actualWidth, scaleType);
+//        // Decode to the nearest power of two scaling factor.
+//        decodeOptions.inJustDecodeBounds = false;
+//        decodeOptions.inSampleSize = findBestSampleSize(actualWidth, actualHeight, desiredWidth, desiredHeight);
+//        Bitmap tempBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, decodeOptions);
+//        // If necessary, scale down to the maximal acceptable size.
+//        if (tempBitmap != null && desiredWidth > 0 && desiredHeight > 0 && (tempBitmap.getWidth() > desiredWidth || tempBitmap.getHeight() > desiredHeight)) {
+//            obj = Bitmap.createScaledBitmap(tempBitmap, desiredWidth, desiredHeight, true);
+//            tempBitmap.recycle();
+//        } else {
+//            obj = tempBitmap;
+//        }
+//    }
 
     protected void decodeFrom(InputStream inputStream, ImageLoaderOptions options) {
         if (options.getFixedWidth() > 0 && options.getFixedHeight() > 0) {
-            decodeFrom(inputStream, options.getBitmapOptions(), options.getFixedWidth(), options.getFixedHeight());
+            decodeStreamByFixedBound(inputStream, options.getFixedWidth(), options.getFixedHeight());
         } else {
-            decodeFrom(inputStream, options.getBitmapOptions(), options.getScale(), options.getMaxWidth(), options.getMaxHeight());
+            decodeStreamByMaxBound(inputStream, options.getMaxWidth(), options.getMaxHeight());
         }
-        // TODO: 11/1/15 waiting add ...
     }
 
     @Override
@@ -173,7 +137,7 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
 
     protected final int getBitmapSize() {
         Bitmap bitmap = get();
-        if (bitmap == null) {
+        if (bitmap == null || bitmap.isRecycled()) {
             return 0;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -226,6 +190,14 @@ final class BitmapEntity extends CacheEntity<Bitmap> {
         return resized;
     }
 
+    protected final int findSampleSize(int actualWidth, int actualHeight, int desiredWidth, int desiredHeight) {
+        float wr = actualWidth * 1.0f / desiredWidth;
+        float hr = actualHeight * 1.0f / desiredHeight;
+        float ratio = Math.min(wr, hr);
+        return Math.round(ratio);
+    }
+
+    @Deprecated
     protected final int findBestSampleSize(int actualWidth, int actualHeight, int desiredWidth, int desiredHeight) {
         double wr = (double) actualWidth / desiredWidth;
         double hr = (double) actualHeight / desiredHeight;

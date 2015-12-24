@@ -1,18 +1,11 @@
 package org.pinwheel.agility.net;
 
 import android.util.Log;
-
-import com.squareup.okhttp.Headers;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
-
+import com.squareup.okhttp.*;
 import org.pinwheel.agility.net.parser.IDataParser;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +33,7 @@ public class OkHttpAgent implements HttpClientAgent {
 
     public OkHttpAgent(int parallelSize) {
         client = new OkHttpClient();
-        executor = Executors.newFixedThreadPool(parallelSize);
+        executor = Executors.newFixedThreadPool(Math.max(1, parallelSize));
     }
 
     protected com.squareup.okhttp.Request convert(Request request) {

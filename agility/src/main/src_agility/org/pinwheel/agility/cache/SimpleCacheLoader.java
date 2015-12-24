@@ -1,7 +1,6 @@
 package org.pinwheel.agility.cache;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 
 import java.io.InputStream;
@@ -105,26 +104,10 @@ public class SimpleCacheLoader implements CacheLoader {
 
     @Override
     public Bitmap getBitmap(String key) {
-        if (memoryCache == null || diskCache == null) {
-            return null;
-        }
-        CacheEntity value = memoryCache.getCache(key);
-        if (value != null && value instanceof BitmapEntity) {
-            return ((BitmapEntity) value).get();
-        } else {
-            InputStream inputStream = diskCache.getCache(key);
-            if (inputStream != null) {
-                BitmapEntity data = new BitmapEntity();
-                data.decodeFrom(inputStream);
-                memoryCache.setCache(key, data);
-                return data.get();
-            } else {
-                return null;
-            }
-        }
+        return getBitmap(key, false);
     }
 
-    public Bitmap getBitmap(String key, BitmapFactory.Options options) {
+    protected final Bitmap getBitmap(String key, boolean lowMemoryMode) {
         if (memoryCache == null || diskCache == null) {
             return null;
         }
@@ -134,8 +117,8 @@ public class SimpleCacheLoader implements CacheLoader {
         } else {
             InputStream inputStream = diskCache.getCache(key);
             if (inputStream != null) {
-                BitmapEntity data = new BitmapEntity();
-                data.decodeFrom(inputStream, options);
+                BitmapEntity data = new BitmapEntity(lowMemoryMode);
+                data.decodeFrom(inputStream);
                 memoryCache.setCache(key, data);
                 return data.get();
             } else {

@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -17,12 +16,11 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
-
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.cache.CacheLoader;
 import org.pinwheel.agility.cache.DataCacheManager;
-import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.net.VolleyImageLoader;
+import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.demo4agility.R;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
 

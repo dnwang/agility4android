@@ -6,9 +6,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.HttpClientAgent.OnRequestAdapter;
 import org.pinwheel.agility.net.Request;
@@ -106,18 +106,29 @@ public class ImageLoader {
     }
 
     public void setImage(View view, String url) {
-        setImage(view, url, defaultOptions);
+        if (view == null || TextUtils.isEmpty(url)) {
+            return;
+        }
+        setImage(view, url, BaseUtils.deepClone(defaultOptions));
     }
 
     public void setImage(View view, String url, ImageLoaderOptions options) {
-        if (view == null) {
+        if (view == null || TextUtils.isEmpty(url) || options == null) {
             return;
+        }
+        if (options.justViewBounds()) {
+            int viewWidth = view.getMeasuredWidth();
+            int viewHeight = view.getMeasuredHeight();
+            options.setMaxSize((viewWidth <= 0 ? options.getMaxWidth() : viewWidth), (viewHeight <= 0 ? options.getMaxHeight() : viewHeight));
         }
         getBitmap(new ViewReceiver(view), url, options);
     }
 
     public void getBitmap(BitmapReceiver receiver, String url) {
-        getBitmap(receiver, url, defaultOptions);
+        if (receiver == null || TextUtils.isEmpty(url)) {
+            return;
+        }
+        getBitmap(receiver, url, BaseUtils.deepClone(defaultOptions));
     }
 
     public void getBitmap(BitmapReceiver receiver, String url, ImageLoaderOptions options) {
@@ -322,21 +333,18 @@ public class ImageLoader {
          * Start download and show bitmap
          */
         private void getBitmapFromNetwork() {
-            Request request = new Request.Builder()
-                    .url(url)
-                    .timeOut(options.getNetworkTimeOut(), 0)
-                    .create();
+            Request request = new Request.Builder().url(url).timeOut(options.getNetworkTimeOut(), 0).create();
             request.setResponseParser(new DataParserAdapter<Bitmap>() {
                 @Override
                 public void parse(InputStream inputStream) throws Exception {
-                    BitmapEntity bitmapEntity = new BitmapEntity();
+                    BitmapEntity bitmapEntity = new BitmapEntity(options.lowMemoryMode());
                     bitmapEntity.decodeFrom(inputStream, options);
                     cacheLoader.setBitmap(key, bitmapEntity.get());
                 }
 
                 @Override
                 public Bitmap getResult() {
-                    return cacheLoader.getBitmap(key, options.getBitmapOptions());
+                    return cacheLoader.getBitmap(key);
                 }
             });
             request.setOnRequestListener(new OnRequestAdapter<Bitmap>() {
@@ -362,7 +370,7 @@ public class ImageLoader {
             // get memory / disk cache
             Bitmap cache = null;
             if (!options.isIgnoreCache()) {
-                cache = cacheLoader.getBitmap(key, options.getBitmapOptions());
+                cache = cacheLoader.getBitmap(key);
             }
             if (cache != null) {
                 // load cache success

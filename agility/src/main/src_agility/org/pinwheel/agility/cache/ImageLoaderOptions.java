@@ -1,7 +1,6 @@
 package org.pinwheel.agility.cache;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import java.io.Serializable;
 
 /**
  * Copyright (C), 2015 <br>
@@ -11,7 +10,7 @@ import android.graphics.BitmapFactory;
  *
  * @author dnwang
  */
-public final class ImageLoaderOptions {
+public final class ImageLoaderOptions implements Serializable {
 
     public static final int DEFAULT_MAX_WIDTH = 192;
     public static final int DEFAULT_MAX_HEIGHT = 192;
@@ -21,38 +20,34 @@ public final class ImageLoaderOptions {
 
     private int fixedWidth;
     private int fixedHeight;
-    private float scale;
+
     private int maxWidth;
     private int maxHeight;
-    private BitmapFactory.Options options;
 
     private boolean ignoreCache;
     private int networkTimeOut;
+    private boolean lowMemoryMode;
+    private boolean justViewBounds;
 
     private ImageLoaderOptions(Builder builder) {
         this.defaultRes = builder.defaultRes;
         this.errorRes = builder.errorRes;
         this.fixedWidth = builder.fixedWidth;
         this.fixedHeight = builder.fixedHeight;
-        this.scale = builder.scale;
-        this.options = builder.options;
         this.maxWidth = builder.maxWidth;
         this.maxHeight = builder.maxHeight;
         this.networkTimeOut = builder.networkTimeOut;
         this.ignoreCache = builder.ignoreCache;
+        this.lowMemoryMode = builder.lowMemoryMode;
+        this.justViewBounds = builder.justViewBounds;
     }
 
-    public String getKey() {
+    protected String getKey() {
         int result = fixedWidth;
         result = 31 * result + fixedHeight;
-        result = 31 * result + (scale != +0.0f ? Float.floatToIntBits(scale) : 0);
         result = 31 * result + maxWidth;
         result = 31 * result + maxHeight;
         return String.valueOf(result);
-    }
-
-    public float getScale() {
-        return scale;
     }
 
     public int getMaxWidth() {
@@ -63,6 +58,11 @@ public final class ImageLoaderOptions {
         return maxHeight;
     }
 
+    protected void setMaxSize(int maxWidth, int maxHeight) {
+        this.maxWidth = Math.max(0, maxWidth);
+        this.maxHeight = Math.max(0, maxHeight);
+    }
+
     public int getFixedWidth() {
         return fixedWidth;
     }
@@ -71,12 +71,22 @@ public final class ImageLoaderOptions {
         return fixedHeight;
     }
 
-    public BitmapFactory.Options getBitmapOptions() {
-        return options;
+    @Deprecated
+    protected void setFixedSize(int fixedWidth, int fixedHeight) {
+        this.fixedWidth = Math.max(0, fixedWidth);
+        this.fixedHeight = Math.max(0, fixedHeight);
     }
 
     public boolean isIgnoreCache() {
         return ignoreCache;
+    }
+
+    public boolean lowMemoryMode() {
+        return lowMemoryMode;
+    }
+
+    public boolean justViewBounds() {
+        return justViewBounds;
     }
 
     public int getDefaultRes() {
@@ -101,43 +111,33 @@ public final class ImageLoaderOptions {
 
         private int fixedWidth;
         private int fixedHeight;
-        private float scale;
         private int maxWidth;
         private int maxHeight;
-        private BitmapFactory.Options options;
 
-        private boolean ignoreCache;
         private int networkTimeOut;
+        private boolean ignoreCache;
+        private boolean lowMemoryMode;
+        private boolean justViewBounds;
 
         public Builder() {
             maxWidth = DEFAULT_MAX_WIDTH;
             maxHeight = DEFAULT_MAX_HEIGHT;
-            scale = 1f;
-            networkTimeOut = 20;//20s
-
-            // reduce memory expenses
-            options = new BitmapFactory.Options();
-            options.inPurgeable = true;
-            options.inInputShareable = true;
-            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            networkTimeOut = 30;//30s
+            ignoreCache = false;
+            lowMemoryMode = true;
+            justViewBounds = false;
         }
 
-        public Builder fixedBound(int fixedWidth, int fixedHeight) {
+        @Deprecated
+        public Builder fixedSize(int fixedWidth, int fixedHeight) {
             this.fixedWidth = Math.max(0, fixedWidth);
             this.fixedHeight = Math.max(0, fixedHeight);
             return this;
         }
 
-        public Builder scale(float scale, int maxWidth, int maxHeight) {
-            this.scale = Math.max(0, Math.min(scale, 1));
+        public Builder maxSize(int maxWidth, int maxHeight) {
             this.maxWidth = Math.max(0, maxWidth);
             this.maxHeight = Math.max(0, maxHeight);
-            return this;
-        }
-
-        @Deprecated
-        public Builder bitmapOptions(BitmapFactory.Options options) {
-            this.options = options;
             return this;
         }
 
@@ -158,6 +158,16 @@ public final class ImageLoaderOptions {
 
         public Builder ignoreCache(boolean is) {
             this.ignoreCache = is;
+            return this;
+        }
+
+        public Builder lowMemoryMode(boolean is) {
+            this.lowMemoryMode = is;
+            return this;
+        }
+
+        public Builder justViewBounds(boolean is) {
+            this.justViewBounds = is;
             return this;
         }
 
