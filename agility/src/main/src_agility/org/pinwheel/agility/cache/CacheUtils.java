@@ -1,14 +1,10 @@
 package org.pinwheel.agility.cache;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
-import android.view.View;
-import android.widget.ImageView;
 
 import java.io.File;
-import java.lang.ref.SoftReference;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -21,6 +17,10 @@ import java.security.NoSuchAlgorithmException;
  * @author dnwang
  */
 final class CacheUtils {
+
+    public static final int DEFAULT_MAX_DISK_CACHE = 128 * 1024 * 1024;//128M
+    //    public static final int DEFAULT_MAX_MEMORY_CACHE = 12 * 1024 * 1024;//12M
+    public static final int DEFAULT_MAX_MEMORY_CACHE = (int) (Runtime.getRuntime().maxMemory() / 10);
 
     private CacheUtils() {
 
@@ -61,34 +61,38 @@ final class CacheUtils {
         }
     }
 
-//    public static void setBitmap(SoftReference<? extends View> viewReference, Bitmap bitmap) {
-//        View v = viewReference.get();
-//        if (v != null) {
-//            if (v instanceof ImageView) {
-//                ((ImageView) v).setImageBitmap(bitmap);
-//            } else {
-//                if (bitmap == null) {
-//                    v.setBackgroundDrawable(null);
-//                } else {
-//                    v.setBackgroundDrawable(new BitmapDrawable(bitmap));
-//                }
-//            }
-//        }
-//    }
-//
-//    public static void setBitmap(SoftReference<? extends View> viewReference, int res) {
-//        if (res <= 0) {
-//            setBitmap(viewReference, null);
-//        } else {
-//            View v = viewReference.get();
-//            if (v != null) {
-//                if (v instanceof ImageView) {
-//                    ((ImageView) v).setImageResource(res);
-//                } else {
-//                    v.setBackgroundResource(res);
-//                }
-//            }
-//        }
-//    }
+    public static int computeSampleSize(BitmapFactory.Options options, int minSideLength, int maxNumOfPixels) {
+        int initialSize = computeInitialSampleSize(options, minSideLength, maxNumOfPixels);
+        int roundedSize;
+        if (initialSize <= 8) {
+            roundedSize = 1;
+            while (roundedSize < initialSize) {
+                roundedSize <<= 1;
+            }
+        } else {
+            roundedSize = (initialSize + 7) / 8 * 8;
+        }
+        return roundedSize;
+    }
+
+    private static int computeInitialSampleSize(BitmapFactory.Options options, int minSideLength, int maxNumOfPixels) {
+        double w = options.outWidth;
+        double h = options.outHeight;
+        int lowerBound = (maxNumOfPixels == -1) ? 1 : (int) Math.ceil(Math.sqrt(w * h / maxNumOfPixels));
+        int upperBound = (minSideLength == -1) ? 128 : (int) Math.min(Math.floor(w / minSideLength), Math.floor(h / minSideLength));
+
+        if (upperBound < lowerBound) {
+            // return the larger one when there is no overlapping zone.
+            return lowerBound;
+        }
+
+        if ((maxNumOfPixels == -1) && (minSideLength == -1)) {
+            return 1;
+        } else if (minSideLength == -1) {
+            return lowerBound;
+        } else {
+            return upperBound;
+        }
+    }
 
 }

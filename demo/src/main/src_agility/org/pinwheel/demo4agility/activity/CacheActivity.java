@@ -1,32 +1,24 @@
 package org.pinwheel.demo4agility.activity;
 
-import android.content.Context;
-import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
-import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
+
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
-import org.pinwheel.agility.cache.CacheLoader;
 import org.pinwheel.agility.cache.DataCacheManager;
-import org.pinwheel.agility.net.VolleyImageLoader;
+import org.pinwheel.agility.cache.ViewReceiver;
+import org.pinwheel.agility.dialog.SweetDialog;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.demo4agility.R;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Copyright (C), 2015 <br>
@@ -145,38 +137,79 @@ public class CacheActivity extends AbsTestActivity {
             "http://pics.sc.chinaz.com/Files/pic/icons128/5966/w3.png"
     };
 
-    private Adapter adapter;
+    ImageView poster;
+
+    private void showPoster(String url) {
+        if (poster == null) {
+            poster = new ImageView(this);
+            poster.setBackgroundColor(Color.parseColor("#aa000000"));
+            poster.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        }
+        dismiss();
+
+        ((ViewGroup) getWindow().getDecorView()).addView(poster, -1, -1);
+        poster.setOnClickListener(new SweetDialog.OnClickListener() {
+            @Override
+            public void onClick(SweetDialog dialog, View v) {
+                dismiss();
+            }
+        });
+
+        ViewReceiver.Options options = new ViewReceiver.Options();// no limit
+        options.defaultRes = android.R.drawable.stat_sys_download;
+        ImageLoaderManager.getInstance(this).setImageByAgility(poster, url, options);
+    }
+
+    private void dismiss() {
+        if (poster.getParent() != null) {
+            ((ViewGroup) poster.getParent()).removeView(poster);
+            poster.setImageBitmap(null);
+        }
+    }
 
     @Override
     protected void onInitInCreate() {
-        VolleyImageLoader.init(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ImageLoaderManager.release();
     }
 
     @Override
     protected View getContentView() {
-        adapter = new Adapter(CacheActivity.this);
-        GridView gridView = new GridView(this);
-        gridView.setAdapter(adapter);
-        gridView.setNumColumns(6);
-        gridView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        gridView.setVerticalScrollBarEnabled(false);
-        return gridView;
-    }
-
-    @Override
-    protected void doTest() {
+        Adapter adapter = new Adapter();
         for (int i = 0; i < 10; i++) {
             for (String url : urls) {
                 adapter.addItem(url);
             }
         }
-        adapter.notifyDataSetChanged();
 
+        GridView gridView = new GridView(this);
+        gridView.setAdapter(adapter);
+        gridView.setNumColumns(6);
+        gridView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        gridView.setVerticalScrollBarEnabled(false);
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                showPoster(urls[position % urls.length]);
+//                showPoster("/sdcard/bitmap.png");// support native uri
+            }
+        });
+
+        return gridView;
+    }
+
+    @Override
+    protected void doTest() {
         Object obj = DataCacheManager.getInstance(this).getObject("test_cache");
         if (obj != null) {
             logout(obj);
         } else {
-            Map<String, Struct> map = new HashMap<>();
+            HashMap<String, Struct> map = new HashMap<>();
             for (int i = 0; i < 5; i++) {
                 Struct struct = new Struct();
                 struct.testInt = i;
@@ -196,66 +229,26 @@ public class CacheActivity extends AbsTestActivity {
 
         private int viewCount;
 
-        private Context context;
-        private LayoutInflater inflater;
-
-        public Adapter(Context context) {
-            //Volley init
-            VolleyImageLoader.init(context);
-            //ImageLoader init
-            DisplayImageOptions options;
-            options = new DisplayImageOptions.Builder()
-                    .showImageOnLoading(R.drawable.holo_btn_av_download) //设置图片在下载期间显示的图片
-                    .showImageForEmptyUri(R.drawable.holo_btn_alerts_and_states_error)//设置图片Uri为空或是错误的时候显示的图片
-                    .showImageOnFail(R.drawable.holo_btn_av_download)  //设置图片加载/解码过程中错误时候显示的图片
-                    .cacheInMemory(true)//设置下载的图片是否缓存在内存中
-                    .cacheOnDisc(true)//设置下载的图片是否缓存在SD卡中
-                    .considerExifParams(true)  //是否考虑JPEG图像EXIF参数（旋转，翻转）
-                    .imageScaleType(ImageScaleType.EXACTLY_STRETCHED)//设置图片以如何的编码方式显示
-                    .bitmapConfig(Bitmap.Config.RGB_565)//设置图片的解码类型//
-                    .resetViewBeforeLoading(true)//设置图片在下载前是否重置，复位
-                    .displayer(new RoundedBitmapDisplayer(20))//是否设置为圆角，弧度为多少
-                    .displayer(new FadeInBitmapDisplayer(100))//是否图片加载好后渐入的动画时间
-                    .build();//构建完成
-
-            ImageLoaderConfiguration config = new ImageLoaderConfiguration
-                    .Builder(context)
-                    .defaultDisplayImageOptions(options)
-                    .memoryCacheExtraOptions(480, 480) // max width, max height，即保存的每个缓存文件的最大长宽
-                    .threadPoolSize(6)//线程池内加载的数量
-                    .threadPriority(Thread.NORM_PRIORITY - 2)
-                    .denyCacheImageMultipleSizesInMemory()
-                    .memoryCacheSize(CacheLoader.DEFAULT_MAX_MEMORY_CACHE)
-                    .discCacheSize(CacheLoader.DEFAULT_MAX_DISK_CACHE)
-                    .discCacheFileNameGenerator(new Md5FileNameGenerator())//将保存的时候的URI名称用MD5 加密
-                    .imageDownloader(new BaseImageDownloader(context, 5 * 1000, 30 * 1000)) // connectTimeout (5 s), readTimeout (30 s)超时时间
-                    .writeDebugLogs() // Remove for release app
-                    .build();//开始构建
-            ImageLoader.getInstance().init(config);
-            this.context = context;
-            this.inflater = LayoutInflater.from(context);
-        }
-
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             if (convertView == null) {
-                convertView = inflater.inflate(R.layout.item_image, null);
+                convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image, null);
                 convertView.setId(viewCount++);
             }
+            final int id = convertView.getId();
+            final int imgIndex = position % urls.length;
+
             TextView desc = BaseUtils.getViewByHolder(convertView, R.id.desc);
-            desc.setText("View:" + convertView.getId() + "\n" +
-                    "IMG:" + String.valueOf(position % urls.length));
+            desc.setText("View:" + id + "\n" + "IMG:" + imgIndex);
 
             // By Agility
             ImageView imageView = BaseUtils.getViewByHolder(convertView, R.id.image);
-            ImageLoaderManager.getImageLoader(context).setImage(imageView, getItem(position));
-
-            // By ImageLoader
-//            ImageLoader.getInstance().displayImage(getItem(position), imageView);
+            ImageLoaderManager.getInstance(parent.getContext()).setImageByAgility(imageView, getItem(position));
+//            ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader(imageView, getItem(position));
 
             // By Volley
-//            NetworkImageView imageView = BaseUtils.getViewByHolder(convertView, R.id.image);
-//            BitmapLoader.getInstance().setImage(imageView, getItem(position));
+//            NetworkImageView networkImageView = BaseUtils.getViewByHolder(convertView, R.id.image);
+//            ImageLoaderManager.getInstance(parent.getContext()).setImageByVolley(networkImageView, getItem(position));
 
             return convertView;
         }

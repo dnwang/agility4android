@@ -2,25 +2,27 @@ package org.pinwheel.agility.cache;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
+
 import org.pinwheel.agility.net.HttpClientAgent;
-import org.pinwheel.agility.net.HttpClientAgent.OnRequestAdapter;
+import org.pinwheel.agility.net.HttpClientAgentHelper;
+import org.pinwheel.agility.net.HttpConnectionAgent;
+import org.pinwheel.agility.net.OkHttpAgent;
 import org.pinwheel.agility.net.Request;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.util.BaseUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.lang.ref.SoftReference;
+import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,134 +42,198 @@ public class ImageLoader {
     /**
      * Network task map
      */
-    private final HashMap<String, AsyncLoaderTask> asyncTaskMap;
+    private final Map<String, AsyncLoaderTask> taskMap;
+    /**
+     * Thread cache pool
+     */
+    private ExecutorService executor;
     /**
      * Memory and disk cache loader
      */
-    private SimpleCacheLoader cacheLoader;
+    private MemoryCache memoryCache;
+    private DiskCache diskCache;
     /**
      * Network engine
      */
     private HttpClientAgent httpEngine;
-
-    private ExecutorService executor;
-
     /**
-     * Global default loader options
+     * ImageLoader options
      */
-    private ImageLoaderOptions defaultOptions;
+    private final ImageLoaderOptions loaderOptions;
+    /**
+     * Global default ViewReceiverOptions
+     */
+    private ViewReceiver.Options defaultViewReceiverOptions;
+
+    private Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
     /**
-     * Default diskCacheSize: {@link CacheLoader}
-     * Default memoryCacheSize: {@link CacheLoader}
+     * Default loader options. {@link ImageLoaderOptions}
      *
-     * @param context    context
-     * @param httpEngine HttpClientAgent
+     * @param context context
      */
-    public ImageLoader(Context context, HttpClientAgent httpEngine) {
-        this(context, CacheLoader.DEFAULT_MAX_MEMORY_CACHE, CacheLoader.DEFAULT_MAX_DISK_CACHE, httpEngine, 0);
+    public ImageLoader(Context context) {
+        this(context, new ImageLoaderOptions.Builder().create());
     }
 
     /**
      * Full constructor
      *
-     * @param context         context
-     * @param memoryCacheSize memoryCacheSize
-     * @param diskCacheSize   diskCacheSize
-     * @param httpEngine      HttpClientAgent
+     * @param context context
+     * @param options loader options
      */
-    public ImageLoader(Context context, int memoryCacheSize, int diskCacheSize, HttpClientAgent httpEngine, int maxParallelSize) {
-        if (maxParallelSize <= 0) {
+    public ImageLoader(Context context, ImageLoaderOptions options) {
+        if (context == null || options == null) {
+            throw new NullPointerException(getClass().getSimpleName() + " init error. please make sure 'Context' or 'ImageLoaderOptions' not empty.");
+        }
+
+        // init thread pool
+        int parallelSize = options.getParallelSize();
+        if (parallelSize <= 0) {
             this.executor = Executors.newCachedThreadPool();
         } else {
-            this.executor = Executors.newFixedThreadPool(maxParallelSize);
+            this.executor = Executors.newFixedThreadPool(parallelSize);
         }
-        this.asyncTaskMap = new HashMap<>();
-        DiskCache diskCache = new DiskCache(
+
+        // init task map. ConcurrentHashMap (thread safety); 16 default size
+        this.taskMap = new ConcurrentHashMap<>(16);
+
+        // init disk cache
+        this.diskCache = new DiskCache(
                 CacheUtils.getDiskCacheDir(context, PATH),
                 BaseUtils.getVersionCode(context),
-                Math.max(0, diskCacheSize));
-        MemoryCache memoryCache = new MemoryCache(Math.max(0, memoryCacheSize));
-        this.cacheLoader = new SimpleCacheLoader(memoryCache, diskCache);
-        this.httpEngine = httpEngine;
+                options.getDiskCacheSize());
+        // init memory cache
+        this.memoryCache = new MemoryCache(options.getMemoryCacheSize());
+
+        // init network engine, auto select
+        if (HttpClientAgentHelper.isImportOkHttp()) {
+            this.httpEngine = new OkHttpAgent(options.getParallelSize());
+        } else {
+            this.httpEngine = new HttpConnectionAgent(options.getParallelSize());
+        }
+
+        this.loaderOptions = options;
+    }
+
+    public void setDefaultViewReceiverOptions(ViewReceiver.Options Options) {
+        this.defaultViewReceiverOptions = Options;
+    }
+
+    public void setImage(View view, String uri) {
+        ViewReceiver.Options options;
+        if (defaultViewReceiverOptions == null) {
+            options = new ViewReceiver.Options(view.getContext());
+        } else {
+            options = new ViewReceiver.Options(defaultViewReceiverOptions);
+        }
+        setImage(view, uri, options);
     }
 
     /**
-     * Get cache controller
+     * Auto load bitmap to target view (ImageView:BackgroundResource; View:Background)
      *
-     * @return cacheLoader
+     * @param view    target view
+     * @param uri     bitmap connection uri
+     * @param options image load params
      */
-    public CacheLoader getCacheLoader() {
-        return cacheLoader;
-    }
-
-    public void setDefaultOptions(ImageLoaderOptions defaultOptions) {
-        this.defaultOptions = defaultOptions == null ? new ImageLoaderOptions.Builder().create() : defaultOptions;
-    }
-
-    public void setImage(View view, String url) {
-        if (view == null || TextUtils.isEmpty(url)) {
-            return;
-        }
-        setImage(view, url, BaseUtils.deepClone(defaultOptions));
-    }
-
-    public void setImage(View view, String url, ImageLoaderOptions options) {
-        if (view == null || TextUtils.isEmpty(url) || options == null) {
-            return;
-        }
-        if (options.justViewBounds()) {
-            int viewWidth = view.getMeasuredWidth();
-            int viewHeight = view.getMeasuredHeight();
-            options.setMaxSize((viewWidth <= 0 ? options.getMaxWidth() : viewWidth), (viewHeight <= 0 ? options.getMaxHeight() : viewHeight));
-        }
-        getBitmap(new ViewReceiver(view), url, options);
-    }
-
-    public void getBitmap(BitmapReceiver receiver, String url) {
-        if (receiver == null || TextUtils.isEmpty(url)) {
-            return;
-        }
-        getBitmap(receiver, url, BaseUtils.deepClone(defaultOptions));
-    }
-
-    public void getBitmap(BitmapReceiver receiver, String url, ImageLoaderOptions options) {
-        if (receiver == null || TextUtils.isEmpty(url) || options == null || executor == null) {
-            // show error res for receiver
-            if (receiver != null && options != null) {
-                receiver.dispatch(options.getErrorRes());
-            }
-            return;
-        }
+    public void setImage(View view, String uri, ViewReceiver.Options options) {
+        ViewReceiver viewReceiver = new ViewReceiver(view);
         // dispatch default bitmap
-        receiver.dispatch(options.getDefaultRes());
-        // clear receiver
-        clearReceiverInTaskMap(receiver);
-        // convert cache key
-        String key = CacheUtils.convertKey(url + options.getKey());
-        // loading memory cache first
-        if (!options.isIgnoreCache()) {
-            CacheEntity memoryCache = cacheLoader.getMemoryCache().getCache(key);
-            if (memoryCache != null && memoryCache instanceof BitmapEntity) {
-                Bitmap bitmap = ((BitmapEntity) memoryCache).get();
-                if (bitmap != null) {
-                    receiver.dispatch(bitmap);
-                    return;
+        if (options != null) {
+            viewReceiver.dispatch(options.defaultRes);
+            // auto resize to view bound
+            if (options.justViewBound) {
+                final int viewWidth = view.getMeasuredWidth();
+                final int viewHeight = view.getMeasuredHeight();
+                if (viewWidth > 0 && viewHeight > 0) {
+                    options.maxWidth = viewWidth;
+                    options.maxHeight = viewHeight;
                 }
             }
         }
+        getBitmap(viewReceiver, uri, options);
+    }
+
+    public void getBitmap(BitmapReceiver receiver, String uri) {
+        getBitmap(receiver, uri, new BitmapReceiver.Options());
+    }
+
+    /**
+     * Get bitmap to receiver
+     *
+     * @param receiver bitmap receiver
+     * @param uri      bitmap connection uri
+     * @param options  bitmap load params
+     */
+    public void getBitmap(BitmapReceiver receiver, String uri, BitmapReceiver.Options options) {
+        if (receiver == null || TextUtils.isEmpty(uri) || executor == null) {
+            // show error res for receiver
+            if (receiver != null && options != null) {
+                receiver.dispatch(null);
+            }
+            return;
+        }
+        // bind options to receiver
+        receiver.setOptions(options);
+        // clear receiver
+        clearReceiverInTaskMap(receiver);
+        // loading memory cache first
+        final String memoryKey = getMemoryKey(getDiskKey(uri), options);
+        ObjectEntity cacheEntity = memoryCache.getCache(memoryKey);
+        if (cacheEntity != null && cacheEntity instanceof BitmapEntity) {
+            receiver.dispatch(((BitmapEntity) cacheEntity).get());
+            return;
+        }
+
         // async load disk cache and network bitmap
-        AsyncLoaderTask asyncLoader = new AsyncLoaderTask(key, url, options);
+        AsyncLoaderTask loaderTask = new AsyncLoaderTask(uri);
         // check task is already in queue, if not put it
-        if (!checkAndPutTask(asyncLoader)) {
+        if (!checkAndPutTask(loaderTask)) {
             // add this receiver to task
-            asyncLoader.addReceiver(receiver);
+            loaderTask.addReceiver(receiver);
             // start new task
-            executor.execute(asyncLoader);
+            executor.execute(loaderTask);
         } else {
             // put receiver to task only, no need start new task
-            addReceiverToTask(key, receiver);
+            addReceiverToTask(loaderTask.diskKey, receiver);
         }
+    }
+
+    public final DiskCache getDiskCache() {
+        return this.diskCache;
+    }
+
+    public final MemoryCache getMemoryCache() {
+        return this.memoryCache;
+    }
+
+    /**
+     * Load disk cache to memory and return it
+     *
+     * @param diskKey the key of disk cache
+     * @param options params
+     * @return memory cache bitmap
+     */
+    protected Bitmap getDiskCacheToMemory(String diskKey, BitmapReceiver.Options options) {
+        BitmapEntity bitmapEntity;
+        if (options == null) {
+            bitmapEntity = new BitmapEntity();
+            bitmapEntity.decodeFrom(diskCache.getCache(diskKey));
+        } else {
+            bitmapEntity = new BitmapEntity(options.config);
+            bitmapEntity.decodeFrom(diskCache.getCache(diskKey), options);
+        }
+        memoryCache.setCache(getMemoryKey(diskKey, options), bitmapEntity);
+        return bitmapEntity.get();
+    }
+
+    protected final String getMemoryKey(String diskKey, BitmapReceiver.Options options) {
+        return options == null ? diskKey : (diskKey + "#" + options.hashCode());
+    }
+
+    protected final String getDiskKey(String url) {
+        return CacheUtils.convertKey(url);
     }
 
     /**
@@ -177,24 +243,25 @@ public class ImageLoader {
      * @return is put
      */
     protected boolean checkAndPutTask(AsyncLoaderTask task) {
-        synchronized (asyncTaskMap) {
-            boolean is = asyncTaskMap.containsKey(task.key);
-            if (!is) {
-                asyncTaskMap.put(task.key, task);
-            }
-            return is;
+        final boolean is = taskMap.containsKey(task.diskKey);
+        if (!is) {
+            taskMap.put(task.diskKey, task);
         }
+        return is;
     }
 
     /**
-     * Clear task when network task complete
+     * Remove task
      *
      * @param key key
      */
-    protected void removeTaskAtLoadingComplete(String key) {
-        AsyncLoaderTask task = asyncTaskMap.remove(key);
+    protected void removeTask(String key) {
+        AsyncLoaderTask task = taskMap.remove(key);
         if (task != null) {
             task.release();
+        }
+        if (taskMap.size() == 0) {
+            System.gc();
         }
     }
 
@@ -205,11 +272,9 @@ public class ImageLoader {
      * @param receiver receiver
      */
     protected void addReceiverToTask(String key, BitmapReceiver receiver) {
-        synchronized (asyncTaskMap) {
-            AsyncLoaderTask task = asyncTaskMap.get(key);
-            if (task != null) {
-                task.addReceiver(receiver);
-            }
+        AsyncLoaderTask task = taskMap.get(key);
+        if (task != null) {
+            task.addReceiver(receiver);
         }
     }
 
@@ -219,11 +284,9 @@ public class ImageLoader {
      * @param receiver receiver
      */
     protected void clearReceiverInTaskMap(BitmapReceiver receiver) {
-        synchronized (asyncTaskMap) {
-            Collection<AsyncLoaderTask> tasks = asyncTaskMap.values();
-            for (AsyncLoaderTask task : tasks) {
-                task.removeReceiver(receiver);
-            }
+        Collection<AsyncLoaderTask> tasks = taskMap.values();
+        for (AsyncLoaderTask task : tasks) {
+            task.removeReceiver(receiver);
         }
     }
 
@@ -231,74 +294,47 @@ public class ImageLoader {
      * Release all task reference
      */
     public void release() {
-        synchronized (asyncTaskMap) {
-            asyncTaskMap.clear();
+        Collection<AsyncLoaderTask> tasks = taskMap.values();
+        for (AsyncLoaderTask task : tasks) {
+            task.release();
         }
+        taskMap.clear();
+
         if (executor != null) {
             executor.shutdown();
             executor = null;
         }
-        if (cacheLoader != null) {
-            cacheLoader.release();
-            cacheLoader = null;
+        if (memoryCache != null) {
+            memoryCache.release();
+            memoryCache = null;
         }
+        if (diskCache != null) {
+            diskCache.release();
+            diskCache = null;
+        }
+        System.gc();
     }
 
     /**
      * Load bitmap task.
      */
-    protected final class AsyncLoaderTask implements Runnable {
+    private class AsyncLoaderTask implements Runnable {
 
-        private final HashSet<BitmapReceiver> receivers;
-        private String key;
-        private String url;
-        private ImageLoaderOptions options;
+        private final Map<Integer, BitmapReceiver> receivers;
+        private final String diskKey;
+        private final String uri;
 
-        public AsyncLoaderTask(String key, String url, ImageLoaderOptions options) {
-            this.receivers = new HashSet<>(1);
-            this.key = key;
-            this.url = url;
-            this.options = options;
+        public AsyncLoaderTask(String uri) {
+            this.diskKey = getDiskKey(uri);
+            this.receivers = new ConcurrentHashMap<>(10);
+            this.uri = uri;
         }
 
         /**
          * Release all receiver
          */
         public void release() {
-            synchronized (receivers) {
-                receivers.clear();
-            }
-        }
-
-        /**
-         * Apply bitmap to all receiver
-         *
-         * @param bitmap bitmap
-         */
-        public void applyBitmap(final Bitmap bitmap) {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    for (BitmapReceiver receiver : receivers) {
-                        receiver.dispatch(bitmap);
-                    }
-                    // remove this task from taskMap! task is all complete
-                    removeTaskAtLoadingComplete(key);
-                }
-            });
-        }
-
-        public void applyBitmap(final int res) {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    for (BitmapReceiver receiver : receivers) {
-                        receiver.dispatch(res);
-                    }
-                    // remove this task from taskMap! task is all complete
-                    removeTaskAtLoadingComplete(key);
-                }
-            });
+            receivers.clear();
         }
 
         /**
@@ -307,9 +343,7 @@ public class ImageLoader {
          * @param receiver receiver
          */
         public void addReceiver(BitmapReceiver receiver) {
-            synchronized (receivers) {
-                receivers.add(receiver);
-            }
+            receivers.put(receiver.hashCode(), receiver);
         }
 
         /**
@@ -318,140 +352,169 @@ public class ImageLoader {
          * @param targetReceiver receiver
          */
         public void removeReceiver(BitmapReceiver targetReceiver) {
-            synchronized (receivers) {
-                Iterator<BitmapReceiver> iterator = receivers.iterator();
-                while (iterator.hasNext()) {
-                    BitmapReceiver receiver = iterator.next();
-                    if (receiver.equals(targetReceiver)) {
-                        iterator.remove();
-                    }
-                }
+            receivers.remove(targetReceiver.hashCode());
+        }
+
+        public void postToReceiver(final BitmapReceiver receiver, final Bitmap bitmap) {
+            if (receiver == null) {
+                return;
             }
+            mainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    receiver.dispatch(bitmap);
+                }
+            });
         }
 
         /**
          * Start download and show bitmap
          */
         private void getBitmapFromNetwork() {
-            Request request = new Request.Builder().url(url).timeOut(options.getNetworkTimeOut(), 0).create();
-            request.setResponseParser(new DataParserAdapter<Bitmap>() {
+            Request request = new Request.Builder().url(uri).timeOut(loaderOptions.getNetworkTimeOut(), 0).create();
+            request.setResponseParser(new DataParserAdapter() {
                 @Override
-                public void parse(InputStream inputStream) throws Exception {
-                    BitmapEntity bitmapEntity = new BitmapEntity(options.lowMemoryMode());
-                    bitmapEntity.decodeFrom(inputStream, options);
-                    cacheLoader.setBitmap(key, bitmapEntity.get());
-                }
-
-                @Override
-                public Bitmap getResult() {
-                    return cacheLoader.getBitmap(key);
-                }
-            });
-            request.setOnRequestListener(new OnRequestAdapter<Bitmap>() {
-                @Override
-                public void onDeliverSuccess(Bitmap obj) {
-                    if (obj != null) {
-                        applyBitmap(obj);
-                    } else {
-                        onDeliverError(new Exception("onDeliverSuccess: bitmap = null!"));
+                public void parse(InputStream inStream) throws Exception {
+                    diskCache.setCache(diskKey, inStream);
+                    Collection<BitmapReceiver> collection = receivers.values();
+                    for (BitmapReceiver receiver : collection) {
+                        postToReceiver(receiver, getDiskCacheToMemory(diskKey, receiver.getOptions()));
                     }
-                }
-
-                @Override
-                public void onDeliverError(Exception e) {
-                    applyBitmap(options.getErrorRes()); // show error bitmap
+                    removeTask(diskKey);
                 }
             });
             httpEngine.enqueue(request);
         }
 
+        private void getBitmapFromNativePath() {
+            try {
+                FileInputStream fileInStream = new FileInputStream(new File(uri));
+                Collection<BitmapReceiver> collection = receivers.values();
+                for (BitmapReceiver receiver : collection) {
+                    BitmapEntity bitmapEntity;
+                    BitmapReceiver.Options options = receiver.getOptions();
+                    if (options == null) {
+                        bitmapEntity = new BitmapEntity();
+                        bitmapEntity.decodeFrom(fileInStream);
+                    } else {
+                        bitmapEntity = new BitmapEntity(options.config);
+                        bitmapEntity.decodeFrom(fileInStream, options);
+                    }
+                    memoryCache.setCache(getMemoryKey(diskKey, options), bitmapEntity);
+                    postToReceiver(receiver, bitmapEntity.get());
+                }
+                removeTask(diskKey);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private boolean isNativeUri() {
+            return !uri.startsWith("http");
+        }
+
         @Override
         public void run() {
-            // get memory / disk cache
-            Bitmap cache = null;
-            if (!options.isIgnoreCache()) {
-                cache = cacheLoader.getBitmap(key);
+            if (isNativeUri()) {
+                // this is a native path
+                getBitmapFromNativePath();
+                return;
             }
-            if (cache != null) {
-                // load cache success
-                applyBitmap(cache);
-            } else {
-                // post this task to download queue
+
+            if (!diskCache.isContains(diskKey)) {
+                // have no disk cache, download bitmap from network
                 getBitmapFromNetwork();
-            }
-        }
-    }
-
-    /**
-     * Bitmap receiver.
-     */
-    public interface BitmapReceiver {
-
-        void dispatch(int res);
-
-        void dispatch(Bitmap bitmap);
-
-    }
-
-    /**
-     * View receiver reference.
-     */
-    private static final class ViewReceiver implements BitmapReceiver {
-
-        private SoftReference<View> reference;// !!
-
-        public ViewReceiver(View view) {
-            this.reference = new SoftReference<>(view);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            ViewReceiver that = (ViewReceiver) o;
-            return reference.get() == that.reference.get();
-        }
-
-        @Override
-        public int hashCode() {
-            return reference.get() == null ? 0 : reference.get().hashCode();
-        }
-
-        @Override
-        public void dispatch(int res) {
-            if (res <= 0) {
-                dispatch(null);
             } else {
-                View v = reference.get();
-                if (v != null) {
-                    if (v instanceof ImageView) {
-                        ((ImageView) v).setImageResource(res);
-                    } else {
-                        v.setBackgroundResource(res);
-                    }
+                // just load disk cache
+                Collection<BitmapReceiver> collection = receivers.values();
+                for (BitmapReceiver receiver : collection) {
+                    postToReceiver(receiver, getDiskCacheToMemory(diskKey, receiver.getOptions()));
                 }
+                removeTask(diskKey);
+            }
+        }
+    }
+
+    /**
+     * Copyright (C), 2015 <br>
+     * <br>
+     * All rights reserved <br>
+     * <br>
+     *
+     * @author dnwang
+     */
+    public static final class ImageLoaderOptions implements Serializable {
+
+        private int networkTimeOut;
+        private int memoryCacheSize;
+        private int diskCacheSize;
+        private int parallelSize;
+
+        private ImageLoaderOptions(Builder builder) {
+            this.parallelSize = builder.parallelSize;
+            this.memoryCacheSize = builder.memoryCacheSize;
+            this.diskCacheSize = builder.diskCacheSize;
+            this.networkTimeOut = builder.connectTimeOut;
+        }
+
+        public int getNetworkTimeOut() {
+            return networkTimeOut;
+        }
+
+        public int getMemoryCacheSize() {
+            return memoryCacheSize;
+        }
+
+        public int getDiskCacheSize() {
+            return diskCacheSize;
+        }
+
+        public int getParallelSize() {
+            return parallelSize;
+        }
+
+        /**
+         * Options builder
+         */
+        public static final class Builder {
+
+            private int connectTimeOut;
+            private int memoryCacheSize;
+            private int diskCacheSize;
+            private int parallelSize;
+
+            public Builder() {
+                memoryCacheSize = CacheUtils.DEFAULT_MAX_MEMORY_CACHE;
+                diskCacheSize = CacheUtils.DEFAULT_MAX_DISK_CACHE;
+                parallelSize = 4;
+                connectTimeOut = 30;// 30s
+            }
+
+            public Builder connectTimeOut(int timeOut) {
+                this.connectTimeOut = Math.max(0, timeOut);
+                return this;
+            }
+
+            public Builder memoryCacheSize(int size) {
+                this.memoryCacheSize = Math.max(0, size);
+                return this;
+            }
+
+            public Builder diskCacheSize(int size) {
+                this.diskCacheSize = Math.max(0, size);
+                return this;
+            }
+
+            public Builder parallelSize(int size) {
+                this.parallelSize = Math.max(0, size);
+                return this;
+            }
+
+            public ImageLoaderOptions create() {
+                return new ImageLoaderOptions(this);
             }
         }
 
-        @Override
-        public void dispatch(Bitmap bitmap) {
-            View v = reference.get();
-            if (v != null) {
-                if (v instanceof ImageView) {
-                    ((ImageView) v).setImageBitmap(bitmap);
-                } else {
-                    if (bitmap == null) {
-                        v.setBackgroundDrawable(null);
-                    } else {
-                        v.setBackgroundDrawable(new BitmapDrawable(bitmap));
-                    }
-                }
-            }
-        }
     }
 
 }

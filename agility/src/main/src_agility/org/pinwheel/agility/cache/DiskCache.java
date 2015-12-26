@@ -2,6 +2,8 @@ package org.pinwheel.agility.cache;
 
 import android.text.TextUtils;
 
+import org.pinwheel.agility.cache.lru.DiskLruCache;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -19,6 +21,8 @@ import java.io.OutputStream;
  */
 public class DiskCache {
 
+//    private final Object lock = new Object();
+
     private DiskLruCache diskCache;
 
     public DiskCache(File path, int version, int cacheSize) {
@@ -29,8 +33,28 @@ public class DiskCache {
         }
     }
 
+    @Deprecated
+    public boolean isContains(String key) {
+        if (TextUtils.isEmpty(key)) {
+            return false;
+        }
+        if (diskCache == null) {
+            return false;
+        }
+        String[] fileName = diskCache.getDirectory().list();
+        for (String name : fileName) {
+            if (name.startsWith(key + ".")) {// unknown suffix
+                return true;
+            }
+        }
+        return false;
+    }
+
     public InputStream getCache(String key) {
-        if (TextUtils.isEmpty(key) || diskCache == null) {
+        if (TextUtils.isEmpty(key)) {
+            return null;
+        }
+        if (diskCache == null) {
             return null;
         }
         try {
@@ -44,8 +68,11 @@ public class DiskCache {
         return null;
     }
 
-    public synchronized void setCache(String key, InputStream inputStream) {
-        if (TextUtils.isEmpty(key) || diskCache == null) {
+    public void setCache(String key, InputStream inputStream) {
+        if (TextUtils.isEmpty(key)) {
+            return;
+        }
+        if (diskCache == null) {
             return;
         }
         try {
@@ -61,11 +88,22 @@ public class DiskCache {
             diskCache.flush(); // no need call it every times;
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
-    public synchronized void remove(String key) {
-        if (TextUtils.isEmpty(key) || diskCache == null) {
+    public void remove(String key) {
+        if (TextUtils.isEmpty(key)) {
+            return;
+        }
+        if (diskCache == null) {
             return;
         }
         try {
@@ -76,7 +114,7 @@ public class DiskCache {
     }
 
     public long size() {
-        return diskCache.size();
+        return diskCache == null ? 0 : diskCache.size();
     }
 
     public void delete() {
@@ -90,22 +128,23 @@ public class DiskCache {
         }
     }
 
-    public synchronized void release() {
-        if (diskCache != null) {
-            try {
-                diskCache.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (!diskCache.isClosed()) {
-                    try {
-                        diskCache.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+    public void release() {
+        if (diskCache == null) {
+            return;
+        }
+        try {
+            diskCache.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (!diskCache.isClosed()) {
+                try {
+                    diskCache.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                diskCache = null;
             }
+            diskCache = null;
         }
     }
 
@@ -116,15 +155,17 @@ public class DiskCache {
         try {
             in = new BufferedInputStream(inputStream);
             out = new BufferedOutputStream(outputStream);
-            int buff;
-            while ((buff = in.read()) != -1) {
-                out.write(buff);
+            byte[] buff = new byte[1024];
+            int size = 0;
+            while ((size = in.read(buff)) != -1) {
+                out.write(buff, 0, size);
             }
             result = true;
         } catch (final Exception e) {
             e.printStackTrace();
             result = false;
         } finally {
+            // FIXME can not close inputStream
             try {
                 if (out != null) {
                     out.close();
@@ -135,6 +176,20 @@ public class DiskCache {
             } catch (final IOException e) {
                 e.printStackTrace();
             }
+//            if (inputStream != null) {
+//                try {
+//                    inputStream.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            if (outputStream != null) {
+//                try {
+//                    outputStream.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         }
         return result;
     }

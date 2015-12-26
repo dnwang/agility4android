@@ -22,13 +22,29 @@ import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 public final class BaseUtils {
     private static final String TAG = BaseUtils.class.getSimpleName();
@@ -66,6 +82,7 @@ public final class BaseUtils {
 
     /**
      * 流转字节
+     *
      * @param inputStream
      * @return
      */
@@ -625,24 +642,38 @@ public final class BaseUtils {
 
     /**
      * @author denan.wang
-     * @date 2014/9/23
-     * @description 深拷贝
+     * @description
      */
     public static <T> T deepClone(T obj) {
+        T result = null;
+        ByteArrayOutputStream bo = null;
+        ObjectInputStream oi = null;
         try {
-            ByteArrayOutputStream bo = new ByteArrayOutputStream();
+            bo = new ByteArrayOutputStream();
             ObjectOutputStream oo = new ObjectOutputStream(bo);
             oo.writeObject(obj);
-            ByteArrayInputStream bi = new ByteArrayInputStream(bo.toByteArray());
-            ObjectInputStream oi = new ObjectInputStream(bi);
-            return (T) oi.readObject();
-        } catch (IOException e) {
+            oi = new ObjectInputStream(new ByteArrayInputStream(bo.toByteArray()));
+            result = (T) oi.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            return null;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
+        } finally {
+            if (bo != null) {
+                try {
+                    bo.flush();
+                    bo.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (oi != null) {
+                try {
+                    oi.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
+        return result;
     }
 
     /**
@@ -662,10 +693,11 @@ public final class BaseUtils {
     }
 
     public static String getMacAddress(Context context) {
-        WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        WifiInfo info = wifi.getConnectionInfo();
         try {
-            return info.getMacAddress();
+            WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            WifiInfo info = wifi.getConnectionInfo();
+            String mac = info.getMacAddress();
+            return mac == null ? "" : mac;
         } catch (Exception e) {
             return "";
         }

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 /**
  * Copyright (C), 2015 <br>
@@ -15,37 +16,76 @@ import java.io.ObjectOutputStream;
  *
  * @author dnwang
  */
-final class ObjectEntity extends CacheEntity<Object> {
+public class ObjectEntity<T> implements Serializable {
+
+    private T obj;
+    private int size;
 
     public ObjectEntity() {
-        super();
+        this.obj = null;
     }
 
-    public ObjectEntity(Object obj) {
-        super(obj);
-    }
-
-    /**
-     * Size of object
-     *
-     * @return a default value
-     */
-    @Deprecated
-    @Override
     protected int sizeOf() {
-        if (obj == null) {
-            return 0;
-        }
-        return 65536;
+        return size;
     }
 
-    @Override
-    protected void decodeFrom(InputStream inputStream) {
+    protected InputStream getInputStream() {
+        if (obj == null) {
+            return null;
+        }
+        ByteArrayInputStream inputStream = null;
+        ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+        try {
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteOutputStream);
+            objectOutputStream.writeObject(obj);
+            byte[] bytes = byteOutputStream.toByteArray();
+            this.size = bytes.length;
+            objectOutputStream.flush();
+            objectOutputStream.close();
+            inputStream = new ByteArrayInputStream(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                byteOutputStream.flush();
+                byteOutputStream.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+        return inputStream;
+    }
+
+    public T get() {
+        return obj;
+    }
+
+    protected final void setObj(T obj) {
+        this.obj = obj;
+    }
+
+    public void decodeFrom(InputStream inputStream) {
+        if (inputStream == null) {
+            return;
+        }
         ObjectInputStream objectInputStream = null;
         try {
-            objectInputStream = new ObjectInputStream(inputStream);
-            obj = objectInputStream.readObject();
+            ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+            byte[] buff = new byte[1024];
+            int size = 0;
+            while ((size = inputStream.read(buff)) != -1) {
+                byteOutputStream.write(buff, 0, size);
+            }
+            buff = byteOutputStream.toByteArray();
+            this.size = buff.length;
+            objectInputStream = new ObjectInputStream(new ByteArrayInputStream(buff));
+            setObj((T) objectInputStream.readObject());
+
+            byteOutputStream.flush();
+            byteOutputStream.close();
         } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+        } finally {
             if (objectInputStream != null) {
                 try {
                     objectInputStream.close();
@@ -53,27 +93,49 @@ final class ObjectEntity extends CacheEntity<Object> {
                     e1.printStackTrace();
                 }
             }
-        }
-    }
-
-    @Override
-    protected InputStream getInputStream() {
-        if (obj == null) {
-            return null;
-        }
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        try {
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-            objectOutputStream.writeObject(obj);
-            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-        } catch (IOException e) {
             try {
-                byteArrayOutputStream.close();
+                inputStream.close();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-            return null;
         }
     }
 
+    public void decodeFrom(T obj) {
+        if (obj == null) {
+            return;
+        }
+        ByteArrayOutputStream byteOutStream = null;
+        ObjectInputStream objInStream = null;
+        try {
+            byteOutStream = new ByteArrayOutputStream();
+            ObjectOutputStream objOutStream = new ObjectOutputStream(byteOutStream);
+            objOutStream.writeObject(obj);
+            byte[] bytes = byteOutStream.toByteArray();
+            this.size = bytes.length;
+            objInStream = new ObjectInputStream(new ByteArrayInputStream(bytes));
+            setObj((T) objInStream.readObject());
+
+            objOutStream.flush();
+            objOutStream.close();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            if (byteOutStream != null) {
+                try {
+                    byteOutStream.flush();
+                    byteOutStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (objInStream != null) {
+                try {
+                    objInStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }

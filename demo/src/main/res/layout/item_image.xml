@@ -22,7 +22,7 @@
         android:shadowRadius="5"
         android:text="detail"
         android:textColor="@android:color/white"
-        android:textSize="14sp"
+        android:textSize="8sp"
         android:textStyle="bold" />
 
 </FrameLayout>

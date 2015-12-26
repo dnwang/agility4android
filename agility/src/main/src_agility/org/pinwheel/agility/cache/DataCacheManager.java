@@ -1,11 +1,11 @@
 package org.pinwheel.agility.cache;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.text.TextUtils;
 
 import org.pinwheel.agility.util.BaseUtils;
 
+import java.io.InputStream;
 import java.io.Serializable;
 
 /**
@@ -29,85 +29,95 @@ public final class DataCacheManager {
         return instance;
     }
 
-    private CacheLoader cacheLoader;
+    private MemoryCache memoryCache;
+    private DiskCache diskCache;
 
     private DataCacheManager(Context context) {
-        DiskCache diskCache = new DiskCache(
+        this.diskCache = new DiskCache(
                 CacheUtils.getDiskCacheDir(context, PATH),
                 BaseUtils.getVersionCode(context),
-                CacheLoader.DEFAULT_MAX_DISK_CACHE);
-        MemoryCache memoryCache = new MemoryCache(CacheLoader.DEFAULT_MAX_MEMORY_CACHE);
-        cacheLoader = new SimpleCacheLoader(memoryCache, diskCache);
+                CacheUtils.DEFAULT_MAX_DISK_CACHE);
+        this.memoryCache = new MemoryCache(CacheUtils.DEFAULT_MAX_MEMORY_CACHE);
     }
 
-    public CacheLoader getCacheLoader() {
-        return cacheLoader;
+    public DiskCache getDiskCache() {
+        return this.diskCache;
+    }
+
+    public MemoryCache getMemoryCache() {
+        return this.memoryCache;
     }
 
     public synchronized static void release() {
         if (instance != null) {
-            instance.cacheLoader.release();
-            instance.cacheLoader = null;
+            if (instance.memoryCache != null) {
+                instance.memoryCache.release();
+                instance.memoryCache = null;
+            }
+            if (instance.diskCache != null) {
+                instance.diskCache.release();
+                instance.diskCache = null;
+            }
         }
         instance = null;
     }
 
-    public void setObject(String key, Object obj) {
-        if (TextUtils.isEmpty(key) || cacheLoader == null) {
+    public void setObject(String key, Serializable obj) {
+        if (TextUtils.isEmpty(key)) {
             return;
         }
-        if (obj != null && !(obj instanceof Serializable)) {
-            throw new IllegalStateException(obj.getClass().getSimpleName() + " was implemented Serializable?");
+        if (memoryCache == null || diskCache == null) {
+            return;
         }
-        cacheLoader.setObject(CacheUtils.convertKey(key), obj);
+        key = CacheUtils.convertKey(key);
+        ObjectEntity<Serializable> value = new ObjectEntity<>();
+        value.decodeFrom(obj);
+        memoryCache.setCache(key, value);
+        diskCache.setCache(key, value.getInputStream());
     }
 
     public Object getObject(String key) {
-        if (cacheLoader == null) {
+        if (TextUtils.isEmpty(key)) {
             return null;
         }
-        return cacheLoader.getObject(CacheUtils.convertKey(key));
+        if (memoryCache == null || diskCache == null) {
+            return null;
+        }
+        key = CacheUtils.convertKey(key);
+        ObjectEntity cache = memoryCache.getCache(key);
+        if (cache != null) {
+            return cache.get();
+        } else {
+            InputStream inputStream = diskCache.getCache(key);
+            if (inputStream != null) {
+                ObjectEntity value = new ObjectEntity();
+                value.decodeFrom(inputStream);
+                memoryCache.setCache(key, value);
+                return value.get();
+            } else {
+                return null;
+            }
+        }
     }
 
     public void remove(String key) {
-        if (TextUtils.isEmpty(key) || cacheLoader == null) {
+        if (TextUtils.isEmpty(key)) {
             return;
         }
-        cacheLoader.remove(key);
+        if (memoryCache == null || diskCache == null) {
+            return;
+        }
+        memoryCache.remove(key);
+        diskCache.remove(key);
     }
 
     public void clearAllCache() {
-        if (cacheLoader == null) {
+        if (memoryCache == null || diskCache == null) {
             return;
         }
-        cacheLoader.clear();
-    }
-
-    /**
-     * {@link ImageLoader}
-     *
-     * @param key    key
-     * @param bitmap bitmap
-     */
-    @Deprecated
-    public void setBitmap(String key, Bitmap bitmap) {
-        if (TextUtils.isEmpty(key) || cacheLoader == null) {
-            return;
-        }
-        cacheLoader.setBitmap(CacheUtils.convertKey(key), bitmap);
-    }
-
-    /**
-     * {@link ImageLoader}
-     *
-     * @param key key
-     */
-    @Deprecated
-    public Bitmap getBitmap(String key) {
-        if (cacheLoader == null) {
-            return null;
-        }
-        return cacheLoader.getBitmap(CacheUtils.convertKey(key));
+        memoryCache.clear();
+        diskCache.delete();
+        System.gc();
     }
 
 }

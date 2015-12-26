@@ -13,52 +13,55 @@ import android.text.TextUtils;
  */
 public class MemoryCache {
 
-    private LruCache<String, CacheEntity> memoryCache;
+//    private final Object lock = new Object();
+
+    private LruCache<String, ObjectEntity> memoryCache;
 
     public MemoryCache(int cacheSize) {
-        this.memoryCache = new LruCache<String, CacheEntity>(Math.max(0, cacheSize)) {
+        this.memoryCache = new LruCache<String, ObjectEntity>(Math.max(0, cacheSize)) {
             @Override
-            protected int sizeOf(String key, CacheEntity value) {
+            protected int sizeOf(String key, ObjectEntity value) {
                 return value.sizeOf();
             }
         };
     }
 
-    public CacheEntity getCache(String key) {
-        if (memoryCache == null || TextUtils.isEmpty(key)) {
+    public ObjectEntity getCache(String key) {
+        if (TextUtils.isEmpty(key)) {
             return null;
         }
-        return memoryCache.get(key);
+        return memoryCache == null ? null : memoryCache.get(key);
     }
 
-    public synchronized void setCache(String key, CacheEntity value) {
-        if (memoryCache == null || TextUtils.isEmpty(key)) {
+    public void setCache(String key, ObjectEntity value) {
+        if (TextUtils.isEmpty(key)) {
             return;
         }
-        memoryCache.put(key, value);
+        if (memoryCache != null) {
+            memoryCache.put(key, value);
+        }
     }
 
-    public synchronized void remove(String key) {
-        if (memoryCache == null || TextUtils.isEmpty(key)) {
+    public void remove(String key) {
+        if (TextUtils.isEmpty(key)) {
             return;
         }
-        memoryCache.remove(key);
+        if (memoryCache != null) {
+            memoryCache.remove(key);
+        }
     }
 
     public long size() {
-        if (memoryCache == null) {
-            return 0;
-        }
-        return memoryCache.size();
+        return memoryCache == null ? 0 : memoryCache.size();
     }
 
-    public synchronized void clear() {
+    public void clear() {
         if (memoryCache != null) {
             memoryCache.evictAll();
         }
     }
 
-    public synchronized void release() {
+    public void release() {
         clear();
         memoryCache = null;
     }

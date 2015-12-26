@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.pinwheel.agility.cache;
+package org.pinwheel.agility.cache.lru;
 
 import java.io.Closeable;
 import java.io.File;

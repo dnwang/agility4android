@@ -1,6 +1,7 @@
 package org.pinwheel.agility.net;
 
 import android.util.Log;
+
 import org.pinwheel.agility.net.parser.IDataParser;
 
 import java.io.DataOutputStream;
@@ -29,7 +30,11 @@ public class HttpConnectionAgent implements HttpClientAgent {
     }
 
     public HttpConnectionAgent(int parallelSize) {
-        executor = Executors.newFixedThreadPool(Math.max(1, parallelSize));
+        if (parallelSize <= 0) {
+            this.executor = Executors.newCachedThreadPool();
+        } else {
+            this.executor = Executors.newFixedThreadPool(parallelSize);
+        }
     }
 
     protected void convert(Request request, HttpURLConnection connection) throws Exception {
