@@ -61,29 +61,43 @@ public abstract class BitmapReceiver {
     public static class Options implements Serializable {
 
         @Deprecated
-        public int fixedWidth;
+        private int fixedWidth;
         @Deprecated
-        public int fixedHeight;
+        private int fixedHeight;
 
-        public int maxWidth;
-        public int maxHeight;
+        private int maxWidth;
+        private int maxHeight;
 
-        public Bitmap.Config config;
+        private Bitmap.Config config;
 
-        public Options() {
-            this.maxWidth = -1;
-            this.maxHeight = -1;
-            this.fixedWidth = -1;
-            this.fixedHeight = -1;
-            this.config = Bitmap.Config.RGB_565;
+        protected Options(OptionsBuilder builder) {
+            this.maxWidth = builder.maxWidth;
+            this.maxHeight = builder.maxHeight;
+            this.fixedWidth = builder.fixedWidth;
+            this.fixedHeight = builder.fixedHeight;
+            this.config = builder.config;
         }
 
-        public Options(Options options) {
-            this.maxWidth = options.maxWidth;
-            this.maxHeight = options.maxHeight;
-            this.fixedWidth = options.fixedWidth;
-            this.fixedHeight = options.fixedHeight;
-            this.config = options.config;
+        @Deprecated
+        public int getFixedWidth() {
+            return fixedWidth;
+        }
+
+        @Deprecated
+        public int getFixedHeight() {
+            return fixedHeight;
+        }
+
+        public int getMaxWidth() {
+            return maxWidth;
+        }
+
+        public int getMaxHeight() {
+            return maxHeight;
+        }
+
+        public Bitmap.Config getConfig() {
+            return config;
         }
 
         @Override
@@ -111,6 +125,63 @@ public abstract class BitmapReceiver {
             result = 31 * result + (config != null ? config.hashCode() : 0);
             return result;
         }
-
     }
+
+    /**
+     * Copyright (C), 2015 <br>
+     * <br>
+     * All rights reserved <br>
+     * <br>
+     *
+     * @author dnwang
+     */
+    public static class OptionsBuilder {
+
+        @Deprecated
+        private int fixedWidth;
+        @Deprecated
+        private int fixedHeight;
+
+        private int maxWidth;
+        private int maxHeight;
+
+        private Bitmap.Config config;
+
+        public OptionsBuilder() {
+            this.fixedWidth = -1;
+            this.fixedHeight = -1;
+            this.maxWidth = -1;
+            this.maxHeight = -1;
+            this.config = Bitmap.Config.RGB_565;
+        }
+
+        public OptionsBuilder setFixed(int fixedWidth, int fixedHeight) {
+            this.fixedWidth = fixedWidth;
+            this.fixedHeight = fixedHeight;
+            return this;
+        }
+
+        public OptionsBuilder setMax(int maxWidth, int maxHeight) {
+            this.maxWidth = maxWidth;
+            this.maxHeight = maxHeight;
+            return this;
+        }
+
+        public OptionsBuilder setConfig(Bitmap.Config config) {
+            this.config = config;
+            return this;
+        }
+
+        public OptionsBuilder copy(Options options) {
+            setFixed(options.fixedWidth, options.fixedHeight);
+            setMax(options.maxWidth, options.maxHeight);
+            setConfig(options.config);
+            return this;
+        }
+
+        public Options create() {
+            return new Options(this);
+        }
+    }
+
 }

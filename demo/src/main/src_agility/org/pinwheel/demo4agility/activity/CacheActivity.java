@@ -155,9 +155,10 @@ public class CacheActivity extends AbsTestActivity {
             }
         });
 
-        ViewReceiver.Options options = new ViewReceiver.Options();// no limit
-        options.defaultRes = android.R.drawable.stat_sys_download;
-        ImageLoaderManager.getInstance(this).setImageByAgility(poster, url, options);
+        ViewReceiver.OptionsBuilder optionsBuilder = new ViewReceiver.OptionsBuilder()// no limit
+                .setDefaultRes(android.R.drawable.stat_sys_download)
+                .setErrorRes(android.R.drawable.stat_notify_error);
+        ImageLoaderManager.getInstance(this).setImageByAgility(poster, url, optionsBuilder);
     }
 
     private void dismiss() {

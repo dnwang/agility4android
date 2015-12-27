@@ -63,7 +63,7 @@ public class ImageLoader {
     /**
      * Global default ViewReceiverOptions
      */
-    private ViewReceiver.Options defaultViewReceiverOptions;
+    private ViewReceiver.Options defaultOptions;
 
     private Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
@@ -116,47 +116,48 @@ public class ImageLoader {
         this.loaderOptions = options;
     }
 
-    public void setDefaultViewReceiverOptions(ViewReceiver.Options Options) {
-        this.defaultViewReceiverOptions = Options;
+    public void setDefaultOptions(ViewReceiver.Options Options) {
+        this.defaultOptions = Options;
     }
 
     public void setImage(View view, String uri) {
-        ViewReceiver.Options options;
-        if (defaultViewReceiverOptions == null) {
-            options = new ViewReceiver.Options(view.getContext());
-        } else {
-            options = new ViewReceiver.Options(defaultViewReceiverOptions);
-        }
-        setImage(view, uri, options);
+        setImage(view, uri, new ViewReceiver.OptionsBuilder().copy(defaultOptions));
     }
 
     /**
      * Auto load bitmap to target view (ImageView:BackgroundResource; View:Background)
      *
-     * @param view    target view
-     * @param uri     bitmap connection uri
-     * @param options image load params
+     * @param view           target view
+     * @param uri            bitmap connection uri
+     * @param optionsBuilder image load options builder
      */
-    public void setImage(View view, String uri, ViewReceiver.Options options) {
-        ViewReceiver viewReceiver = new ViewReceiver(view);
-        // dispatch default bitmap
-        if (options != null) {
-            viewReceiver.dispatch(options.defaultRes);
-            // auto resize to view bound
-            if (options.justViewBound) {
+    public void setImage(View view, String uri, ViewReceiver.OptionsBuilder optionsBuilder) {
+        if (view == null) {
+            // no need show everything
+            return;
+        }
+        ViewReceiver receiver = new ViewReceiver(view);
+        if (optionsBuilder != null) {
+            // dispatch default bitmap
+            if (optionsBuilder.isJustViewBound()) {
+                // auto resize to view bound
                 final int viewWidth = view.getMeasuredWidth();
                 final int viewHeight = view.getMeasuredHeight();
                 if (viewWidth > 0 && viewHeight > 0) {
-                    options.maxWidth = viewWidth;
-                    options.maxHeight = viewHeight;
+                    optionsBuilder.setMax(viewWidth, viewHeight);
                 }
             }
+            // create final options
+            ViewReceiver.Options options = optionsBuilder.create();
+            receiver.dispatch(options.getDefaultRes());
+            getBitmap(receiver, uri, options);
+        } else {
+            getBitmap(receiver, uri, null);
         }
-        getBitmap(viewReceiver, uri, options);
     }
 
     public void getBitmap(BitmapReceiver receiver, String uri) {
-        getBitmap(receiver, uri, new BitmapReceiver.Options());
+        getBitmap(receiver, uri, new BitmapReceiver.OptionsBuilder().create());
     }
 
     /**
@@ -167,15 +168,16 @@ public class ImageLoader {
      * @param options  bitmap load params
      */
     public void getBitmap(BitmapReceiver receiver, String uri, BitmapReceiver.Options options) {
-        if (receiver == null || TextUtils.isEmpty(uri) || executor == null) {
-            // show error res for receiver
-            if (receiver != null && options != null) {
-                receiver.dispatch(null);
-            }
+        if (receiver == null || executor == null) {
             return;
         }
         // bind options to receiver
         receiver.setOptions(options);
+
+        if (TextUtils.isEmpty(uri)) {
+            receiver.dispatch(null);
+            return;
+        }
         // clear receiver
         clearReceiverInTaskMap(receiver);
         // loading memory cache first
@@ -221,7 +223,7 @@ public class ImageLoader {
             bitmapEntity = new BitmapEntity();
             bitmapEntity.decodeFrom(diskCache.getCache(diskKey));
         } else {
-            bitmapEntity = new BitmapEntity(options.config);
+            bitmapEntity = new BitmapEntity(options.getConfig());
             bitmapEntity.decodeFrom(diskCache.getCache(diskKey), options);
         }
         memoryCache.setCache(getMemoryKey(diskKey, options), bitmapEntity);
@@ -397,7 +399,7 @@ public class ImageLoader {
                         bitmapEntity = new BitmapEntity();
                         bitmapEntity.decodeFrom(fileInStream);
                     } else {
-                        bitmapEntity = new BitmapEntity(options.config);
+                        bitmapEntity = new BitmapEntity(options.getConfig());
                         bitmapEntity.decodeFrom(fileInStream, options);
                     }
                     memoryCache.setCache(getMemoryKey(diskKey, options), bitmapEntity);

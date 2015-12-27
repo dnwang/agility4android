@@ -4,8 +4,6 @@ import android.text.TextUtils;
 
 import org.pinwheel.agility.cache.lru.DiskLruCache;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,29 +67,42 @@ public class DiskCache {
     }
 
     public void setCache(String key, InputStream inputStream) {
-        if (TextUtils.isEmpty(key)) {
-            return;
-        }
-        if (diskCache == null) {
-            return;
-        }
+        DiskLruCache.Editor editor = null;
+        OutputStream outputStream = null;
         try {
-            DiskLruCache.Editor editor = diskCache.edit(key);
+            editor = diskCache.edit(key);
             if (editor != null) {
-                OutputStream outputStream = editor.newOutputStream(0);
-                if (convertStream(inputStream, outputStream)) {
-                    editor.commit();
-                } else {
-                    editor.abort();
+                outputStream = editor.newOutputStream(0);
+                byte[] buff = new byte[1024];
+                int size = 0;
+                while ((size = inputStream.read(buff)) != -1) {
+                    outputStream.write(buff, 0, size);
                 }
+                editor.commit();
+                diskCache.flush(); // no need call it every times;
             }
-            diskCache.flush(); // no need call it every times;
         } catch (Exception e) {
             e.printStackTrace();
+            if (editor != null) {
+                try {
+                    editor.abort();
+                    diskCache.flush();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
         } finally {
             if (inputStream != null) {
                 try {
                     inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (outputStream != null) {
+                try {
+                    outputStream.flush();
+                    outputStream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -146,52 +157,6 @@ public class DiskCache {
             }
             diskCache = null;
         }
-    }
-
-    protected final boolean convertStream(InputStream inputStream, OutputStream outputStream) {
-        boolean result = false;
-        BufferedOutputStream out = null;
-        BufferedInputStream in = null;
-        try {
-            in = new BufferedInputStream(inputStream);
-            out = new BufferedOutputStream(outputStream);
-            byte[] buff = new byte[1024];
-            int size = 0;
-            while ((size = in.read(buff)) != -1) {
-                out.write(buff, 0, size);
-            }
-            result = true;
-        } catch (final Exception e) {
-            e.printStackTrace();
-            result = false;
-        } finally {
-            // FIXME can not close inputStream
-            try {
-                if (out != null) {
-                    out.close();
-                }
-                if (in != null) {
-                    in.close();
-                }
-            } catch (final IOException e) {
-                e.printStackTrace();
-            }
-//            if (inputStream != null) {
-//                try {
-//                    inputStream.close();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            if (outputStream != null) {
-//                try {
-//                    outputStream.close();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-        }
-        return result;
     }
 
 }

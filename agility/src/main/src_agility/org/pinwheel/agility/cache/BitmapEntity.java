@@ -6,7 +6,6 @@ import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.widget.ImageView;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -70,17 +69,17 @@ final class BitmapEntity extends ObjectEntity<Bitmap> {
     }
 
     protected void decodeFrom(InputStream inputStream, BitmapReceiver.Options options) {
-        if (options.fixedWidth > 0 && options.fixedHeight > 0) {
-            decodeStreamByFixedBound(inputStream, options.fixedWidth, options.fixedHeight);
-        } else if (options.maxWidth < 0 || options.maxHeight < 0) {
+        if (options.getFixedWidth() > 0 && options.getFixedHeight() > 0) {
+            decodeStreamByFixedBound(inputStream, options.getFixedWidth(), options.getFixedHeight());
+        } else if (options.getMaxWidth() < 0 || options.getMaxHeight() < 0) {
             decodeFrom(inputStream);
         } else {
             if (options instanceof ViewReceiver.Options) {
                 // TODO
-                decodeStreamByMaxBound(inputStream, options.maxWidth, options.maxHeight);
+                decodeStreamByMaxBound(inputStream, options.getMaxWidth(), options.getMaxHeight());
                 // END
             } else {
-                decodeStreamByMaxBound(inputStream, options.maxWidth, options.maxHeight);
+                decodeStreamByMaxBound(inputStream, options.getMaxWidth(), options.getMaxHeight());
             }
         }
     }
@@ -130,41 +129,32 @@ final class BitmapEntity extends ObjectEntity<Bitmap> {
 
     protected final byte[] stream2Byte(InputStream inputStream) {
         byte[] content = null;
-        BufferedInputStream in = null;
         ByteArrayOutputStream out = null;
         try {
-            in = new BufferedInputStream(inputStream);
             out = new ByteArrayOutputStream();
             byte[] buff = new byte[1024];
             int size = 0;
-            while ((size = in.read(buff)) != -1) {
+            while ((size = inputStream.read(buff)) != -1) {
                 out.write(buff, 0, size);
             }
             content = out.toByteArray();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (inputStream != null) {
+            if (inputStream != null) {
+                try {
                     inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                if (out != null) {
+            if (out != null) {
+                try {
                     out.flush();
                     out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
         return content;

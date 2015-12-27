@@ -80,10 +80,12 @@ public final class ImageLoaderManager {
     private static ImageLoader newInstance(Context context) {
         ImageLoader.ImageLoaderOptions loaderOptions = new ImageLoader.ImageLoaderOptions.Builder().create();
         ImageLoader loader = new ImageLoader(context, loaderOptions);
-        ViewReceiver.Options options = new ViewReceiver.Options(context);
-        options.defaultRes = org.pinwheel.agility.R.drawable.holo_btn_av_download;
-        options.errorRes = org.pinwheel.agility.R.drawable.holo_btn_alerts_and_states_error;
-        loader.setDefaultViewReceiverOptions(options);
+        ViewReceiver.Options options = new ViewReceiver.OptionsBuilder()
+                .setAutoSize(context.getResources())
+                .setDefaultRes(org.pinwheel.agility.R.drawable.holo_btn_av_download)
+                .setErrorRes(org.pinwheel.agility.R.drawable.holo_btn_alerts_and_states_error)
+                .create();
+        loader.setDefaultOptions(options);
         return loader;
     }
 
@@ -91,8 +93,8 @@ public final class ImageLoaderManager {
         agilityImageLoader.setImage(view, uri);
     }
 
-    public void setImageByAgility(ImageView view, String uri, ViewReceiver.Options options) {
-        agilityImageLoader.setImage(view, uri, options);
+    public void setImageByAgility(ImageView view, String uri, ViewReceiver.OptionsBuilder optionsBuilder) {
+        agilityImageLoader.setImage(view, uri, optionsBuilder);
     }
 
     public void setImageByImageLoader(ImageView view, String uri) {
