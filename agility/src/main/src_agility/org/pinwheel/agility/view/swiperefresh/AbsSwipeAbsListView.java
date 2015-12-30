@@ -10,13 +10,12 @@ import android.widget.Adapter;
 import android.widget.ListAdapter;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2014/9/26 17:03
- * @description
  */
 abstract class AbsSwipeAbsListView extends AbsSwipeView<AbsListView> {
 

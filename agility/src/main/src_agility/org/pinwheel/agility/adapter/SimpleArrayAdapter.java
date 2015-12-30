@@ -6,13 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2014/8/27 15:27
- * @description
  */
 public abstract class SimpleArrayAdapter<T> extends BaseAdapter {
 

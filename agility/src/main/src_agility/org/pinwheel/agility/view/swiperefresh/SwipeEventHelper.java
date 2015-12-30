@@ -4,13 +4,12 @@ import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2014/9/29 21:27
- * @description
  */
 public class SwipeEventHelper implements SwipeListView.OnRefreshListener, AbsListView.OnScrollListener {
 

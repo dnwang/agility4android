@@ -8,6 +8,14 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Copyright (C), 2015 <br>
+ * <br>
+ * All rights reserved <br>
+ * <br>
+ *
+ * @author dnwang
+ */
 public final class FileUtils {
 
     private FileUtils() {
@@ -26,12 +34,10 @@ public final class FileUtils {
 
         boolean isException = false;
         FileOutputStream fout = null;
-        //检测目录是否存在
         File p = new File(name.substring(0, name.lastIndexOf(File.separator)));
         if (!p.exists()) {
             p.mkdirs();
         }
-        //写入 文件
         try {
             fout = new FileOutputStream(name);
             byte[] buf = new byte[1024] ;
@@ -67,12 +73,10 @@ public final class FileUtils {
 
         boolean isException = false;
         FileOutputStream fout = null;
-        //检测目录是否存在
         File p = new File(name.substring(0, name.lastIndexOf(File.separator)));
         if (!p.exists()) {
             p.mkdirs();
         }
-        //写入 文件
         try {
             fout = new FileOutputStream(name);
             fout.write(data);
@@ -104,12 +108,10 @@ public final class FileUtils {
 
         boolean isException = false;
         FileOutputStream fout = null;
-        //检测目录是否存在
         File p = new File(name.substring(0, name.lastIndexOf(File.separator)));
         if (!p.exists()) {
             p.mkdirs();
         }
-        //写入 文件
         try {
             fout = new FileOutputStream(name);
             bitmap.compress(format, 100, fout);
@@ -139,12 +141,10 @@ public final class FileUtils {
     public static void add(String name, byte[] data) throws Exception {
         boolean isException = false;
         FileOutputStream fout = null;
-        //检测目录是否存在
         File p = new File(name.substring(0, name.lastIndexOf(File.separator)));
         if (!p.exists()) {
             p.mkdirs();
         }
-        //追加 写入 文件
         try {
             fout = new FileOutputStream(name, true);
             fout.write(data);

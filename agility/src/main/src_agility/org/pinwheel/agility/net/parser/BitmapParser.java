@@ -93,12 +93,10 @@ public class BitmapParser extends DataParserAdapter<Bitmap> {
 
         boolean isException = false;
         FileOutputStream fout = null;
-        //检测目录是否存在
         File p = new File(name.substring(0, name.lastIndexOf(File.separator)));
         if (!p.exists()) {
             p.mkdirs();
         }
-        //写入 文件
         try {
             fout = new FileOutputStream(name);
             bitmap.compress(format, 100, fout);

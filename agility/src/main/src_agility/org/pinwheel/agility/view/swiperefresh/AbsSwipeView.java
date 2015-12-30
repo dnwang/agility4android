@@ -15,10 +15,12 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 
 /**
- * 这个实现了下拉刷新和上拉加载更多的功能
+ * Copyright (C), 2015 <br>
+ * <br>
+ * All rights reserved <br>
+ * <br>
  *
- * @param <T>
- * @since 2013-7-29
+ * @author dnwang
  */
 abstract class AbsSwipeView<T extends View> extends LinearLayout {
     /**

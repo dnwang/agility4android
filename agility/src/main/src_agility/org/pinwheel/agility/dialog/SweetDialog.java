@@ -16,13 +16,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2015/2/5
- * @description
  */
 public class SweetDialog extends Dialog implements DialogInterface.OnDismissListener {
 

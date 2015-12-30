@@ -17,13 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2015/2/14 19:25
- * @description
  */
 public final class TabController {
 
@@ -83,7 +82,6 @@ public final class TabController {
                         listener.onTabChanged(TabController.this);
                     }
                     // END
-                    // TODO denan.wang; 2015/2/15; 屏蔽clearItemState();
                     return;
                 }
             }
@@ -138,7 +136,6 @@ public final class TabController {
                     selector.replaceAll(rect_list);
                 }
 
-                // 位置改变之后，使tab对齐page
                 int current_tab = getCurrentTab();
                 if (current_tab == -1) {
                     clearItemState();
@@ -224,7 +221,6 @@ public final class TabController {
             tabs.add(new Pair<View, View>(item, page));
         }
 
-        // 全部添加之后,一次性重置 selectorView 位置, 相比for循环中使用 addTab 会减少子视图便利次数
         onGlobalLayout();
     }
 
@@ -272,7 +268,6 @@ public final class TabController {
 
         for (Pair<View, View> tab : tabs) {
             if (child_view == tab.first) {
-                // TODO denan.wang; 2015/2/15; 屏蔽 removeView
                 return false;
             }
         }
@@ -328,12 +323,11 @@ public final class TabController {
 
     public void setCurrentTab(int index) {
         Pair<View, View> tab = tabs.get(index);
-        // 先全部 取消状态
         clearItemState();
         // END
         // FIXME denan.wang; 2015/2/25;
-//        tab.first.callOnClick(); // API过高
-//        tab.first.performClick();// 在高版本API中会有点击声音
+//        tab.first.callOnClick();
+//        tab.first.performClick();
         onSelectorClickListener.onClick(tab.first);
         // END
 

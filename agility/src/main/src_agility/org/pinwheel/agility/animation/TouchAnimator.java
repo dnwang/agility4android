@@ -9,13 +9,12 @@ import android.view.View;
 import org.pinwheel.agility.util.UIUtils;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2015/3/11 0:40
- * @description
  */
 public final class TouchAnimator {
 

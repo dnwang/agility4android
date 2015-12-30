@@ -100,6 +100,9 @@ final class BitmapEntity extends ObjectEntity<Bitmap> {
      * According max bound, auto resize
      */
     protected void decodeStreamByMaxBound(InputStream inputStream, int maxWidth, int maxHeight) {
+        if (inputStream == null || maxWidth < 0 || maxHeight < 0) {
+            return;
+        }
         byte[] bytes = stream2Byte(inputStream);
         if (bytes == null || bytes.length == 0) {
             return;

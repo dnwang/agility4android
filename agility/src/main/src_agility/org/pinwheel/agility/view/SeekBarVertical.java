@@ -9,13 +9,12 @@ import android.view.ViewParent;
 import android.widget.SeekBar;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2014/9/27 15:19
- * @description
  */
 public class SeekBarVertical extends SeekBar {
 
@@ -135,7 +134,6 @@ public class SeekBarVertical extends SeekBar {
         int y = (int) event.getY();
         float scale;
         float progress = 0;
-        // 下面是最小值
         if (y > height - bottom) {
             scale = 0.0f;
         } else if (y < top) {

@@ -1,9 +1,12 @@
 package org.pinwheel.agility.util;
 
 /**
- * 查找算法
+ * Copyright (C), 2015 <br>
+ * <br>
+ * All rights reserved <br>
+ * <br>
  *
- * @author WangDenan
+ * @author dnwang
  */
 public final class Search {
 
@@ -11,13 +14,6 @@ public final class Search {
 
     }
 
-    /**
-     * 二分查找
-     *
-     * @param arr
-     * @param value
-     * @return index
-     */
     public static int binarySearch(int arr[], int value) {
         int low = 0;
         int high = arr.length - 1;

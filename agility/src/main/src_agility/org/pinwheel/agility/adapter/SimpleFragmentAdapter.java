@@ -7,13 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2014/9/20 19:56
- * @description
  */
 public final class SimpleFragmentAdapter extends android.support.v4.app.FragmentPagerAdapter {
     private ArrayList<Fragment> fragments;

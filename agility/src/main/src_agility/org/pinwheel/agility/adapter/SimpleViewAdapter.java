@@ -7,6 +7,14 @@ import android.widget.BaseAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Copyright (C), 2015 <br>
+ * <br>
+ * All rights reserved <br>
+ * <br>
+ *
+ * @author dnwang
+ */
 public final class SimpleViewAdapter extends BaseAdapter {
 
     private ArrayList<View> views;

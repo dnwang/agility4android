@@ -7,6 +7,14 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Copyright (C), 2015 <br>
+ * <br>
+ * All rights reserved <br>
+ * <br>
+ *
+ * @author dnwang
+ */
 public final class SimplePagerAdapter extends PagerAdapter {
 
     private ArrayList<View> mViews;

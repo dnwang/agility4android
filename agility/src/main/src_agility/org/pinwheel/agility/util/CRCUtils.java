@@ -18,7 +18,6 @@ public final class CRCUtils {
     }
 
     static {
-        //参考 http://bioinf.cs.ucl.ac.uk/downloads/crc64/crc64.c
         long part;
         for (int i = 0; i < 256; i++) {
             part = i;

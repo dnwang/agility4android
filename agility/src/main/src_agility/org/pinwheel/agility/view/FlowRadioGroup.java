@@ -7,7 +7,10 @@ import android.widget.RadioGroup;
 import org.pinwheel.agility.util.UIUtils;
 
 /**
- * FlowRadioGroup
+ * Copyright (C), 2015 <br>
+ * <br>
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
  */

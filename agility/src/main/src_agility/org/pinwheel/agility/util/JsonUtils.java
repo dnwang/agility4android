@@ -7,21 +7,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Json数据解析工具类，支持的Json格式有
- * [{"":"","":""},{"":"","":""},{"":"","":""}]、 {"":"","":""}]  单层嵌套
- * {"":"","":{}}  只支持多层的Json对象嵌套    多层的数组嵌套，混合嵌套暂不不支持
- */
 public final class JsonUtils {
-    /**
-     * json数据解析     [{"":"","":""},{"":"","":""},{"":"","":""}]  单层嵌套模式
-     * 暂不支持[,,,,](数组中嵌套的不是Json对象而是普通对象)
-     *
-     * @param clazz
-     * @param json
-     * @return
-     * @throws Exception
-     */
+
     public static <T> List<T> parserJsonToList(Class<T> clazz, String json) throws Exception {
         Field[] names = clazz.getFields();
         JSONArray array = new JSONArray(json);
@@ -38,14 +25,6 @@ public final class JsonUtils {
         return list;
     }
 
-    /**
-     * json数据解析    [{"":"","":""},{"":"","":""},{"":"","":""}]
-     *
-     * @param clazz
-     * @param array
-     * @return
-     * @throws Exception
-     */
     public static <T> List<T> parserJsonToList(Class<T> clazz, JSONArray array) throws Exception {
         Field[] names = clazz.getFields();
         List<T> list = new ArrayList<T>();
@@ -61,14 +40,6 @@ public final class JsonUtils {
         return list;
     }
 
-    /**
-     * json数据解析  {}  简单模式
-     *
-     * @param clazz
-     * @param json
-     * @return
-     * @throws Exception
-     */
     public static <T> T parserJsonToObject(Class<T> clazz, String json) throws Exception {
         Field[] names = clazz.getFields();
         JSONObject jsonobj = new JSONObject(json);
@@ -83,14 +54,6 @@ public final class JsonUtils {
         return object;
     }
 
-    /**
-     * json数据解析  {}  简单模式
-     *
-     * @param clazz
-     * @param jsonobj
-     * @return
-     * @throws Exception
-     */
     public static <T> T parserJsonToObject(Class<T> clazz, JSONObject jsonobj) throws Exception {
         Field[] names = clazz.getFields();
         T object = clazz.newInstance();

@@ -24,11 +24,11 @@ import java.util.ArrayList;
 @Deprecated
 public class SweetListView extends ListView implements Swipeable, GestureDetector.OnGestureListener {
 
-    private boolean inSwipe;// 是否正在滑动中
-    private int current_state;// 当前状态
+    private boolean inSwipe;
+    private int current_state;
 
-    private int standard_top; //返回时作为标准值
-    private int standard_bottom; //返回时作为标准值
+    private int standard_top;
+    private int standard_bottom;
 
     private GestureDetector gestureDetector;
 
@@ -54,7 +54,6 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
         this.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                // 记录开始拖动前的参考值
                 setStandard(getTop(), getBottom());
                 getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
@@ -63,7 +62,7 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
 
     private void setStandard(int top, int bottom) {
         standard_top = top;
-        standard_bottom = bottom - standard_top; // 去除listview顶部的其它距离
+        standard_bottom = bottom - standard_top;
         last_top = standard_top;
     }
 
@@ -77,7 +76,6 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (isHandled && isNeedSendCancel) {
-                    // 避免在move里 连续发送cancel
                     isNeedSendCancel = false;
                     final long now = SystemClock.uptimeMillis();
                     event = MotionEvent.obtain(now, now, MotionEvent.ACTION_CANCEL, event.getX(), event.getY(), 0);
@@ -89,13 +87,13 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
                 break;
             case MotionEvent.ACTION_UP:
                 if (isHold()) {
-                    //在悬停位置时,可点击不回弹
+
                 } else {
                     reset("noCallBack");
                 }
                 break;
         }
-        // 一次非move之后，清除标记
+
         isNeedSendCancel = true;
         boolean superHandle = false;
         try {
@@ -128,22 +126,18 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        //如果有自动滑动，在手动滑动之前先清除
         if (mAutoScroll != null) {
             removeCallbacks(mAutoScroll);
         }
 
         if (isAtTop() && distanceY < 0 && (Math.abs(distanceX) < Math.abs(distanceY))) {
-            // 可以下拉 并且 向下手势 = 拖动1
             doSwipeDown((int) distanceY);
             return true;
         }
         if (isAtBottom() && distanceY > 0 && (Math.abs(distanceX) < Math.abs(distanceY))) {
-            // 可以上拉 并且 向上手势 = 拖动2
             doSwipeUp((int) distanceY);
             return true;
         }
-        // FIXME denan.wang; 2014/9/30; 重点在于下拉过程中的上滑手势，屏蔽上滑过度的doSwipe调用，同理上拉
         if (inSwipe) {
             doSwipe((int) distanceY);
             if (getTop() == standard_top) {
@@ -161,7 +155,6 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 //        Log.e("--> onFling", "velocityY:" + velocityY);
-        // - 向上，+向下
         return false;
     }
 
@@ -175,35 +168,29 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
-        // 重新定位参考值, 同时可以弥补有时OnGlobalLayoutListener()中getTop==0
         if (standard_top != t || standard_bottom != b) {
             setStandard(t, b);
         }
 
-        // 重至偏移位置!,onLayout会将view重至道初始位置
         this.offsetTopAndBottom(offsetY);
     }
 
     private void doSwipeDown(int dy) {
-        // 通知 开始下拉 (“ && !inSwipe ” 开始状态 通知一次)
         if (mOnSwipeListeners != null && !inSwipe) {
             for (OnSwipeListener listener : mOnSwipeListeners) {
                 listener.onSwipeDownStart(this);
             }
         }
-        // 设置当前是下拉状态
         current_state = STATE_DOWN;
         doSwipe(dy);
     }
 
     private void doSwipeUp(int dy) {
-        // 通知 开始上拉 (“ && !inSwipe ” 开始状态 通知一次)
         if (mOnSwipeListeners != null && !inSwipe) {
             for (OnSwipeListener listener : mOnSwipeListeners) {
                 listener.onSwipeUpStart(this);
             }
         }
-        // 设置当前是上拉状态
         current_state = STATE_UP;
         doSwipe(dy);
     }
@@ -229,9 +216,7 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
     }
 
     private void onHold() {
-        // 取消自动复位
         this.removeCallbacks(resetSwipe);
-        // 通知 滑动悬停
         if (mOnSwipeListeners != null) {
             if (current_state == STATE_UP) {
                 for (OnSwipeListener listener : mOnSwipeListeners) {
@@ -243,57 +228,40 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
                 }
             }
         }
-        // 悬停不改变状态
 //        inSwipe = false;
 //        current_state = STATE_HOLD;
     }
 
     private int last_top;
 
-    /**
-     * 带符号的偏移距离
-     *
-     * @param dy
-     */
     private void doSwipe(int dy) {
-        // 取消自动复位
         this.removeCallbacks(resetSwipe);
 
         last_top = getTop();
-        // 预测滑动距离,修正
         int target_top = last_top - dy;
-        // 设置偏移
         if (inSwipe && (last_top - standard_top) * (target_top - standard_top) <= 0) {
-            //在滑动过程中,目标位置和上一次的位置在 临界点两边 时,修正滑动距离到临界点
             dy = last_top - standard_top;
         }
 
         inSwipe = true;
-        //要判断对于大小，如果小于 系数，除出来小于0 就始终不会被偏移，就一直滑不动了
         if (Math.abs(dy) > mSwipeRatio) {
             dy = dy / mSwipeRatio;
         }
 
         this.scrollOffset(-dy);
 
-        // 通知滑动
         if (mOnSwipeListeners != null) {
-            // 返回与起始位置的实时距离
-            // 返回-dy,与reset中方向保持一致
             for (OnSwipeListener listeners : mOnSwipeListeners) {
                 listeners.onSwipe(this, standard_top - getTop(), -dy, false);
             }
         }
 
-        //在滑动的过程中主动滑到了停止的临界值,
         if (standard_top == getTop()) {
-            // 停止
             this.onSwipeComplete();
         }
     }
 
     private void onSwipeComplete() {
-        // 通知 滑动停止
         if (mOnSwipeListeners != null) {
             if (current_state == STATE_UP) {
                 for (OnSwipeListener listener : mOnSwipeListeners) {
@@ -305,49 +273,35 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
                 }
             }
         }
-        // 设置当前是停止状态
         inSwipe = false;
         current_state = STATE_STOP;
     }
 
     private static final int DELAY = 10;
 
-    /**
-     * 自动复位
-     */
     private Runnable resetSwipe = new Runnable() {
         public int reset_to_target;
 
         @Override
         public void run() {
-            // 与起始位置的总距离
             int all_dy = standard_top - getTop();
 
-            // 先判断是否需要悬停
             if (isNeedHold && isNotOverHoldTarget(all_dy)) {
-                // 如果 需要悬停 并且 没有越过悬停位置,将此次复位的目标设为 悬停位置 (bottom 要为负)
-                // 返回初始位置时都是以old_top为基准的
                 reset_to_target = all_dy > 0 ? standard_top - bottom_hold_dy : standard_top + top_hold_dy;
             } else {
-                // 否则还是 起始位置
                 reset_to_target = standard_top;
-                // 置为需要，不然置过一次之后便一直忽略了
                 isNeedHold = true;
             }
 
-            // 算偏移,是否停止
             int dy = reset_to_target - getTop();
             if (dy == 0) {
                 if (reset_to_target == standard_top) {
-                    // 停止
                     onSwipeComplete();
                 } else {
-                    // 悬停
                     onHold();
                 }
                 return;
             } else if (Math.abs(dy) > mResetRatio) {
-                // 减缓复位速度,并且是dy能准确地减为0
                 dy = dy / mResetRatio;
             } else {
                 dy = dy > 0 ? 1 : -1;
@@ -355,9 +309,7 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
 
             scrollOffset(dy);
 
-            // 通知滑动
             if (mOnSwipeListeners != null) {
-                // 始终返回与起始位置的实时距离（无视目前的目标距离）
                 for (OnSwipeListener listener : mOnSwipeListeners) {
                     listener.onSwipe(SweetListView.this, standard_top - getTop(), dy, true);
                 }
@@ -378,17 +330,14 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
             this.isFirstScroll = true;
         }
 
-        //模拟下拉上拉手势，发送doSwipeDown，doSwipeUp消息，类似ACTION_MOVE
         @Override
         public void run() {
             if (isFirstScroll) {
                 isFirstScroll = false;
                 if (getAdapter() != null && getAdapter().getCount() > 1) {
                     if (isScrollToTop) {
-                        // 先滑到顶部
                         setSelection(0);
                     } else {
-                        // 先滑到底部
                         setSelection(getAdapter().getCount() - 1);
                     }
                 }
@@ -398,7 +347,6 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
                 int dy = standard_top - getTop();
 //                int offset = -AUTO_SCROLL_SPEED;
 
-                //下拉的距离都是负数
                 if (dy == -top_hold_dy) {
                     onHold();
                     return;
@@ -502,14 +450,12 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        // 这里如果清楚，在viewpager的切换时，会触发detach，导致引用失效
 //        if (mOnSwipeListeners != null) {
 //            mOnSwipeListeners.clear();
 //            mOnSwipeListeners = null;
 //        }
     }
 
-    // 保持引用,如果在自动滑动的时候,发生主动拖动,要取消自动
     private AutoScroll mAutoScroll = null;
 
     @Override
@@ -536,7 +482,6 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
         this.bottom_hold_dy = bottom_hold_dy;
     }
 
-    // 在自动回弹的时候，是否忽略悬停
     boolean isNeedHold = true;
 
     @Override
@@ -549,7 +494,6 @@ public class SweetListView extends ListView implements Swipeable, GestureDetecto
             removeCallbacks(resetSwipe);
             postDelayed(resetSwipe, 0);
             if (args != null && args.length == 1 && args[0].equals("noCallBack")) {
-                // 不回调
             } else {
                 for (OnSwipeListener callback : mOnSwipeListeners) {
                     if (callback instanceof OnSwipeMarkCallBack) {

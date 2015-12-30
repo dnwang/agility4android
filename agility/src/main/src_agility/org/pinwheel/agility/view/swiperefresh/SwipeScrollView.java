@@ -7,13 +7,12 @@ import android.view.ViewGroup;
 import android.widget.ScrollView;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2014/8/12 17:03
- * @description
  */
 public class SwipeScrollView extends AbsSwipeView<ScrollView> {
 

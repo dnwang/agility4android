@@ -3,13 +3,12 @@ package org.pinwheel.agility.view;
 import android.view.View;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2014/9/29 21:28
- * @description
  */
 @Deprecated
 interface Swipeable {
@@ -26,66 +25,16 @@ interface Swipeable {
     public static final int STATE_UP = 0x02;
 
     public void addSwipeMarkById(int id, int place, int hold_dy);
-
     public void setOnSwipeListener(OnSwipeListener listener);
-
-    /**
-     * @param isTopHold true:顶部悬停；false:底部悬停
-     * @param delay     启动延迟
-     * @author denan.wang
-     * @date 2014/9/29
-     * @description 主动滑动到悬停
-     */
     public void doSwipeToHold(boolean isTopHold, int delay);
-
-    /**
-     * @param top_hold_dy    顶部悬停相对顶部的距离
-     * @param bottom_hold_dy 底部悬停相对顶部的距离
-     * @author denan.wang
-     * @date 2014/9/29
-     * @description 设置需要悬停
-     */
     public void setNeedHold(int top_hold_dy, int bottom_hold_dy);
-
-    /**
-     * @author denan.wang
-     * @date 2014/9/29
-     * @description 复位
-     */
     public void reset(String... args);
-
-    /**
-     * @author denan.wang
-     * @date 2014/9/29
-     * @description 设置拖动阻尼
-     */
     public void setSwipeRatio(int ratio);
-
     public int getSwipeRatio();
-
-    /**
-     * @author denan.wang
-     * @date 2014/9/29
-     * @description 设置回弹阻尼
-     */
     public void setResetRatio(int ratio);
-
     public int getResetRatio();
-
-    /**
-     * @author denan.wang
-     * @date 2014/9/29
-     * @description 获取当前状态
-     */
     public int getState();
-
-    /**
-     * @author denan.wang
-     * @date 2014/9/29
-     * @description 当前是否悬停
-     */
     public boolean isHold();
-
     public boolean isOverHold();
 
     /**

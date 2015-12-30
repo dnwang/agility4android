@@ -10,9 +10,12 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 /**
- * 字体管理
+ * Copyright (C), 2015 <br>
+ * <br>
+ * All rights reserved <br>
+ * <br>
  *
- * @author WangDenan
+ * @author dnwang
  */
 @Deprecated
 final class FontManager {
@@ -21,12 +24,6 @@ final class FontManager {
 
     }
 
-    /**
-     * 更换字体
-     *
-     * @param root
-     * @param context
-     */
     public static void changeFont(ViewGroup root, Context context, String path) {
 
         Typeface tf = Typeface.createFromAsset(context.getAssets(), path);

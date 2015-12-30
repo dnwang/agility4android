@@ -18,13 +18,12 @@ import org.pinwheel.agility.view.controller.TabController;
 import java.util.ArrayList;
 
 /**
- * 版权所有 (C), 2014 <br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2015/2/14 19:25
- * @description
  */
 @Deprecated
 public final class TabSelectorView extends FrameLayout implements TabController.ISelectable {
@@ -38,7 +37,6 @@ public final class TabSelectorView extends FrameLayout implements TabController.
     private Runnable resetRunnable = new Runnable() {
         @Override
         public void run() {
-            //　恢复　index
             moveTo(restore_index, false);
             restore_index = -1;
         }
@@ -80,7 +78,6 @@ public final class TabSelectorView extends FrameLayout implements TabController.
         selector.setTop(0);
         selector.setBottom(0);
 
-        // FIXME denan.wang; 2015/2/14; 未知立即move没有动画...，延迟100
         removeCallbacks(resetRunnable);
         postDelayed(resetRunnable, 100);
         // END
@@ -94,7 +91,6 @@ public final class TabSelectorView extends FrameLayout implements TabController.
 
         rectList.add(index, rect);
         if (index <= currentIndex) {
-            // 插在之前,将当前位置向后移
             currentIndex++;
 //            restore_index = currentIndex;
 //            reset(null);
@@ -115,11 +111,9 @@ public final class TabSelectorView extends FrameLayout implements TabController.
 
         rectList.remove(index);
         if (index == currentIndex) {
-            // 正好把当前的删除了
             currentIndex = -1;
 //            reset(null);
         } else if (index < currentIndex) {
-            // 删除了之前的位置，当前位置向前移
             currentIndex--;
 //            restore_index = currentIndex;
 //            reset(null);
@@ -221,7 +215,6 @@ public final class TabSelectorView extends FrameLayout implements TabController.
 
     @Override
     protected void onRestoreInstanceState(Parcelable state) {
-        // TODO denan.wang; 2015/2/15; 转屏之后 恢复
         Bundle bundle = (Bundle) state;
         restore_index = bundle.getInt("current_index", 0);
         state = bundle.getParcelable("super_state");

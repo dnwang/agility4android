@@ -130,18 +130,13 @@ public final class VolleyRequestHelper {
         }
         RequestWrapper<T> request = new RequestWrapper<T>(method, adapter, parser, listener);
 
-        // 使用 adapter tag 标记一条 request
         final Object tag = adapter.getTag();
         if (tag != null) {
             request.setTag(tag);
         }
-        // END
 
-        // 设置请求次数，每次超时时长
         request.setRetryPolicy(new DefaultRetryPolicy(adapter.getTimeout(), adapter.getNumOfRetries(), 1.0f));
-        // END
 
-        // 清除队列中 相同url的请求
         if (tag != null && adapter.isKeepSingle()) {
             mQueue.cancelAll(new RequestQueue.RequestFilter() {
                 @Override
@@ -150,7 +145,6 @@ public final class VolleyRequestHelper {
                 }
             });
         }
-        // END
 
         mQueue.add(request);
 

@@ -16,15 +16,15 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * 加密方式工具类
+ * Copyright (C), 2015 <br>
+ * <br>
+ * All rights reserved <br>
+ * <br>
+ *
+ * @author dnwang
  */
 public final class EncryptUtils {
-    /**
-     * 加密Map集合中的数据，先将参数中Map集合改成TreeMap在拼成key=value形式后加密
-     *
-     * @param map
-     * @return
-     */
+
     public static Map<String, String> getSignStr(Map<String, String> map) {
         if (map != null) {
             StringBuffer sb = new StringBuffer();
@@ -58,12 +58,6 @@ public final class EncryptUtils {
     }
 
 
-    /**
-     * MD5加密
-     *
-     * @param message 要进行MD5加密的字符串
-     * @return 加密结果为32位字符串
-     */
     public static String MD5(String message) {
         MessageDigest messageDigest = null;
         StringBuffer md5StrBuff = new StringBuffer();
@@ -88,15 +82,6 @@ public final class EncryptUtils {
         return md5StrBuff.toString();
     }
 
-    /**
-     * MD5加密
-     *
-     * @param message     要加密的内容
-     * @param charsetName 编码通畅直接输入("utf-8","gbk")
-     * @return
-     * @throws java.security.NoSuchAlgorithmException
-     * @throws java.io.UnsupportedEncodingException   不支持编码异常
-     */
     public static String MD5(String message, String charsetName) {
         String resultString = null;
         resultString = new String(message);
@@ -114,9 +99,6 @@ public final class EncryptUtils {
         return resultString;
     }
 
-    /**
-     * 支持md5加密的方法
-     */
     private static String byteArrayToHexString(byte b[]) {
         StringBuffer resultSb = new StringBuffer();
         for (int i = 0; i < b.length; i++) {
@@ -125,9 +107,6 @@ public final class EncryptUtils {
         return resultSb.toString();
     }
 
-    /**
-     * 支持md5加密的方法
-     */
     private static String byteToHexStringMd5(byte b) {
         int n = b;
         if (n < 0) {
@@ -138,24 +117,10 @@ public final class EncryptUtils {
         return hexDigitsMd5[d1] + hexDigitsMd5[d2];
     }
 
-    /**
-     * 支持md5加密的数组
-     */
     private static final String hexDigitsMd5[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};
 
-    /**************************************************** AES加密 **************************************************/
-    /**
-     * aes加密的内容
-     */
     private static final String AESTYPE = "AES/ECB/PKCS5Padding";// AES/ECB/PKCS5Padding
 
-    /**
-     * AES加密
-     *
-     * @param keyStr    密钥(16位长度或32位)
-     * @param plainText 要加密的内容
-     * @return 返回加密成功的string
-     */
     public static String AES(String keyStr, String plainText) {
         byte[] encrypt = null;
         try {
@@ -170,13 +135,6 @@ public final class EncryptUtils {
         return new String(android.util.Base64.encode(encrypt, android.util.Base64.DEFAULT));
     }
 
-    /**
-     * AES解密
-     *
-     * @param keyStr      密钥
-     * @param encryptData 需要解密的内容
-     * @return 返回解密成功的string
-     */
     public static String AESdecrypt(String keyStr, String encryptData) {
         if (encryptData != null) {
             byte[] decrypt = null;
@@ -195,13 +153,6 @@ public final class EncryptUtils {
         }
     }
 
-    /**
-     * AES加密获取key
-     *
-     * @param key 密钥
-     * @return
-     * @throws Exception
-     */
     private static Key generateKeyAES(String key) throws Exception {
         try {
             SecretKeySpec keySpec = new SecretKeySpec(
@@ -213,9 +164,6 @@ public final class EncryptUtils {
         }
     }
 
-    /**
-     * ********************************************************************* SHA1值加密 **************************************
-     */
     public static String sha1(String str) {
         if (TextUtils.isEmpty(str)) {
             return null;
@@ -240,9 +188,6 @@ public final class EncryptUtils {
         }
     }
 
-    /**
-     * ******************************************************** RSA私钥加密 ******************************************
-     */
     public static final String SIGN_ALGORITHMS = "SHA1WithRSA";
 
     public static String RSA(String content, String privateKey) {

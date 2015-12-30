@@ -46,6 +46,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+/**
+ * Copyright (C), 2015 <br>
+ * <br>
+ * All rights reserved <br>
+ * <br>
+ *
+ * @author dnwang
+ */
 public final class BaseUtils {
     private static final String TAG = BaseUtils.class.getSimpleName();
 
@@ -53,12 +61,6 @@ public final class BaseUtils {
 
     }
 
-    /**
-     * 流转字符串
-     *
-     * @param is
-     * @return
-     */
     public static String streamToString(InputStream is) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         StringBuilder sb = new StringBuilder();
@@ -80,12 +82,6 @@ public final class BaseUtils {
         return sb.toString();
     }
 
-    /**
-     * 流转字节
-     *
-     * @param inputStream
-     * @return
-     */
     public static byte[] stream2Byte(InputStream inputStream) {
         byte[] content = null;
         BufferedInputStream in = null;
@@ -120,12 +116,6 @@ public final class BaseUtils {
         return content;
     }
 
-    /**
-     * 判断当前网络是否为wifi
-     *
-     * @param mContext
-     * @return
-     */
     public static boolean isWifi(Context mContext) {
         ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
@@ -135,11 +125,6 @@ public final class BaseUtils {
         return false;
     }
 
-    /**
-     * 版本是否匹配
-     *
-     * @return
-     */
     public static Boolean equalsVersionName(Context context, String newVersion) {
         PackageManager manager = context.getPackageManager();
         try {
@@ -153,11 +138,6 @@ public final class BaseUtils {
         return false;
     }
 
-    /**
-     * 版本是否匹配
-     *
-     * @return
-     */
     public static Boolean equalsVersionCode(Context context, int newVersionCode) {
         PackageManager manager = context.getPackageManager();
         try {
@@ -172,12 +152,6 @@ public final class BaseUtils {
         return false;
     }
 
-    /**
-     * Get version
-     *
-     * @param context
-     * @return
-     */
     public static String getVersion(Context context) {
         PackageManager manager = context.getPackageManager();
         try {
@@ -189,12 +163,6 @@ public final class BaseUtils {
         }
     }
 
-    /**
-     * Get version
-     *
-     * @param context
-     * @return
-     */
     public static int getVersionCode(Context context) {
         PackageManager manager = context.getPackageManager();
         try {
@@ -206,12 +174,6 @@ public final class BaseUtils {
         }
     }
 
-    /**
-     * dial phone number
-     *
-     * @param context
-     * @param number
-     */
     public static void callNumber(Context context, String number) {
         if (TextUtils.isEmpty(number)) {
             return;
@@ -220,13 +182,6 @@ public final class BaseUtils {
         context.startActivity(intent);
     }
 
-    /**
-     * Install APK file
-     *
-     * @param c
-     * @param isPrivatePath private path
-     * @param apk
-     */
     public static void installApk(Context c, boolean isPrivatePath, File apk) {
         if (apk == null || !apk.exists()) {
             return;
@@ -249,13 +204,6 @@ public final class BaseUtils {
         }
     }
 
-    /**
-     * is out of bounds
-     *
-     * @param activity
-     * @param event
-     * @return
-     */
     public static boolean isOutOfBounds(Activity activity, MotionEvent event) {
         final int x = (int) event.getX();
         final int y = (int) event.getY();
@@ -264,13 +212,6 @@ public final class BaseUtils {
         return (x < -slop) || (y < -slop) || (x > (decorView.getWidth() + slop)) || (y > (decorView.getHeight() + slop));
     }
 
-    /**
-     * get apk file info
-     *
-     * @param c
-     * @param apk
-     * @return
-     */
     public static PackageInfo getAPKInfo(Context c, File apk) {
         if (!apk.exists())
             return null;
@@ -371,10 +312,6 @@ public final class BaseUtils {
         return year + ":" + month + ":" + day;
     }
 
-    /**
-     * @param contentLength
-     * @return
-     */
     public static String longSizeToStr(long contentLength) {
         float length = contentLength;
         String strLen;
@@ -411,17 +348,11 @@ public final class BaseUtils {
         return strLen;
     }
 
-    /**
-     * 判断一个字符是否是汉字
-     */
     public static boolean isChinese(char a) {
         int v = (int) a;
         return (v >= 0x4E00 && v <= 0x9FFF);
     }
 
-    /**
-     * long值转换成ip地址 方法表述
-     */
     public static String long2Ip(long ipInt) {
         StringBuilder sb = new StringBuilder();
         sb.append(ipInt & 0xFF).append(".");
@@ -431,9 +362,6 @@ public final class BaseUtils {
         return sb.toString();
     }
 
-    /**
-     * 根据子网掩码长度计算子网掩码
-     */
     public static String prefixLengthToMaskString(int length) {
         if (length == 0) {
             return "0.0.0.0";
@@ -521,15 +449,10 @@ public final class BaseUtils {
         }
     }
 
-    /**
-     * 判断某一个应用程序是不是系统的应用程序，
-     * 如果是返回true，否则返回false。
-     */
     public static boolean isSystemApp(ApplicationInfo info) {
-        //有些系统应用是可以更新的，如果用户自己下载了一个系统的应用来更新了原来的，它还是系统应用，这个就是判断这种情况的
         if ((info.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
             return false;
-        } else if ((info.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {//判断是不是系统应用
+        } else if ((info.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
             return false;
         }
         return true;
@@ -613,11 +536,6 @@ public final class BaseUtils {
         }
     }
 
-    /**
-     * @author denan.wang
-     * @date 2014/8/26
-     * @description 获取系统时区
-     */
     public static String getTimeZone() {
         TimeZone tz = TimeZone.getDefault();
         String value = tz.getDisplayName(false, TimeZone.SHORT);
@@ -626,11 +544,6 @@ public final class BaseUtils {
         return value;
     }
 
-    /**
-     * @author denan.wang
-     * @date 2014/9/20
-     * @description 毫秒 转为 HH:mm:ss
-     */
     public static String generateTime(long time) {
         int totalSeconds = (int) (time / 1000);
         int seconds = totalSeconds % 60;
@@ -640,10 +553,6 @@ public final class BaseUtils {
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 
-    /**
-     * @author denan.wang
-     * @description
-     */
     public static <T> T deepClone(T obj) {
         T result = null;
         ByteArrayOutputStream bo = null;
@@ -676,11 +585,6 @@ public final class BaseUtils {
         return result;
     }
 
-    /**
-     * @author denan.wang
-     * @date 2014/9/26
-     * @description 反射获取id
-     */
     public static int getResourceID(String pkg_name, String cls_name, String id_name) {
         int id = 0;
         try {
@@ -703,11 +607,6 @@ public final class BaseUtils {
         }
     }
 
-    /**
-     * @author denan.wang
-     * @date 2015/2/5
-     * @description 判断网络是否连接
-     */
     public boolean isNetworkConnected(Context context) {
         if (context != null) {
             ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

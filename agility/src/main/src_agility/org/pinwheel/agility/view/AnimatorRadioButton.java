@@ -7,13 +7,12 @@ import android.widget.RadioButton;
 import org.pinwheel.agility.animation.TouchAnimator;
 
 /**
- * 版权所有 (C), 2014, 北京视达科科技有限公司<br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2015/3/11 14:15
- * @description
  */
 public class AnimatorRadioButton extends RadioButton {
 

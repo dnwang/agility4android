@@ -19,12 +19,6 @@ public final class FieldUtils {
 
     }
 
-    /**
-     * 获取对象的成员变量
-     *
-     * @param obj
-     * @return
-     */
     public static Map<String, String> obj2Map(Object obj) {
         Map<String, String> values = new HashMap<String, String>();
         Class cls = obj.getClass();
@@ -43,12 +37,6 @@ public final class FieldUtils {
         return values;
     }
 
-    /**
-     * 获取对象的泛型类
-     *
-     * @param obj
-     * @return
-     */
     public static Class getGenericClass(Object obj) {
         if (obj == null) {
             return null;

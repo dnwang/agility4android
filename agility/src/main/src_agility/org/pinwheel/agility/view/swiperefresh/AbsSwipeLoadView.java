@@ -9,10 +9,12 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 /**
- * 这个类定义了Header和Footer的共通行为
+ * Copyright (C), 2015 <br>
+ * <br>
+ * All rights reserved <br>
+ * <br>
  *
- * @author Li Hong
- * @since 2013-8-16
+ * @author dnwang
  */
 public abstract class AbsSwipeLoadView extends RelativeLayout {
 

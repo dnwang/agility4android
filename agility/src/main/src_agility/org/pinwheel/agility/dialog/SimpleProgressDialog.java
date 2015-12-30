@@ -11,13 +11,12 @@ import org.pinwheel.agility.util.UIUtils;
 import org.pinwheel.agility.view.ProgressCircular;
 
 /**
- * 版权所有 (C), 2014<br>
+ * Copyright (C), 2015 <br>
  * <br>
- * All rights reserved
+ * All rights reserved <br>
+ * <br>
  *
  * @author dnwang
- * @date 2015/3/13 9:06
- * @description
  */
 public class SimpleProgressDialog extends SweetDialog {
 
