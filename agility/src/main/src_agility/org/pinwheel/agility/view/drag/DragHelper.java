@@ -19,22 +19,22 @@ import java.util.List;
  */
 class DragHelper implements Draggable {
 
-    private int topHoldDistance;//顶部悬停距离
-    private int bottomHoldDistance;//顶部悬停距离
-    private int orientation;//反向
-    private int currentPosition;//越界位置
-    private int currentState;//当前状态
-    private int maxInertiaDistance;//最大越界距离
-    private float resetVelocity;//手动释放返回速度
-    private float inertiaVelocity;//越界速度
-    private float inertiaResetVelocity;//越界返回速度
-    private float inertiaWeight;//越界权重
-    private float ratio;//阻尼系数
-    private List<OnDragListener> onDragListeners;//拖动回调
-    private Movable mover;//视图移动控制
+    private int topHoldDistance;
+    private int bottomHoldDistance;
+    private int orientation;
+    private int currentPosition;
+    private int currentState;
+    private int maxInertiaDistance;
+    private float resetVelocity;
+    private float inertiaVelocity;
+    private float inertiaResetVelocity;
+    private float inertiaWeight;
+    private float ratio;
+    private List<OnDragListener> onDragListeners;
+    private Movable mover;
 
-    private float distance;//当前滑动距离
-    private ValueAnimator animator;//自动滑动属性动画
+    private float distance;
+    private ValueAnimator animator;
 
     public DragHelper(Movable mover) {
         this.mover = mover;

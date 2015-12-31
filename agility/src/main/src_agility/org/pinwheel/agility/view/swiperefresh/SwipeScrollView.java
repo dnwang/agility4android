@@ -39,12 +39,8 @@ public class SwipeScrollView extends AbsSwipeView<ScrollView> {
     @Override
     protected void onGlobalLayout() {
         super.onGlobalLayout();
-        //这样做的目的在于可以使用xml布局确定子视图的一些属性，更方便
-        //0:header,1.container,2.footer,3.xml之中的第一个视图
         View contentView = SwipeScrollView.this.getChildAt(3);
         replaceContentView(contentView);
-        //0:header,1.container(mRefreshableView包含xml之中的第一个视图),2.footer
-        //默认只有下拉回弹,普通样式
         setOnlyOverScroll(true);
         setNormalStyle();
     }
@@ -73,19 +69,11 @@ public class SwipeScrollView extends AbsSwipeView<ScrollView> {
         return false;
     }
 
-    /**
-     * 设置为(无滚动条)
-     */
     public void setNormalStyle() {
         mScrollView.setHorizontalScrollBarEnabled(false);
         mScrollView.setVerticalScrollBarEnabled(false);
     }
 
-    /**
-     * @author denan.wang
-     * @date 2014/9/27
-     * @description
-     */
     private void replaceContentView(View contentView) {
         if (contentView == null) {
             return;

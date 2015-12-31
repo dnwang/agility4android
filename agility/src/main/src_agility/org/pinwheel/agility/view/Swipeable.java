@@ -37,11 +37,6 @@ interface Swipeable {
     public boolean isHold();
     public boolean isOverHold();
 
-    /**
-     * @author denan.wang
-     * @date 2014/9/29
-     * @description
-     */
     public static interface OnSwipeListener {
 
         public void onSwipeDownStart(View v);
@@ -91,11 +86,6 @@ interface Swipeable {
         }
     }
 
-    /**
-     * @author denan.wang
-     * @date 2014/12/10
-     * @description
-     */
     public static interface OnSwipeMarkCallBack extends OnSwipeListener {
 
         public static final int PLACE_TOP = 0x01;

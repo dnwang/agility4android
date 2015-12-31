@@ -6,7 +6,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
-
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -103,7 +102,6 @@ public class DragScrollView extends ScrollView implements Draggable {
                 final boolean isArrivedBottom = isArrivedBottom();
 
                 if ((dragHelper.isDragging() || state == STATE_NONE) && (isArrivedTop || isArrivedBottom)) {
-                    // BEGIN;顶／底 越界 状态设置
                     if (isArrivedTop && (int) absOldDy == 0) {
                         if (yDiff < 0) {
                             return super.onTouchEvent(event);
@@ -117,7 +115,6 @@ public class DragScrollView extends ScrollView implements Draggable {
                             setState(STATE_DRAGGING_BOTTOM);
                         }
                     }
-                    // END;顶／底 越界 附加判断
 
                     float offset;
                     if (oldDy * yDiff < 0) {

@@ -47,7 +47,6 @@ final class SimpleSwipeFooterView extends AbsSwipeLoadView {
 
     @Override
     public int getContentSize() {
-        //当返回值为0时，意外有道底部直接更多的效果...
         int height = 0;
         if (null != mContainer) {
             height = mContainer.getHeight();

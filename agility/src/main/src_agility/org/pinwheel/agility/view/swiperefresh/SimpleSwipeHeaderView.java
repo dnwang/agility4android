@@ -46,7 +46,6 @@ final class SimpleSwipeHeaderView extends AbsSwipeLoadView {
 
         float pivotValue = 0.5f;    // SUPPRESS CHECKSTYLE
         float toDegree = -180f;     // SUPPRESS CHECKSTYLE
-        // 初始化旋转动画
         mRotateUpAnim = new RotateAnimation(0.0f, toDegree, Animation.RELATIVE_TO_SELF, pivotValue,
                 Animation.RELATIVE_TO_SELF, pivotValue);
         mRotateUpAnim.setDuration(ROTATE_ANIM_DURATION);
@@ -60,7 +59,6 @@ final class SimpleSwipeHeaderView extends AbsSwipeLoadView {
 
     @Override
     public void setLastUpdatedLabel(CharSequence label) {
-        // 如果最后更新的时间的文本是空的话，隐藏前面的标题
 //        mHeaderTimeViewTitle.setVisibility(TextUtils.isEmpty(label) ? INVISIBLE : VISIBLE);
         mHeaderTimeView.setText(label);
     }

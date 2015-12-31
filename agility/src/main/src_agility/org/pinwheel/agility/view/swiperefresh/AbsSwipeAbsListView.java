@@ -116,11 +116,6 @@ abstract class AbsSwipeAbsListView extends AbsSwipeView<AbsListView> {
         setOnScrollListener(eventHelper);
     }
 
-    /*常用AbsListView函数包装*/
-
-    /**
-     * 设置为(无滚动条，无点按样式)
-     */
     public void setNormalStyle() {
         mAbsListView.setSelector(new BitmapDrawable());
         mAbsListView.setCacheColorHint(0);

@@ -76,9 +76,6 @@ public class ProgressCircular extends View {
 
     /**
      * The constructor for the ProgressWheel
-     *
-     * @param context
-     * @param attrs
      */
     public ProgressCircular(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -95,8 +92,6 @@ public class ProgressCircular extends View {
 
     /**
      * create by dnwang
-     *
-     * @param context
      */
     private void setDefaultValue(Context context) {
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
@@ -109,8 +104,6 @@ public class ProgressCircular extends View {
 
     /**
      * The constructor for the ProgressWheel
-     *
-     * @param context
      */
     public ProgressCircular(Context context) {
         super(context);

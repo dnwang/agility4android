@@ -64,9 +64,6 @@ public class SweetCoverFlow extends Gallery {
 
     private boolean reflectionEnabled = false;
 
-    /**
-     * TODO: Doc
-     */
     private float unselectedAlpha;
 
     /**
@@ -74,9 +71,6 @@ public class SweetCoverFlow extends Gallery {
      */
     private Camera transformationCamera;
 
-    /**
-     * TODO: Doc
-     */
     private int maxRotation = 75;
 
     /**
@@ -84,9 +78,6 @@ public class SweetCoverFlow extends Gallery {
      */
     private float unselectedScale;
 
-    /**
-     * TODO: Doc
-     */
     private float scaleDownGravity = SCALEDOWN_GRAVITY_CENTER;
 
     /**
@@ -196,8 +187,6 @@ public class SweetCoverFlow extends Gallery {
      * Use this to provide a {@link SweetCoverFlowAdapter} to the coverflow. This
      * method will throw an {@link ClassCastException} if the passed adapter does not
      * subclass {@link SweetCoverFlowAdapter}.
-     *
-     * @param adapter
      */
     @Override
     public void setAdapter(SpinnerAdapter adapter) {
@@ -210,8 +199,6 @@ public class SweetCoverFlow extends Gallery {
 
     /**
      * Returns the maximum rotation that is applied to items left and right of the center of the coverflow.
-     *
-     * @return
      */
     public int getMaxRotation() {
         return maxRotation;
@@ -219,101 +206,49 @@ public class SweetCoverFlow extends Gallery {
 
     /**
      * Sets the maximum rotation that is applied to items left and right of the center of the coverflow.
-     *
-     * @param maxRotation
      */
     public void setMaxRotation(int maxRotation) {
         this.maxRotation = maxRotation;
     }
 
-    /**
-     * TODO: Write doc
-     *
-     * @return
-     */
     public float getUnselectedAlpha() {
         return this.unselectedAlpha;
     }
 
-    /**
-     * TODO: Write doc
-     *
-     * @return
-     */
     public float getUnselectedScale() {
         return unselectedScale;
     }
 
-    /**
-     * TODO: Write doc
-     *
-     * @param unselectedScale
-     */
     public void setUnselectedScale(float unselectedScale) {
         this.unselectedScale = unselectedScale;
     }
 
-    /**
-     * TODO: Doc
-     *
-     * @return
-     */
     public float getScaleDownGravity() {
         return scaleDownGravity;
     }
 
-    /**
-     * TODO: Doc
-     *
-     * @param scaleDownGravity
-     */
     public void setScaleDownGravity(float scaleDownGravity) {
         this.scaleDownGravity = scaleDownGravity;
     }
 
-    /**
-     * TODO: Write doc
-     *
-     * @return
-     */
     public int getActionDistance() {
         return actionDistance;
     }
 
-    /**
-     * TODO: Write doc
-     *
-     * @param actionDistance
-     */
     public void setActionDistance(int actionDistance) {
         this.actionDistance = actionDistance;
     }
 
-    /**
-     * TODO: Write doc
-     *
-     * @param unselectedAlpha
-     */
     @Override
     public void setUnselectedAlpha(float unselectedAlpha) {
         super.setUnselectedAlpha(unselectedAlpha);
         this.unselectedAlpha = unselectedAlpha;
     }
 
-    /**
-     * TODO: Write doc
-     *
-     * @return
-     */
     public float getUnselectedSaturation() {
         return unselectedSaturation;
     }
 
-    /**
-     * TODO: Write doc
-     *
-     * @param unselectedSaturation
-     */
     public void setUnselectedSaturation(float unselectedSaturation) {
         this.unselectedSaturation = unselectedSaturation;
     }
@@ -694,8 +629,6 @@ public class SweetCoverFlow extends Gallery {
 
         /**
          * Creates the reflected images.
-         *
-         * @return true, if successful
          */
         private void createReflectedImages() {
 
