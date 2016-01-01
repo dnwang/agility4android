@@ -1,8 +1,10 @@
 package org.pinwheel.demo4agility.activity;
 
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.view.View;
 import android.widget.Button;
+
 import org.pinwheel.agility.dialog.SimpleProgressDialog;
 import org.pinwheel.agility.dialog.SweetDialog;
 import org.pinwheel.demo4agility.R;
@@ -24,8 +26,25 @@ public class DialogActivity extends AbsTestActivity implements View.OnClickListe
     }
 
     @Override
-    protected void doTest() {
+    protected void doSomethingAfterCreated() {
+        new AlertDialog.Builder(this)
+                .setMessage("System Dialog")
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
 
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
+//        ProgressDialog progressDialog = new ProgressDialog(this);
+//        progressDialog.setMessage("Loading now...");
+//        progressDialog.show();
     }
 
     @Override

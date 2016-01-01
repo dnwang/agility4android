@@ -69,7 +69,7 @@ public class HttpClientAgentActivity extends AbsTestActivity {
     String finalTag;
 
     @Override
-    protected void doTest() {
+    protected void doSomethingAfterCreated() {
         // TODO: 10/15/15 cancel test (ok)
 //        for (int i = 0; i < 5; i++) {
 //            finalTag = System.currentTimeMillis() + i + "";

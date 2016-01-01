@@ -9,7 +9,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.*;
+import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -43,15 +47,15 @@ abstract class AbsTestActivity extends Activity {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(500l);
+                    Thread.sleep(200);
+                    uiHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            doSomethingAfterCreated();
+                        }
+                    });
                 } catch (InterruptedException e) {
                 }
-                uiHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        doTest();
-                    }
-                });
             }
         }).start();
     }
@@ -99,7 +103,7 @@ abstract class AbsTestActivity extends Activity {
 
     protected abstract View getContentView();
 
-    protected abstract void doTest();
+    protected abstract void doSomethingAfterCreated();
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

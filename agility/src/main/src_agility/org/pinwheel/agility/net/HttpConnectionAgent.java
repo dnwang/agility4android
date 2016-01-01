@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
  *
  * @author dnwang
  */
-public class HttpConnectionAgent implements HttpClientAgent {
+public class HttpConnectionAgent extends HttpClientAgent {
     private static final String TAG = OkHttpAgent.class.getSimpleName();
 
     private ExecutorService executor;
@@ -55,9 +55,7 @@ public class HttpConnectionAgent implements HttpClientAgent {
     @Override
     public void enqueue(final Request request) {
         if (request == null) {
-            if (debug) {
-                Log.e(TAG, "Request must not null !");
-            }
+            Log.e(TAG, "Client or request must not null !");
             return;
         }
 
@@ -100,9 +98,7 @@ public class HttpConnectionAgent implements HttpClientAgent {
                         throw new IllegalStateException("Response code: " + code + "; message: " + message);
                     }
                 } catch (Exception e) {
-                    if (debug) {
-                        e.printStackTrace();
-                    }
+                    e.printStackTrace();
                     if (connection != null) {
                         connection.disconnect();
                     }
@@ -128,9 +124,7 @@ public class HttpConnectionAgent implements HttpClientAgent {
                         callback.dispatchOnSuccess(parser.getResult());
                     }
                 } catch (Exception e) {
-                    if (debug) {
-                        e.printStackTrace();
-                    }
+                    e.printStackTrace();
                     if (callback != null) {
                         callback.dispatchOnError(e);
                     }
@@ -153,9 +147,7 @@ public class HttpConnectionAgent implements HttpClientAgent {
 
     @Override
     public void cancel(Object... tags) {
-        if (debug) {
-            Log.e(TAG, HttpConnectionAgent.class.getSimpleName() + " not support cancel.");
-        }
+        Log.e(TAG, HttpConnectionAgent.class.getSimpleName() + " not support cancel.");
     }
 
     @Override

@@ -200,7 +200,7 @@ public class CacheActivity extends AbsTestActivity {
     }
 
     @Override
-    protected void doTest() {
+    protected void doSomethingAfterCreated() {
         Object obj = DataCacheManager.getInstance(this).getObject("test_cache");
         if (obj != null) {
             logout(obj);

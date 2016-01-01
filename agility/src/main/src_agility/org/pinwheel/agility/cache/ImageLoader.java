@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import android.view.View;
 
 import org.pinwheel.agility.net.HttpClientAgent;
-import org.pinwheel.agility.net.HttpClientAgentHelper;
 import org.pinwheel.agility.net.HttpConnectionAgent;
 import org.pinwheel.agility.net.OkHttpAgent;
 import org.pinwheel.agility.net.Request;
@@ -107,7 +106,7 @@ public class ImageLoader {
         this.memoryCache = new MemoryCache(options.getMemoryCacheSize());
 
         // init network engine, auto select
-        if (HttpClientAgentHelper.isImportOkHttp()) {
+        if (HttpClientAgent.isImportOkHttp()) {
             this.httpEngine = new OkHttpAgent(options.getParallelSize());
         } else {
             this.httpEngine = new HttpConnectionAgent(options.getParallelSize());

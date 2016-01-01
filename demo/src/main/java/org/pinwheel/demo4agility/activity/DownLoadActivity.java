@@ -50,7 +50,7 @@ public class DownLoadActivity extends AbsTestActivity {
     }
 
     @Override
-    protected void doTest() {
+    protected void doSomethingAfterCreated() {
 
     }
 

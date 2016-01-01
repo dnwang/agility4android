@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author dnwang
  */
-public class OkHttpAgent implements HttpClientAgent {
+public class OkHttpAgent extends HttpClientAgent {
     private static final String TAG = OkHttpAgent.class.getSimpleName();
 
     private static final MediaType MEDIA_TYPE_MARKDOWN = MediaType.parse("text/x-markdown; charset=utf-8");
@@ -32,7 +32,7 @@ public class OkHttpAgent implements HttpClientAgent {
     private OkHttpClient client;
     private ExecutorService executor;
 
-    public OkHttpAgent(){
+    public OkHttpAgent() {
         client = new OkHttpClient();
         executor = Executors.newCachedThreadPool();
     }
@@ -84,9 +84,7 @@ public class OkHttpAgent implements HttpClientAgent {
     @Override
     public void enqueue(final Request request) {
         if (client == null || request == null) {
-            if (debug) {
-                Log.e(TAG, "client or request must not null !");
-            }
+            Log.e(TAG, "client or request must not null !");
             return;
         }
 
@@ -115,9 +113,7 @@ public class OkHttpAgent implements HttpClientAgent {
                         throw new IllegalStateException("Response code: " + response.code() + "; message: " + response.message());
                     }
                 } catch (Exception e) {
-                    if (debug) {
-                        e.printStackTrace();
-                    }
+                    e.printStackTrace();
                     if (callback != null) {
                         callback.dispatchOnError(e);
                     }
@@ -139,9 +135,7 @@ public class OkHttpAgent implements HttpClientAgent {
                         callback.dispatchOnSuccess(parser.getResult());
                     }
                 } catch (Exception e) {
-                    if (debug) {
-                        e.printStackTrace();
-                    }
+                    e.printStackTrace();
                     if (callback != null) {
                         callback.dispatchOnError(e);
                     }

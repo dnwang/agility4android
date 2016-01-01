@@ -73,7 +73,7 @@ public class DragViewActivity extends AbsTestActivity implements AdapterView.OnI
     }
 
     @Override
-    protected void doTest() {
+    protected void doSomethingAfterCreated() {
 
     }
 

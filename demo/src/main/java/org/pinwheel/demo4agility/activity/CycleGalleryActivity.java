@@ -229,7 +229,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
     }
 
     @Override
-    protected void doTest() {
+    protected void doSomethingAfterCreated() {
 
     }
 

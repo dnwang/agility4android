@@ -19,7 +19,7 @@ public class RequestActivity extends AbsTestActivity {
     }
 
     @Override
-    protected void doTest() {
+    protected void doSomethingAfterCreated() {
 //        for (int index = 0; index < 10; index++) {
 //            request();
 //        }

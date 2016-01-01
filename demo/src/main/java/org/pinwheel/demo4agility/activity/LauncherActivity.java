@@ -32,7 +32,7 @@ public class LauncherActivity extends AbsTestActivity implements ListView.OnItem
     }
 
     @Override
-    protected void doTest() {
+    protected void doSomethingAfterCreated() {
 
     }
 

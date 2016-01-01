@@ -17,12 +17,12 @@ public abstract class SimpleArrayAdapter<T> extends BaseAdapter {
 
     protected ArrayList<T> mDatas;
 
-    protected SimpleArrayAdapter(){
+    protected SimpleArrayAdapter() {
         super();
         mDatas = new ArrayList<T>(0);
     }
 
-    protected SimpleArrayAdapter(List<T> datas){
+    protected SimpleArrayAdapter(List<T> datas) {
         super();
         mDatas = new ArrayList<T>(datas);
     }
@@ -34,6 +34,9 @@ public abstract class SimpleArrayAdapter<T> extends BaseAdapter {
 
     @Override
     public T getItem(int position) {
+        if (position < 0 || position >= mDatas.size()) {
+            return null;
+        }
         return mDatas.get(position);
     }
 
@@ -42,23 +45,26 @@ public abstract class SimpleArrayAdapter<T> extends BaseAdapter {
         return position;
     }
 
-    public ArrayList<T> getDatas(){
+    public ArrayList<T> getDatas() {
         return mDatas;
     }
 
-    public void addItem(T obj){
+    public void addItem(T obj) {
         this.mDatas.add(obj);
     }
 
-    public void addItem(T obj, int index){
+    public void addItem(T obj, int index) {
         this.mDatas.add(index, obj);
     }
 
-    public void addAll(List<T> datas){
+    public void addAll(List<T> datas) {
         this.mDatas.addAll(datas);
     }
 
     public void remove(int index) {
+        if (index < 0 || index >= mDatas.size()) {
+            return;
+        }
         this.mDatas.remove(index);
     }
 

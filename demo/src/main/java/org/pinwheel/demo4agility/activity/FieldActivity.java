@@ -36,7 +36,7 @@ public class FieldActivity extends AbsTestActivity {
     }
 
     @Override
-    protected void doTest() {
+    protected void doSomethingAfterCreated() {
         InjectStruct injectStruct = new InjectStruct();
         // 注入
         logout("-------------- Inject -----------------");

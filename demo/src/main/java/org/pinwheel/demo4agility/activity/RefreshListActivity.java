@@ -41,7 +41,7 @@ public class RefreshListActivity extends AbsTestActivity implements AdapterView.
     }
 
     @Override
-    protected void doTest() {
+    protected void doSomethingAfterCreated() {
 
     }
 

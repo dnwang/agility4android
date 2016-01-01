@@ -35,7 +35,7 @@ public class BouncyEditAndTextActivity extends AbsTestActivity {
     }
 
     @Override
-    protected void doTest() {
+    protected void doSomethingAfterCreated() {
 
     }
 

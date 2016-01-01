@@ -11,24 +11,40 @@ import android.os.Looper;
  *
  * @author dnwang
  */
-public interface HttpClientAgent {
+public abstract class HttpClientAgent {
 
-    public static boolean debug = false;
+    public static boolean isImportOkHttp() {
+        try {
+            Class.forName("com.squareup.okhttp.OkHttpClient");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
 
-    public void enqueue(Request request);
+    public static boolean isImportVolley() {
+        try {
+            Class.forName("com.android.volley.RequestQueue");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
 
-    public void parallelExecute(Request... requests);
+    public abstract void enqueue(Request request);
 
-    public void cancel(Object... tags);
+    public abstract void parallelExecute(Request... requests);
 
-    public void release();
+    public abstract void cancel(Object... tags);
+
+    public abstract void release();
 
     /**
      * Request callback
      *
      * @param <T>
      */
-    abstract class OnRequestAdapter<T> {
+    public static abstract class OnRequestAdapter<T> {
 
         public boolean onRequestPrepare(Request request) {
             return false;
@@ -75,7 +91,7 @@ public interface HttpClientAgent {
      *
      * @param <T>
      */
-    abstract class OnRequestHandleTagAdapter<T> extends OnRequestAdapter<T> {
+    public static abstract class OnRequestHandleTagAdapter<T> extends OnRequestAdapter<T> {
 
         private Object tag;
 
@@ -94,7 +110,7 @@ public interface HttpClientAgent {
      *
      * @param <T>
      */
-    abstract class OnRequestWrapper<T> extends OnRequestAdapter<T> {
+    public static abstract class OnRequestWrapper<T> extends OnRequestAdapter<T> {
 
         private OnRequestAdapter adapter;
 

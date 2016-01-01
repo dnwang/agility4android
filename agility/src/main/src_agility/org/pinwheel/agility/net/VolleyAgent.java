@@ -24,7 +24,7 @@ import java.util.Map;
  *
  * @author dnwang
  */
-public class VolleyAgent implements HttpClientAgent {
+public class VolleyAgent extends HttpClientAgent {
     private static final String TAG = VolleyAgent.class.getSimpleName();
 
     private RequestQueue queue;
@@ -54,9 +54,7 @@ public class VolleyAgent implements HttpClientAgent {
     @Override
     public void enqueue(Request request) {
         if (queue == null || request == null) {
-            if (debug) {
-                Log.e(TAG, "queue or request must not null !");
-            }
+            Log.e(TAG, "Queue or request must not null !");
             return;
         }
 
@@ -79,9 +77,7 @@ public class VolleyAgent implements HttpClientAgent {
 
     @Override
     public void parallelExecute(Request... requests) {
-        if (debug) {
-            Log.e(TAG, HttpConnectionAgent.class.getSimpleName() + " not support cancel.");
-        }
+        Log.e(TAG, HttpConnectionAgent.class.getSimpleName() + " not support cancel.");
     }
 
     @Override
@@ -144,9 +140,7 @@ public class VolleyAgent implements HttpClientAgent {
                     return Response.success(parser.getResult(), HttpHeaderParser.parseCacheHeaders(response));
                 }
             } catch (Exception e) {
-                if (debug) {
-                    Log.e(TAG, e.getMessage());
-                }
+                Log.e(TAG, e.getMessage());
                 VolleyError error = new VolleyError(e.getMessage());
                 error.setStackTrace(e.getStackTrace());
                 return Response.error(error);
