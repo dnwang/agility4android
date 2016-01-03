@@ -4,11 +4,15 @@ import android.graphics.Color;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.AdapterView;
+import android.widget.FrameLayout;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.TextView;
+
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.cache.DataCacheManager;
 import org.pinwheel.agility.cache.ViewReceiver;
-import org.pinwheel.agility.dialog.SweetDialog;
 import org.pinwheel.agility.util.UIUtils;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
 
@@ -143,9 +147,9 @@ public class CacheActivity extends AbsTestActivity {
         dismiss();
 
         ((ViewGroup) getWindow().getDecorView()).addView(poster, -1, -1);
-        poster.setOnClickListener(new SweetDialog.OnClickListener() {
+        poster.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(SweetDialog dialog, View v) {
+            public void onClick(View v) {
                 dismiss();
             }
         });

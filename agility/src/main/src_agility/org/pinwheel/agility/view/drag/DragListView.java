@@ -335,4 +335,36 @@ public class DragListView extends ListView implements Draggable {
         return dragHelper.getDistance();
     }
 
+//    private boolean isAtBottom() {
+//        final Adapter adapter = this.getAdapter();
+//        if (null == adapter || adapter.isEmpty()) {
+//            return true;
+//        }
+//
+//        final int lastItemPosition = adapter.getCount() - 1;
+//        final int lastVisiblePosition = getLastVisiblePosition();
+//        if (lastVisiblePosition >= lastItemPosition) {
+//            final int childIndex = lastVisiblePosition - getFirstVisiblePosition();
+//            final int childCount = getChildCount();
+//            final int index = Math.min(childIndex, childCount - 1);
+//            final View lastVisibleChild = getChildAt(index);
+//            if (lastVisibleChild != null) {
+//                return lastVisibleChild.getBottom() <= getMeasuredHeight() - getPaddingBottom(); //padding
+//            }
+//        }
+//        return false;
+//    }
+
+//    private boolean isAtTop() {
+//        final Adapter adapter = this.getAdapter();
+//        if (null == adapter || adapter.isEmpty()) {
+//            return true;
+//        }
+//        int firstPos = getFirstVisiblePosition();
+//        if (firstPos == 0 && getChildAt(firstPos).getTop() >= getPaddingTop()) {//padding
+//            return true;
+//        }
+//        return false;
+//    }
+
 }

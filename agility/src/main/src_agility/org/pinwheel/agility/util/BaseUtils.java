@@ -1,50 +1,29 @@
 package org.pinwheel.agility.util;
 
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.os.StatFs;
-import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * Copyright (C), 2015 <br>
@@ -61,61 +40,7 @@ public final class BaseUtils {
 
     }
 
-    public static String streamToString(InputStream is) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-        try {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                reader.close();
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return sb.toString();
-    }
-
-    public static byte[] stream2Byte(InputStream inputStream) {
-        byte[] content = null;
-        BufferedInputStream in = null;
-        ByteArrayOutputStream out = null;
-        try {
-            in = new BufferedInputStream(inputStream);
-            out = new ByteArrayOutputStream(1024);
-            byte[] temp = new byte[1024];
-            int size = 0;
-            while ((size = in.read(temp)) != -1) {
-                out.write(temp, 0, size);
-            }
-            content = out.toByteArray();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return content;
-    }
-
+    @Deprecated
     public static boolean isWifi(Context mContext) {
         ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
@@ -125,34 +50,7 @@ public final class BaseUtils {
         return false;
     }
 
-    public static Boolean equalsVersionName(Context context, String newVersion) {
-        PackageManager manager = context.getPackageManager();
-        try {
-            PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
-            String currentVersion = info.versionName;
-            if (currentVersion.equals(newVersion))
-                return true;
-        } catch (NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public static Boolean equalsVersionCode(Context context, int newVersionCode) {
-        PackageManager manager = context.getPackageManager();
-        try {
-            PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
-            int currentVersion = info.versionCode;
-            if (currentVersion == newVersionCode) {
-                return true;
-            }
-        } catch (NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public static String getVersion(Context context) {
+    public static String getVersionName(Context context) {
         PackageManager manager = context.getPackageManager();
         try {
             PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
@@ -172,44 +70,6 @@ public final class BaseUtils {
             e.printStackTrace();
             return 0;
         }
-    }
-
-    public static void callNumber(Context context, String number) {
-        if (TextUtils.isEmpty(number)) {
-            return;
-        }
-        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + number));
-        context.startActivity(intent);
-    }
-
-    public static void installApk(Context c, boolean isPrivatePath, File apk) {
-        if (apk == null || !apk.exists()) {
-            return;
-        }
-        if (isPrivatePath) {
-            String cmd = "chmod 777 " + apk.getAbsolutePath();
-            try {
-                Runtime.getRuntime().exec(cmd);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        Intent i = new Intent(Intent.ACTION_VIEW);
-        i.setDataAndType(Uri.parse("file://" + apk.toString()), "application/vnd.android.package-archive");
-        if (c instanceof Activity) {
-            c.startActivity(i);
-        } else {
-            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            c.startActivity(i);
-        }
-    }
-
-    public static boolean isOutOfBounds(Activity activity, MotionEvent event) {
-        final int x = (int) event.getX();
-        final int y = (int) event.getY();
-        final int slop = ViewConfiguration.get(activity).getScaledWindowTouchSlop();
-        final View decorView = activity.getWindow().getDecorView();
-        return (x < -slop) || (y < -slop) || (x > (decorView.getWidth() + slop)) || (y > (decorView.getHeight() + slop));
     }
 
     public static PackageInfo getAPKInfo(Context c, File apk) {
@@ -236,80 +96,6 @@ public final class BaseUtils {
     public static String dateFormatToString(Date date, String format) {
         SimpleDateFormat formatSrc = new SimpleDateFormat(format);
         return formatSrc.format(date);
-    }
-
-    public static int computeTimeLengthInMinute(String start, String end) {
-        int startInt = getTimeInMinute(start);
-        int endInt = getTimeInMinute(end);
-        int length = endInt - startInt;
-        final int DAY_IN_MINUTE = 24 * 60;
-        if (endInt < startInt) {
-            length = DAY_IN_MINUTE - (startInt - endInt);
-        }
-        return Math.max(0, length);
-    }
-
-    public static int getTimeInMinute(String ts) {
-        String[] strings = ts.split(":");
-        int time = 0;
-        for (int i = 0; i < strings.length; i++) {
-            int n = Integer.parseInt(strings[i]);
-            time += n * Math.pow(60, strings.length - i - 1);
-        }
-        return time;
-    }
-
-    public static int getTimeInSecond(String time) {
-        String[] strings = time.split(":");
-        int[] ints = new int[strings.length];
-        for (int i = 0; i < ints.length; i++) {
-            ints[i] = Integer.parseInt(strings[i]);
-        }
-        return ints[0] * 60 * 60 + ints[1] * 60 + ints[2];
-    }
-
-    public static int computeTimeLag(String start, String end) {
-        int timeLag = getTimeInSecond(end) - getTimeInSecond(start);
-        if (timeLag < 0) {
-            timeLag = getTimeInSecond("24:00:00") + timeLag;
-        }
-        return timeLag;
-    }
-
-    public static int getTimePercent(String startTime, String endTime) {
-        Calendar calendar = Calendar.getInstance();
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minutes = calendar.get(Calendar.MINUTE);
-        int seconds = calendar.get(Calendar.SECOND);
-        String curTime = hour + ":" + minutes + ":" + seconds;
-        float programTimeLength = BaseUtils.computeTimeLag(startTime, endTime);
-        float playedTimeLength = BaseUtils.computeTimeLag(startTime, curTime);
-        int progress = (int) ((playedTimeLength / programTimeLength) * 100);
-        return progress;
-    }
-
-    public static int getCurTimeInSecond() {
-        return getTimeInSecond(getCurrentTime("HH:mm:ss"));
-    }
-
-    public static String getCurrentTime(String format) {
-        return new SimpleDateFormat(format).format(Calendar.getInstance().getTime());
-    }
-
-    public static String millisecToYMD(long millis) {
-//        if (milli != null && milli.length() > 13) {
-//            milli = milli.substring(0, 13);
-//        }
-        Calendar calendar = new GregorianCalendar();
-        Date date = calendar.getTime();
-        calendar.setTimeInMillis(millis);
-        int day = calendar.get(Calendar.DATE);
-        int month = calendar.get(Calendar.MONTH) + 1; // time, month 1~12
-        int year = calendar.get(Calendar.YEAR);
-        if (month < 10) {
-            return year + ":0" + month;
-        }
-        return year + ":" + month + ":" + day;
     }
 
     public static String longSizeToStr(long contentLength) {
@@ -351,30 +137,6 @@ public final class BaseUtils {
     public static boolean isChinese(char a) {
         int v = (int) a;
         return (v >= 0x4E00 && v <= 0x9FFF);
-    }
-
-    public static String long2Ip(long ipInt) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(ipInt & 0xFF).append(".");
-        sb.append((ipInt >> 8) & 0xFF).append(".");
-        sb.append((ipInt >> 16) & 0xFF).append(".");
-        sb.append((ipInt >> 24) & 0xFF);
-        return sb.toString();
-    }
-
-    public static String prefixLengthToMaskString(int length) {
-        if (length == 0) {
-            return "0.0.0.0";
-        } else if (length < 0 || length > 32) {
-            return "";
-        }
-        StringBuilder builder = new StringBuilder();
-        int mask = 0xffffffff << 32 - length;
-        builder.append((mask >> 24) & 0xff).append(".");
-        builder.append((mask >> 16) & 0xff).append(".");
-        builder.append((mask >> 8) & 0xff).append(".");
-        builder.append(mask & 0xff);
-        return builder.toString();
     }
 
     public static String getAvailMemory(Context context) {
@@ -449,28 +211,6 @@ public final class BaseUtils {
         }
     }
 
-    public static boolean isSystemApp(ApplicationInfo info) {
-        if ((info.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
-            return false;
-        } else if ((info.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
-            return false;
-        }
-        return true;
-    }
-
-    public static boolean isAppRunning(Context context, String pkgName) {
-        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningTaskInfo> list = am.getRunningTasks(100);
-        boolean isAppRunning = false;
-        for (ActivityManager.RunningTaskInfo info : list) {
-            if (info.topActivity.getPackageName().equals(pkgName) || info.baseActivity.getPackageName().equals(pkgName)) {
-                isAppRunning = true;
-                break;
-            }
-        }
-        return isAppRunning;
-    }
-
     @SuppressWarnings("unchecked")
     public static <T extends View> T getViewByHolder(View view, int id) {
         SparseArray<View> viewHolder = (SparseArray<View>) view.getTag();
@@ -486,46 +226,13 @@ public final class BaseUtils {
         return (T) childView;
     }
 
-    private static long lastClickTime;
-
-    public static boolean isFastDoubleClick() {
-        long time = System.currentTimeMillis();
-        long timeD = time - lastClickTime;
-        if (0 < timeD && timeD < 800) {
-            return true;
-        }
-        lastClickTime = time;
-        return false;
-    }
-
-    public static int getJsonInt(JSONObject json, String key, int defaultInt) {
-        int num;
+    public static int string2Int(String string, int defaultValue) {
+        int result = defaultValue;
         try {
-            num = json.getInt(key);
-        } catch (JSONException e) {
-            num = defaultInt;
-        }
-        return num;
-    }
-
-    public static String getJsonString(JSONObject json, String key, String defaultString) {
-        String str;
-        try {
-            str = json.getString(key);
-        } catch (JSONException e) {
-            str = defaultString;
-        }
-        return str;
-    }
-
-    public static int string2Int(String string, int defaultInt) {
-        int num;
-        try {
-            num = Integer.parseInt(string);
+            result = Integer.parseInt(string);
         } catch (Exception e) {
-            num = defaultInt;
         }
-        return num;
+        return result;
     }
 
     public static <T> T getMapValue(Map<? extends Object, T> args, Object key, T defaultValue) {
@@ -534,55 +241,6 @@ public final class BaseUtils {
         } else {
             return defaultValue;
         }
-    }
-
-    public static String getTimeZone() {
-        TimeZone tz = TimeZone.getDefault();
-        String value = tz.getDisplayName(false, TimeZone.SHORT);
-        value = value.substring(value.lastIndexOf("+") + 1);
-        value = value.replace("0", "");
-        return value;
-    }
-
-    public static String generateTime(long time) {
-        int totalSeconds = (int) (time / 1000);
-        int seconds = totalSeconds % 60;
-        int minutes = (totalSeconds / 60) % 60;
-        int hours = totalSeconds / 3600;
-//        return hours > 0 ? String.format("%02d:%02d:%02d", hours, minutes, seconds) : String.format("%02d:%02d", minutes, seconds);
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
-    }
-
-    public static <T> T deepClone(T obj) {
-        T result = null;
-        ByteArrayOutputStream bo = null;
-        ObjectInputStream oi = null;
-        try {
-            bo = new ByteArrayOutputStream();
-            ObjectOutputStream oo = new ObjectOutputStream(bo);
-            oo.writeObject(obj);
-            oi = new ObjectInputStream(new ByteArrayInputStream(bo.toByteArray()));
-            result = (T) oi.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        } finally {
-            if (bo != null) {
-                try {
-                    bo.flush();
-                    bo.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (oi != null) {
-                try {
-                    oi.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return result;
     }
 
     public static int getResourceID(String pkg_name, String cls_name, String id_name) {

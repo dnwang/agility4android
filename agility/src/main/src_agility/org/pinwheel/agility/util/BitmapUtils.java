@@ -3,6 +3,8 @@ package org.pinwheel.agility.util;
 import android.graphics.*;
 import android.media.ThumbnailUtils;
 
+import org.pinwheel.agility.cache.BitmapReceiver;
+
 /**
  * Copyright (C), 2015 <br>
  * <br>

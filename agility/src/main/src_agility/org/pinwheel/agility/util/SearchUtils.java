@@ -8,9 +8,9 @@ package org.pinwheel.agility.util;
  *
  * @author dnwang
  */
-public final class Search {
+public final class SearchUtils {
 
-    private Search(){
+    private SearchUtils(){
 
     }
 

@@ -16,9 +16,8 @@ import org.pinwheel.agility.net.parser.BitmapParser;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.net.parser.FileParser;
 import org.pinwheel.agility.net.parser.GsonParser;
-import org.pinwheel.agility.net.parser.IDataParser;
 import org.pinwheel.agility.util.BaseUtils;
-import org.pinwheel.agility.view.SweetListView;
+import org.pinwheel.agility.view.drag.DragListView;
 import org.pinwheel.demo4agility.entity.WeatherEntity;
 
 import java.io.File;
@@ -47,7 +46,7 @@ public class HttpClientAgentActivity extends AbsTestActivity {
                 requestMethods.add(methodName);
             }
         }
-        ListView list = new SweetListView(this);
+        ListView list = new DragListView(this);
         BaseAdapter adapter = new ArrayAdapter<>(getBaseContext(), android.R.layout.simple_list_item_1, requestMethods);
         list.setAdapter(adapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
