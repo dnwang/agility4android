@@ -4,7 +4,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,11 +31,9 @@ public final class FileUtils {
 
     /**
      * Save data from inputStream
-     *
-     * @param name
-     * @param inStream
-     * @throws Exception
+     * {@link IOUtils}
      */
+    @Deprecated
     public static File save(String name, InputStream inStream) throws Exception {
         File target_file = null;
 
@@ -40,10 +45,10 @@ public final class FileUtils {
         }
         try {
             fout = new FileOutputStream(name);
-            byte[] buf = new byte[1024] ;
-            int flag = 0 ;
-            while((flag = inStream.read(buf))!=-1){
-                fout.write(buf, 0, flag) ;
+            byte[] buf = new byte[1024];
+            int flag = 0;
+            while ((flag = inStream.read(buf)) != -1) {
+                fout.write(buf, 0, flag);
             }
             target_file = new File(name);
         } catch (Exception e) {
@@ -63,11 +68,9 @@ public final class FileUtils {
 
     /**
      * Save data from byte[]
-     *
-     * @param name
-     * @param data
-     * @throws Exception
+     * {@link IOUtils}
      */
+    @Deprecated
     public static File save(String name, byte[] data) throws Exception {
         File target_file = null;
 
@@ -98,11 +101,9 @@ public final class FileUtils {
 
     /**
      * Save bitmap
-     *
-     * @param name
-     * @param bitmap
-     * @throws Exception
+     * {@link BitmapFactory}
      */
+    @Deprecated
     public static File save(String name, Bitmap bitmap, Bitmap.CompressFormat format) throws Exception {
         File target_file = null;
 
@@ -164,10 +165,9 @@ public final class FileUtils {
 
     /**
      * Load string from file
-     *
-     * @param name
-     * @return
+     * {@link IOUtils}
      */
+    @Deprecated
     public static String loadString(String name) {
         String data = "";
         try {
@@ -180,10 +180,9 @@ public final class FileUtils {
 
     /**
      * Load bitmap from file
-     *
-     * @param name
-     * @return
+     * {@link BitmapFactory}
      */
+    @Deprecated
     public static Bitmap loadBitmap(String name) {
         Bitmap bitmap = null;
         FileInputStream fin = null;
@@ -203,9 +202,6 @@ public final class FileUtils {
 
     /**
      * delete file or directory
-     *
-     * @param file
-     * @return
      */
     public static boolean delete(File file) {
         try {
@@ -239,8 +235,9 @@ public final class FileUtils {
                 delete(outFile);
                 copy(in, new FileOutputStream(outFile));
                 return true;
-            } else
+            } else {
                 return false;
+            }
         } else {
             copy(in, new FileOutputStream(outFile));
             return true;
@@ -266,7 +263,7 @@ public final class FileUtils {
         if (isIgnoreHiddenFile && path.getName().startsWith(".")) {
             return null;
         }
-        List<File> match_files = new ArrayList<File>(0);
+        List<File> match_files = new ArrayList<>(0);
 
         File[] files = path.listFiles();
         for (File sub_file : files) {
@@ -288,6 +285,10 @@ public final class FileUtils {
         return match_files;
     }
 
+    /**
+     * {@link IOUtils}
+     */
+    @Deprecated
     private static void copy(InputStream in, OutputStream out) throws Exception {
         boolean isException = false;
         try {
@@ -312,6 +313,10 @@ public final class FileUtils {
         }
     }
 
+    /**
+     * {@link IOUtils}
+     */
+    @Deprecated
     private static String streamToString(InputStream in) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         StringBuilder sb = new StringBuilder();

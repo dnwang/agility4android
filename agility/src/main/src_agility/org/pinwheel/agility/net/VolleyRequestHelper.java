@@ -24,7 +24,9 @@ import java.util.Map;
  * <br>
  *
  * @author dnwang
+ * {@link HttpClientAgent}
  */
+@Deprecated
 public final class VolleyRequestHelper {
     public static boolean debug = false;
 
@@ -132,7 +134,11 @@ public final class VolleyRequestHelper {
 
         final Object tag = adapter.getTag();
         if (tag != null) {
-            request.setTag(tag);
+            try {
+                request.setTag(tag);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
 
         request.setRetryPolicy(new DefaultRetryPolicy(adapter.getTimeout(), adapter.getNumOfRetries(), 1.0f));

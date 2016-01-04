@@ -4,9 +4,6 @@ import android.graphics.Bitmap;
 import android.os.Environment;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
 
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.HttpConnectionAgent;
@@ -17,15 +14,12 @@ import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.net.parser.FileParser;
 import org.pinwheel.agility.net.parser.GsonParser;
 import org.pinwheel.agility.util.BaseUtils;
-import org.pinwheel.agility.view.drag.DragListView;
 import org.pinwheel.demo4agility.entity.WeatherEntity;
 
 import java.io.File;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 
 
-public class HttpClientAgentActivity extends AbsTestActivity {
+public class HttpClientAgentActivity extends AbsMethodListActivity {
 
     HttpClientAgent httpClientAgent;
 
@@ -37,32 +31,8 @@ public class HttpClientAgentActivity extends AbsTestActivity {
     }
 
     @Override
-    protected View getContentView() {
-        ArrayList<String> requestMethods = new ArrayList<>();
-        Method[] methods = HttpClientAgentActivity.class.getMethods();
-        for (Method method : methods) {
-            String methodName = method.getName();
-            if (methodName.endsWith("Request")) {
-                requestMethods.add(methodName);
-            }
-        }
-        ListView list = new DragListView(this);
-        BaseAdapter adapter = new ArrayAdapter<>(getBaseContext(), android.R.layout.simple_list_item_1, requestMethods);
-        list.setAdapter(adapter);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String methodName = String.valueOf(parent.getAdapter().getItem(position));
-                try {
-                    Method method = HttpClientAgentActivity.class.getDeclaredMethod(methodName);
-                    method.setAccessible(true);
-                    method.invoke(HttpClientAgentActivity.this);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        return list;
+    protected void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        showLog(!isShowLog());
     }
 
     String finalTag;
@@ -82,6 +52,7 @@ public class HttpClientAgentActivity extends AbsTestActivity {
         httpClientAgent.release();
     }
 
+    @TestMethod
     public void gsonRequest() {
         final long startTime = System.currentTimeMillis();
 
@@ -106,6 +77,7 @@ public class HttpClientAgentActivity extends AbsTestActivity {
         httpClientAgent.enqueue(request);
     }
 
+    @TestMethod
     public void bitmapRequest() {
         final long startTime = System.currentTimeMillis();
 
@@ -131,6 +103,7 @@ public class HttpClientAgentActivity extends AbsTestActivity {
         httpClientAgent.enqueue(request);
     }
 
+    @TestMethod
     public void stringFileRequest() {
         final long startTime = System.currentTimeMillis();
 
@@ -156,6 +129,7 @@ public class HttpClientAgentActivity extends AbsTestActivity {
         httpClientAgent.enqueue(request);
     }
 
+    @TestMethod
     public void bigFileRequest() {
         final long startTime = System.currentTimeMillis();
 

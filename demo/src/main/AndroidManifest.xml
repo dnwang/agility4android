@@ -46,7 +46,7 @@
             android:label="SweetCircularView＋支持嵌套事件 (ListView, ScrollView...)" />
         <activity
             android:name="org.pinwheel.demo4agility.activity.Json2ClassActivity"
-            android:label="测试 Json2Class" />
+            android:label="Json反射生成Class Json2Class" />
         <activity
             android:name="org.pinwheel.demo4agility.activity.CacheActivity"
             android:label="图片缓存 ImageLoader" />

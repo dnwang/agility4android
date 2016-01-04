@@ -11,7 +11,7 @@
             android:background="@color/holo_gray_dark"
             android:layout_gravity="right">
 
-        <org.pinwheel.agility.view.SweetScrollView
+        <org.pinwheel.agility.view.drag.DragScrollView
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:scrollbars="none">
@@ -33,7 +33,7 @@
                         android:orientation="vertical"/>
             </FrameLayout>
 
-        </org.pinwheel.agility.view.SweetScrollView>
+        </org.pinwheel.agility.view.drag.DragScrollView>
     </FrameLayout>
 
     <RelativeLayout

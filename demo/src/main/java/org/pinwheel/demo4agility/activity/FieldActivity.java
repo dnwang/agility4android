@@ -37,6 +37,7 @@ public class FieldActivity extends AbsTestActivity {
 
     @Override
     protected void doSomethingAfterCreated() {
+        showLog(true);
         InjectStruct injectStruct = new InjectStruct();
         // 注入
         logout("-------------- Inject -----------------");
@@ -140,7 +141,9 @@ public class FieldActivity extends AbsTestActivity {
                     Object sub_obj = createObject(field.getType());
 
                     field.set(obj, sub_obj);
-                    injectValue(sub_obj);
+                    if (sub_obj != null) {
+                        injectValue(sub_obj);
+                    }
                 }
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -168,6 +171,10 @@ public class FieldActivity extends AbsTestActivity {
             return '\0';
         } else {
             Object obj = null;
+            Constructor[] constructors = cls.getConstructors();
+            if (constructors == null || constructors.length == 0){
+                return obj;
+            }
 
             Constructor constructor = cls.getConstructors()[0]; // 使用第一个构造
             Class[] types = constructor.getParameterTypes();

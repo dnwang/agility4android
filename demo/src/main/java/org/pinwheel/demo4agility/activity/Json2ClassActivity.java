@@ -30,6 +30,7 @@ public class Json2ClassActivity extends AbsTestActivity {
 
     @Override
     protected void doSomethingAfterCreated() {
+        showLog(true);
         Json2Class.doAnalyze(json_data, "AutoJsonStruct", "/sdcard");
         AutoJsonStruct struct = new Gson().fromJson(json_data, AutoJsonStruct.class);
         logoutObject(struct);

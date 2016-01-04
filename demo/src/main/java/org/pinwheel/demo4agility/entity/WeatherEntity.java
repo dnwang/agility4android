@@ -1,5 +1,6 @@
 package org.pinwheel.demo4agility.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -10,7 +11,7 @@ import java.util.ArrayList;
  *
  * @author dnwang
  */
-public final class WeatherEntity {
+public final class WeatherEntity implements Serializable {
 
     //http://wthrcdn.etouch.cn/weather_mini?citykey=101010100
 
@@ -20,13 +21,13 @@ public final class WeatherEntity {
     String city;
     Data data;
 
-    public static class Data {
+    public static class Data implements Serializable {
         String wendu;
         String ganmao;
         ArrayList<Forecast> forecast;
     }
 
-    public static class Forecast {
+    public static class Forecast implements Serializable {
         String fengxiang;
         String fengli;
         String high;

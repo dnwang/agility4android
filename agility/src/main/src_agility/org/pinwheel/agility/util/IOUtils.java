@@ -110,7 +110,7 @@ public final class IOUtils {
     /**
      * @return byte size of stream
      */
-    public static int link(InputStream inputStream, OutputStream outputStream) {
+    public static int connect(InputStream inputStream, OutputStream outputStream) {
         int size = -1;
         BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
@@ -193,7 +193,7 @@ public final class IOUtils {
         return data;
     }
 
-    public static boolean object2Steam(OutputStream outputStream, Object object) {
+    public static boolean object2Stream(OutputStream outputStream, Object object) {
         boolean success = false;
         if (outputStream == null) {
             return false;

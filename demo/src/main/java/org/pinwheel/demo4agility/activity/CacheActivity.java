@@ -250,14 +250,16 @@ public class CacheActivity extends AbsTestActivity {
         FrameLayout container = new FrameLayout(this);
         ViewHolder holder = new ViewHolder();
         holder.txt = new TextView(this);
+        holder.txt.setTextSize(UIUtils.sp2px(this, 6));
         holder.img = new ImageView(this);
-        holder.img.setBackgroundColor(Color.BLUE);
+        holder.img.setBackgroundColor(Color.GREEN);
         holder.img.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-        FrameLayout.LayoutParams imgParams = new FrameLayout.LayoutParams(-2, UIUtils.dip2px(this, 64));
+        FrameLayout.LayoutParams imgParams = new FrameLayout.LayoutParams(-1, UIUtils.dip2px(this, 64));
         container.addView(holder.img, imgParams);
         FrameLayout.LayoutParams txtParams = new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.LEFT);
         container.addView(holder.txt, txtParams);
+        container.setTag(holder);
         return container;
     }
 
