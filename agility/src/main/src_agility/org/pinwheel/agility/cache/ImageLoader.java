@@ -6,19 +6,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
-
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.HttpConnectionAgent;
 import org.pinwheel.agility.net.OkHttpAgent;
 import org.pinwheel.agility.net.Request;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
-import org.pinwheel.agility.util.BaseUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -98,10 +92,7 @@ public class ImageLoader {
         this.taskMap = new ConcurrentHashMap<>(16);
 
         // init disk cache
-        this.diskCache = new DiskCache(
-                CacheUtils.getDiskCacheDir(context, PATH),
-                BaseUtils.getVersionCode(context),
-                options.getDiskCacheSize());
+        this.diskCache = new DiskCache(CacheUtils.getDiskCacheDir(context, PATH), 0, options.getDiskCacheSize());
         // init memory cache
         this.memoryCache = new MemoryCache(options.getMemoryCacheSize());
 

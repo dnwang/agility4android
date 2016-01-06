@@ -3,8 +3,6 @@ package org.pinwheel.agility.cache;
 import android.content.Context;
 import android.text.TextUtils;
 
-import org.pinwheel.agility.util.BaseUtils;
-
 import java.io.InputStream;
 import java.io.Serializable;
 
@@ -33,10 +31,7 @@ public final class DataCacheManager {
     private DiskCache diskCache;
 
     private DataCacheManager(Context context) {
-        this.diskCache = new DiskCache(
-                CacheUtils.getDiskCacheDir(context, PATH),
-                BaseUtils.getVersionCode(context),
-                CacheUtils.DEFAULT_MAX_DISK_CACHE);
+        this.diskCache = new DiskCache(CacheUtils.getDiskCacheDir(context, PATH), 0, CacheUtils.DEFAULT_MAX_DISK_CACHE);
         this.memoryCache = new MemoryCache(CacheUtils.DEFAULT_MAX_MEMORY_CACHE);
     }
 

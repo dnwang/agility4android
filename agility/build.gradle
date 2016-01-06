@@ -30,8 +30,8 @@ android {
 
     defaultConfig {
         minSdkVersion 15
-        versionCode 68
-        versionName '4.1.0.68'
+        versionCode 69
+        versionName '4.1.0.69'
     }
 
     buildTypes {
