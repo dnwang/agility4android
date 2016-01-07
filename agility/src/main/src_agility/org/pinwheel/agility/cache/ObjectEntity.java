@@ -101,6 +101,10 @@ public class ObjectEntity<T> implements Serializable {
         }
     }
 
+    public void decodeFrom(byte[] bytes) {
+
+    }
+
     public void decodeFrom(T obj) {
         if (obj == null) {
             return;

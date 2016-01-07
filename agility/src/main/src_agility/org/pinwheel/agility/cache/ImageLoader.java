@@ -6,15 +6,25 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
+
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.HttpConnectionAgent;
 import org.pinwheel.agility.net.OkHttpAgent;
 import org.pinwheel.agility.net.Request;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
+import org.pinwheel.agility.util.IOUtils;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -201,22 +211,26 @@ public class ImageLoader {
     }
 
     /**
-     * Load disk cache to memory and return it
+     * Load bitmap to memory and return it
      *
-     * @param diskKey the key of disk cache
-     * @param options params
+     * @param memoryKey memory key
+     * @param bytes     data of bitmap
+     * @param options   params
      * @return memory cache bitmap
      */
-    protected Bitmap getDiskCacheToMemory(String diskKey, BitmapReceiver.Options options) {
+    protected Bitmap getBitmapToMemory(String memoryKey, byte[] bytes, BitmapReceiver.Options options) {
+        if (TextUtils.isEmpty(memoryKey) || bytes == null || bytes.length == 0) {
+            return null;
+        }
         BitmapEntity bitmapEntity;
         if (options == null) {
             bitmapEntity = new BitmapEntity();
-            bitmapEntity.decodeFrom(diskCache.getCache(diskKey));
+            bitmapEntity.decodeFrom(bytes);
         } else {
             bitmapEntity = new BitmapEntity(options.getConfig());
-            bitmapEntity.decodeFrom(diskCache.getCache(diskKey), options);
+            bitmapEntity.decodeFrom(bytes, options);
         }
-        memoryCache.setCache(getMemoryKey(diskKey, options), bitmapEntity);
+        memoryCache.setCache(memoryKey, bitmapEntity);
         return bitmapEntity.get();
     }
 
@@ -249,9 +263,6 @@ public class ImageLoader {
      */
     protected void removeTask(String key) {
         AsyncLoaderTask task = taskMap.remove(key);
-        if (task != null) {
-            task.release();
-        }
         if (taskMap.size() == 0) {
             System.gc();
         }
@@ -312,13 +323,13 @@ public class ImageLoader {
      */
     private class AsyncLoaderTask implements Runnable {
 
-        private final Map<Integer, BitmapReceiver> receivers;
+        private final Set<BitmapReceiver> receivers;
         private final String diskKey;
         private final String uri;
 
         public AsyncLoaderTask(String uri) {
             this.diskKey = getDiskKey(uri);
-            this.receivers = new ConcurrentHashMap<>(10);
+            this.receivers = new HashSet<>(5);
             this.uri = uri;
         }
 
@@ -326,7 +337,9 @@ public class ImageLoader {
          * Release all receiver
          */
         public void release() {
-            receivers.clear();
+            synchronized (receivers) {
+                receivers.clear();
+            }
         }
 
         /**
@@ -335,7 +348,9 @@ public class ImageLoader {
          * @param receiver receiver
          */
         public void addReceiver(BitmapReceiver receiver) {
-            receivers.put(receiver.hashCode(), receiver);
+            synchronized (receivers) {
+                receivers.add(receiver);
+            }
         }
 
         /**
@@ -344,7 +359,9 @@ public class ImageLoader {
          * @param targetReceiver receiver
          */
         public void removeReceiver(BitmapReceiver targetReceiver) {
-            receivers.remove(targetReceiver.hashCode());
+            synchronized (receivers) {
+                receivers.remove(targetReceiver);
+            }
         }
 
         public void postToReceiver(final BitmapReceiver receiver, final Bitmap bitmap) {
@@ -367,12 +384,19 @@ public class ImageLoader {
             request.setResponseParser(new DataParserAdapter() {
                 @Override
                 public void parse(InputStream inStream) throws Exception {
-                    diskCache.setCache(diskKey, inStream);
-                    Collection<BitmapReceiver> collection = receivers.values();
-                    for (BitmapReceiver receiver : collection) {
-                        postToReceiver(receiver, getDiskCacheToMemory(diskKey, receiver.getOptions()));
+                    byte[] bytes = IOUtils.stream2Bytes(inStream);
+                    diskCache.setCache(diskKey, new ByteArrayInputStream(bytes));
+                    synchronized (receivers) {
+                        Iterator<BitmapReceiver> iterator = receivers.iterator();
+                        while (iterator.hasNext()) {
+                            BitmapReceiver receiver = iterator.next();
+                            BitmapReceiver.Options options = receiver.getOptions();
+                            Bitmap bitmap = getBitmapToMemory(getMemoryKey(diskKey, options), bytes, options);
+                            postToReceiver(receiver, bitmap);
+                            iterator.remove();
+                        }
+                        removeTask(diskKey);
                     }
-                    removeTask(diskKey);
                 }
             });
             httpEngine.enqueue(request);
@@ -381,21 +405,18 @@ public class ImageLoader {
         private void getBitmapFromNativePath() {
             try {
                 FileInputStream fileInStream = new FileInputStream(new File(uri));
-                Collection<BitmapReceiver> collection = receivers.values();
-                for (BitmapReceiver receiver : collection) {
-                    BitmapEntity bitmapEntity;
-                    BitmapReceiver.Options options = receiver.getOptions();
-                    if (options == null) {
-                        bitmapEntity = new BitmapEntity();
-                        bitmapEntity.decodeFrom(fileInStream);
-                    } else {
-                        bitmapEntity = new BitmapEntity(options.getConfig());
-                        bitmapEntity.decodeFrom(fileInStream, options);
+                byte[] bytes = IOUtils.stream2Bytes(fileInStream);
+                synchronized (receivers) {
+                    Iterator<BitmapReceiver> iterator = receivers.iterator();
+                    while (iterator.hasNext()) {
+                        BitmapReceiver receiver = iterator.next();
+                        BitmapReceiver.Options options = receiver.getOptions();
+                        Bitmap bitmap = getBitmapToMemory(getMemoryKey(diskKey, options), bytes, options);
+                        postToReceiver(receiver, bitmap);
+                        iterator.remove();
                     }
-                    memoryCache.setCache(getMemoryKey(diskKey, options), bitmapEntity);
-                    postToReceiver(receiver, bitmapEntity.get());
+                    removeTask(diskKey);
                 }
-                removeTask(diskKey);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -418,11 +439,18 @@ public class ImageLoader {
                 getBitmapFromNetwork();
             } else {
                 // just load disk cache
-                Collection<BitmapReceiver> collection = receivers.values();
-                for (BitmapReceiver receiver : collection) {
-                    postToReceiver(receiver, getDiskCacheToMemory(diskKey, receiver.getOptions()));
+                byte[] bytes = IOUtils.stream2Bytes(diskCache.getCache(diskKey));
+                synchronized (receivers) {
+                    Iterator<BitmapReceiver> iterator = receivers.iterator();
+                    while (iterator.hasNext()) {
+                        BitmapReceiver receiver = iterator.next();
+                        BitmapReceiver.Options options = receiver.getOptions();
+                        Bitmap bitmap = getBitmapToMemory(getMemoryKey(diskKey, options), bytes, options);
+                        postToReceiver(receiver, bitmap);
+                        iterator.remove();
+                    }
+                    removeTask(diskKey);
                 }
-                removeTask(diskKey);
             }
         }
     }

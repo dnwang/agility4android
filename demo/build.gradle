@@ -11,8 +11,8 @@ android {
     defaultConfig {
         applicationId "org.pinwheel.demo"
         minSdkVersion 15
-        versionCode 69
-        versionName "4.1.0.69"
+        versionCode 70
+        versionName "4.1.0.70"
     }
 
     lintOptions {

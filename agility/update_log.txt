@@ -80,3 +80,7 @@ v4.0.7.67;20151231;dnwang;
 v4.1.0.68;20160103;dnwang;
 1.Util工具类整理,添加Util.ex包扩展工具类;
 2.移除SweetDialog类;
+
+v4.1.0.70;20160108;dnwang;
+1.ImageLoader Bug任务接收器删除bug修复;
+2.ImageLoader 优化频繁读取本地流;
