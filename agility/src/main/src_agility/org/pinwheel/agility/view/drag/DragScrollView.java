@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
+
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -78,8 +79,26 @@ public class DragScrollView extends ScrollView implements Draggable {
                 } else {
                     return super.dispatchTouchEvent(event);
                 }
+            case MotionEvent.ACTION_MOVE:
+                final float yDiff = event.getRawY() - lastPoint.y;
+                isNeedIntercept = Math.abs(yDiff) > 10;
+                return super.dispatchTouchEvent(event);
             default:
                 return super.dispatchTouchEvent(event);
+        }
+    }
+
+    private boolean isNeedIntercept;
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                return super.onInterceptTouchEvent(event);
+            case MotionEvent.ACTION_MOVE:
+                return isNeedIntercept;
+            default:
+                return super.onInterceptTouchEvent(event);
         }
     }
 
@@ -168,14 +187,14 @@ public class DragScrollView extends ScrollView implements Draggable {
         if (getChildCount() == 0) {
             return false;
         }
-        return getScrollY() == 0;
+        return getScrollY() <= 0;
     }
 
     private boolean isArrivedBottom() {
         if (getChildCount() == 0) {
             return false;
         }
-        return getScrollY() == getChildAt(0).getBottom() + getPaddingBottom() - getMeasuredHeight();
+        return getScrollY() >= getChildAt(0).getBottom() + getPaddingBottom() - getMeasuredHeight();
     }
 
     private final PointF lastPoint = new PointF();

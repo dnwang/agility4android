@@ -101,9 +101,9 @@ class DragHelper implements Draggable {
         if (distance == 0 || (!hasBottomHold() && !hasTopHold())) {
             return false;
         }
-        if (distance > 0 && distance > getTopHoldDistance()) {
+        if (hasTopHold() && distance > 0 && distance > getTopHoldDistance()) {
             return true;
-        } else if (distance < 0 && distance < -getBottomHoldDistance()) {
+        } else if (hasBottomHold() && distance < 0 && distance < -getBottomHoldDistance()) {
             return true;
         } else {
             return false;
@@ -114,8 +114,14 @@ class DragHelper implements Draggable {
     public void hold(final boolean isTopPosition) {
         float newDy = 0;
         if (isTopPosition && hasTopHold()) {
+            if (getPosition() != EDGE_TOP) {
+                setPosition(EDGE_TOP);
+            }
             newDy = getTopHoldDistance();
         } else if (!isTopPosition && hasBottomHold()) {
+            if (getPosition() != EDGE_BOTTOM) {
+                setPosition(EDGE_BOTTOM);
+            }
             newDy = -getBottomHoldDistance();
         }
 
@@ -274,7 +280,6 @@ class DragHelper implements Draggable {
         return currentState;
     }
 
-    @Deprecated
     @Override
     public void setPosition(int position) {
         this.currentPosition = position;

@@ -38,10 +38,10 @@ public class SweetProgress extends View {
     private Point center;
     private Paint paint;
     private int pointSize;
-    private int outerRadius;
-    private int innerRadius;
+    private float outerRadius;
+    private float innerRadius;
 
-    private int pointWidth;
+    private float pointWidth;
 
     private final Runnable loop = new Runnable() {
         @Override
@@ -92,21 +92,21 @@ public class SweetProgress extends View {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        final int dp10 = UIUtils.dip2px(getContext(), 10);
+        final int dp12 = UIUtils.dip2px(getContext(), 12);
 
         final int width = getMeasuredWidth();
         final int height = getMeasuredHeight();
 
         center.set(width / 2, height / 2);
-        outerRadius = Math.min(width - (getPaddingLeft() + getPaddingRight()), height - (getPaddingTop() + getPaddingBottom())) / 2 - 8;
+        outerRadius = Math.min(width - (getPaddingLeft() + getPaddingRight()), height - (getPaddingTop() + getPaddingBottom())) / 2.0f - 8;
 
-        if (outerRadius <= dp10) {
-            innerRadius = outerRadius / 3;
-            pointWidth = 3;
+        if (outerRadius <= dp12) {
+            innerRadius = outerRadius / 2.0f;
+            pointWidth = 4.5f;
             pointSize = 8;
         } else {
-            innerRadius = (int) (outerRadius / 2.5);
-            pointWidth = Math.max(3, outerRadius / (dp10 / 2));
+            innerRadius = outerRadius / 2.0f;
+            pointWidth = Math.max(4.5f, outerRadius / (dp12 / 2.0f));
             pointSize = 12;
         }
 

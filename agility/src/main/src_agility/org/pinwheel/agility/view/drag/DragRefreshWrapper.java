@@ -60,7 +60,9 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
         headerIndicator.bindDraggable(draggable);
         footerIndicator.bindDraggable(draggable);
         draggable.addOnDragListener(this);
-        draggable.setHoldDistance(headerIndicator.getMeasuredHeight(), footerIndicator.getMeasuredHeight());
+        draggable.setHoldDistance(
+                headerIndicator.getVisibility() == VISIBLE ? headerIndicator.getMeasuredHeight() : 0,
+                footerIndicator.getVisibility() == VISIBLE ? footerIndicator.getMeasuredHeight() : 0);
     }
 
     private void resetHeaderIndicator(BaseDragIndicator indicator) {
@@ -68,6 +70,7 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
             return;
         }
         if (headerIndicator != null) {
+            headerIndicator.bindDraggable(null);
             removeView(headerIndicator);
         }
         headerIndicator = indicator;
@@ -106,12 +109,12 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
             if (position == Draggable.EDGE_TOP && !headerIndicator.isHolding()) {
                 headerIndicator.onHold();
                 if (listener != null) {
-                    listener.onRefresh();
+                    listener.onTopRefresh();
                 }
             } else if (position == Draggable.EDGE_BOTTOM && !footerIndicator.isHolding()) {
                 footerIndicator.onHold();
                 if (listener != null) {
-                    listener.onLoadMore();
+                    listener.onBottomLoad();
                 }
             }
         }
@@ -148,10 +151,16 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
 
     public void setHeaderVisibility(boolean isVisible) {
         headerIndicator.setVisibility(isVisible ? VISIBLE : INVISIBLE);
+        if (draggable != null) {
+            draggable.setHoldDistance(isVisible ? headerIndicator.getMeasuredHeight() : 0, draggable.getBottomHoldDistance());
+        }
     }
 
     public void setFooterVisibility(boolean isVisible) {
         footerIndicator.setVisibility(isVisible ? VISIBLE : INVISIBLE);
+        if (draggable != null) {
+            draggable.setHoldDistance(draggable.getTopHoldDistance(), isVisible ? footerIndicator.getMeasuredHeight() : 0);
+        }
     }
 
     public void doRefresh() {
@@ -169,9 +178,9 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
     }
 
     public interface OnRefreshListener {
-        void onRefresh();
+        void onTopRefresh();
 
-        void onLoadMore();
+        void onBottomLoad();
     }
 
 }

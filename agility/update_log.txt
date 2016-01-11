@@ -84,3 +84,9 @@ v4.1.0.68;20160103;dnwang;
 v4.1.0.70;20160108;dnwang;
 1.ImageLoader Bug任务接收器删除bug修复;
 2.ImageLoader 优化频繁读取本地流;
+
+v4.1.0.71;20160111;dnwang;
+1.修复DragScrollView不满一屏不能刷新bug;
+2.调整SweetProgress,更优雅;
+3.修复DragHelper顶部和底部仅一边hold时,另一边不能自动回复bug;
+4.修复调用着主动hold时,没有指示器;
