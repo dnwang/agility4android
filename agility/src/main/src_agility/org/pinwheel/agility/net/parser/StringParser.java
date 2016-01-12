@@ -20,29 +20,18 @@ public class StringParser extends DataParserAdapter<String> {
     @Override
     public void parse(InputStream inStream) throws Exception {
         result = streamToString(inStream);
-        dispatchOnComplete();
+        dispatchComplete();
     }
 
     @Override
     public void parse(byte[] dataBytes) throws Exception {
-        dispatchOnProgress(0, 0);
+        dispatchProgress(0, 0);
 
         result = new String(dataBytes, "UTF-8");
 
-        dispatchOnProgress(0, result.getBytes().length);
+        dispatchProgress(0, result.getBytes().length);
 
-        dispatchOnComplete();
-    }
-
-    @Override
-    public void parse(String dataString) throws Exception {
-        dispatchOnProgress(0, 0);
-
-        result = dataString;
-
-        dispatchOnProgress(0, result == null ? -1 : result.getBytes().length);
-
-        dispatchOnComplete();
+        dispatchComplete();
     }
 
     @Override
@@ -72,7 +61,7 @@ public class StringParser extends DataParserAdapter<String> {
                 progress += line.length();
                 currentTime = System.currentTimeMillis();
                 if (currentTime - lastTime > 1000) {
-                    dispatchOnProgress(progress, -1);// -1 unknown
+                    dispatchProgress(progress, -1);// -1 unknown
                     lastTime = currentTime;
                 }
                 // end
@@ -82,6 +71,11 @@ public class StringParser extends DataParserAdapter<String> {
         } finally {
             try {
                 reader.close();
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
                 is.close();
             } catch (IOException e) {
                 e.printStackTrace();

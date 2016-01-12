@@ -218,10 +218,16 @@ public class CycleGalleryActivity extends AbsTestActivity {
         });
 
         // create pager warapper
-        ViewPager viewPager = new ViewPager(this);
+        final ViewPager viewPager = new ViewPager(this);
         SimplePagerAdapter pagerAdapter = new SimplePagerAdapter();
         viewPager.setAdapter(pagerAdapter);
         Button simpleTestBtn = new Button(this);
+        simpleTestBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                viewPager.setCurrentItem(1);
+            }
+        });
         simpleTestBtn.setText("Just test for pager");
         pagerAdapter.add(simpleTestBtn);
         pagerAdapter.add(container);

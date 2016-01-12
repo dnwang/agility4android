@@ -20,11 +20,17 @@
         </activity>
 
         <activity
-            android:name="org.pinwheel.demo4agility.activity.RequestActivity"
-            android:label="RequestManager请求测试" />
+            android:name=".activity.DragViewActivity"
+            android:label="拖动刷新系列控件 (List,Grid,Scroll)" />
         <activity
             android:name="org.pinwheel.demo4agility.activity.RefreshListActivity"
             android:label="下拉刷新" />
+        <activity
+            android:name="org.pinwheel.demo4agility.activity.CacheActivity"
+            android:label="图片缓存 ImageLoader" />
+        <activity
+            android:name="org.pinwheel.demo4agility.activity.CycleGalleryActivity"
+            android:label="SweetCircularView＋支持嵌套事件 (ListView, ScrollView...)" />
         <activity
             android:name="org.pinwheel.demo4agility.activity.TabActivity"
             android:label="TabController嵌套" />
@@ -42,16 +48,7 @@
             android:name="org.pinwheel.demo4agility.activity.FieldActivity"
             android:label="反射 + 注入" />
         <activity
-            android:name="org.pinwheel.demo4agility.activity.CycleGalleryActivity"
-            android:label="SweetCircularView＋支持嵌套事件 (ListView, ScrollView...)" />
-        <activity
             android:name="org.pinwheel.demo4agility.activity.Json2ClassActivity"
             android:label="Json反射生成Class Json2Class" />
-        <activity
-            android:name="org.pinwheel.demo4agility.activity.CacheActivity"
-            android:label="图片缓存 ImageLoader" />
-        <activity
-            android:name=".activity.DragViewActivity"
-            android:label="拖动刷新系列控件 (List,Grid,Scroll)" />
     </application>
 </manifest>

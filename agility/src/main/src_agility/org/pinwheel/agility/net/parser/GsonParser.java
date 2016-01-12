@@ -39,7 +39,7 @@ public class GsonParser<T> extends DataParserAdapter<T> {
 
     @Override
     public final void parse(InputStream inStream) throws Exception {
-        dispatchOnProgress(0, -1);
+        dispatchProgress(0, -1);
 
         if (cls != null) {
             this.onParse(gson.fromJson(new InputStreamReader(inStream), cls));
@@ -47,32 +47,12 @@ public class GsonParser<T> extends DataParserAdapter<T> {
             this.onParse((T) gson.fromJson(new InputStreamReader(inStream), type));
         }
 
-        dispatchOnComplete();
-    }
-
-    @Override
-    public final void parse(String dataString) throws Exception {
-        dispatchOnProgress(0, dataString == null ? -1 : dataString.getBytes().length);
-
-        if (debug) {
-            Log.d(TAG, dataString);
-        }
-
-        if (cls != null) {
-            this.onParse(gson.fromJson(dataString, cls));
-        } else if (type != null) {
-            this.onParse((T) gson.fromJson(dataString, type));
-        }
-
-        long length = dataString == null ? -1 : dataString.getBytes().length;
-        dispatchOnProgress(length, length);
-
-        dispatchOnComplete();
+        dispatchComplete();
     }
 
     @Override
     public final void parse(byte[] dataBytes) throws Exception {
-        dispatchOnProgress(0, dataBytes == null ? -1 : dataBytes.length);
+        dispatchProgress(0, dataBytes == null ? -1 : dataBytes.length);
 
         String result = new String(dataBytes, "UTF-8");
         if (debug) {
@@ -84,9 +64,9 @@ public class GsonParser<T> extends DataParserAdapter<T> {
             this.onParse((T) gson.fromJson(result, type));
         }
 
-        dispatchOnProgress(dataBytes.length, dataBytes.length);
+        dispatchProgress(dataBytes.length, dataBytes.length);
 
-        dispatchOnComplete();
+        dispatchComplete();
     }
 
     protected void onParse(T t) throws Exception {

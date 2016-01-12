@@ -25,12 +25,6 @@ public interface IDataParser<T> {
     public void parse(byte[] dataBytes) throws Exception;
 
     /**
-     * @param dataString
-     * @throws Exception
-     */
-    public void parse(String dataString) throws Exception;
-
-    /**
      * Get parser result
      *
      * @return T

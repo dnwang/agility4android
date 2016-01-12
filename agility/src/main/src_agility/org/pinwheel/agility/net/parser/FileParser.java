@@ -28,19 +28,13 @@ public class FileParser extends DataParserAdapter<File> {
     @Override
     public void parse(InputStream inStream) throws Exception {
         result = save(fileName, inStream);
-        dispatchOnComplete();
+        dispatchComplete();
     }
 
     @Override
     public void parse(byte[] dataBytes) throws Exception {
         result = save(fileName, dataBytes);
-        dispatchOnComplete();
-    }
-
-    @Override
-    public void parse(String dataString) throws Exception {
-        result = save(fileName, dataString.getBytes());
-        dispatchOnComplete();
+        dispatchComplete();
     }
 
     @Override
@@ -60,16 +54,19 @@ public class FileParser extends DataParserAdapter<File> {
 
         boolean isException = false;
         FileOutputStream fout = null;
-        File p = new File(name.substring(0, name.lastIndexOf(File.separator)));
-        if (!p.exists()) {
-            p.mkdirs();
+        File file = new File(name);
+        File path = file.getParentFile();
+        if (!path.exists()) {
+            path.mkdirs();
+        } else if (file.exists()) {
+            file.delete();
         }
         try {
             long lastTime = 0;
             long currentTime = 0;
             long progress = 0;
 
-            fout = new FileOutputStream(name);
+            fout = new FileOutputStream(file);
             byte[] buf = new byte[1024];
             int len = 0;
             while ((len = inStream.read(buf)) != -1) {
@@ -78,12 +75,12 @@ public class FileParser extends DataParserAdapter<File> {
                 progress += len;
                 currentTime = System.currentTimeMillis();
                 if (currentTime - lastTime > 1000) {
-                    dispatchOnProgress(progress, -1);// -1 unknown
+                    dispatchProgress(progress, -1);// -1 unknown
                     lastTime = currentTime;
                 }
                 // end
             }
-            target_file = new File(name);
+            target_file = file;
         } catch (Exception e) {
             isException = true;
         } finally {
@@ -105,22 +102,25 @@ public class FileParser extends DataParserAdapter<File> {
 
         boolean isException = false;
         FileOutputStream fout = null;
-        File p = new File(name.substring(0, name.lastIndexOf(File.separator)));
-        if (!p.exists()) {
-            p.mkdirs();
+        File file = new File(name);
+        File path = file.getParentFile();
+        if (!path.exists()) {
+            path.mkdirs();
+        } else if (file.exists()) {
+            file.delete();
         }
         try {
-            fout = new FileOutputStream(name);
+            fout = new FileOutputStream(file);
 
             // progress callback
-            dispatchOnProgress(0, data.length);
+            dispatchProgress(0, data.length);
 
             fout.write(data);
 
-            dispatchOnProgress(data.length, data.length);
+            dispatchProgress(data.length, data.length);
             // end
 
-            target_file = new File(name);
+            target_file = file;
         } catch (Exception e) {
             isException = true;
         } finally {

@@ -9,6 +9,7 @@ import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.HttpConnectionAgent;
 import org.pinwheel.agility.net.OkHttpAgent;
 import org.pinwheel.agility.net.Request;
+import org.pinwheel.agility.net.VolleyAgent;
 import org.pinwheel.agility.net.parser.BitmapParser;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.net.parser.FileParser;
@@ -25,8 +26,8 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
 
     @Override
     protected void onInitInCreate() {
-        httpClientAgent = new HttpConnectionAgent(6);
         httpClientAgent = new OkHttpAgent(6);
+//        httpClientAgent = new HttpConnectionAgent(6);
 //        httpClientAgent = new VolleyAgent(getApplicationContext());
     }
 

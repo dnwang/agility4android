@@ -33,32 +33,26 @@ public class BitmapParser extends DataParserAdapter<Bitmap> {
 
     @Override
     public void parse(InputStream inStream) throws Exception {
-        dispatchOnProgress(0, -1);
+        dispatchProgress(0, -1);
 
         result = BitmapFactory.decodeStream(inStream);
 
         saveBitmap2File(result);
 
-        dispatchOnComplete();
+        dispatchComplete();
     }
 
     @Override
     public void parse(byte[] dataBytes) throws Exception {
-        dispatchOnProgress(0, dataBytes == null ? -1 : dataBytes.length);
+        dispatchProgress(0, dataBytes == null ? -1 : dataBytes.length);
 
         result = BitmapFactory.decodeByteArray(dataBytes, 0, dataBytes.length);
 
-        dispatchOnProgress(dataBytes.length, dataBytes.length);
+        dispatchProgress(dataBytes.length, dataBytes.length);
 
         saveBitmap2File(result);
 
-        dispatchOnComplete();
-    }
-
-    @Override
-    public void parse(String dataString) throws Exception {
-        dispatchOnProgress(-1, -1);
-        dispatchOnComplete();
+        dispatchComplete();
     }
 
     @Override
@@ -80,7 +74,7 @@ public class BitmapParser extends DataParserAdapter<Bitmap> {
         if (!TextUtils.isEmpty(fileName)) {
             Bitmap.CompressFormat bitmap_format;
             if (format == null) {
-                bitmap_format = Bitmap.CompressFormat.JPEG;
+                bitmap_format = Bitmap.CompressFormat.PNG;
             } else {
                 bitmap_format = format;
             }
@@ -93,12 +87,15 @@ public class BitmapParser extends DataParserAdapter<Bitmap> {
 
         boolean isException = false;
         FileOutputStream fout = null;
-        File p = new File(name.substring(0, name.lastIndexOf(File.separator)));
-        if (!p.exists()) {
-            p.mkdirs();
+        File file = new File(name);
+        File path = file.getParentFile();
+        if (!path.exists()) {
+            path.mkdirs();
+        } else if (file.exists()) {
+            file.delete();
         }
         try {
-            fout = new FileOutputStream(name);
+            fout = new FileOutputStream(file);
             bitmap.compress(format, 100, fout);
             target_file = new File(name);
         } catch (Exception e) {

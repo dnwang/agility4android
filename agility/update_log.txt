@@ -90,3 +90,8 @@ v4.1.0.71;20160111;dnwang;
 2.调整SweetProgress,更优雅;
 3.修复DragHelper顶部和底部仅一边hold时,另一边不能自动回复bug;
 4.修复调用着主动hold时,没有指示器;
+
+v4.1.0.72;20160112;dnwang;
+1.调整HttpAgent回调逻辑;
+2.优化DataParser解析逻辑;
+3.修复ImageLoader当网络错误不通知Bug;

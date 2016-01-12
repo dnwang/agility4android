@@ -4,7 +4,6 @@ import android.text.TextUtils;
 
 import org.pinwheel.agility.net.parser.IDataParser;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +16,7 @@ import java.util.Set;
  *
  * @author dnwang
  */
-public final class Request implements Serializable {
+public class Request {
 
     private String baseUrl;
     private String method;
@@ -30,18 +29,6 @@ public final class Request implements Serializable {
     private IDataParser responseParser;
     private HttpClientAgent.OnRequestAdapter requestListener;
 
-//    private Request(String method, String url, int timeOut) {
-//        this.baseUrl = TextUtils.isEmpty(url) ? "http://" : url;
-//        this.method = TextUtils.isEmpty(method) ? "GET" : method;
-//        this.timeOut = timeOut;
-//        body = null;
-//        params = new HashMap<String, String>(0);
-//        headers = new HashMap<String, String>(0);
-//        numOfRetries = 0;
-//        isKeepSingle = false;
-//        tag = baseUrl;
-//    }
-
     private Request(Builder builder) {
         baseUrl = builder.url;
         method = builder.method;
@@ -51,7 +38,7 @@ public final class Request implements Serializable {
         timeOut = builder.timeOut;
         numOfRetries = builder.numOfRetries;
         isKeepSingle = builder.isKeepSingle;
-        tag = builder.tag == null ? baseUrl : builder.tag;// use baseUrl as default tag
+        tag = builder.tag;
     }
 
     /**
@@ -182,8 +169,8 @@ public final class Request implements Serializable {
             url = "http://";
             method = "GET";
             body = null;
-            params = new HashMap<String, String>(0);
-            headers = new HashMap<String, String>(0);
+            params = new HashMap<>(0);
+            headers = new HashMap<>(0);
             numOfRetries = 0;
             timeOut = 10 * 60;
             isKeepSingle = false;

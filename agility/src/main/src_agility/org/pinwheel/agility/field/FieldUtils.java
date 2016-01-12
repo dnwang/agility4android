@@ -20,7 +20,7 @@ public final class FieldUtils {
     }
 
     public static Map<String, String> obj2Map(Object obj) {
-        Map<String, String> values = new HashMap<String, String>();
+        Map<String, String> values = new HashMap<>();
         Class cls = obj.getClass();
         for (Field field : cls.getDeclaredFields()) {
             if (field.isAnnotationPresent(Ignore.class)) {

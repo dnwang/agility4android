@@ -88,58 +88,42 @@ public class OkHttpAgent extends HttpClientAgent {
             return;
         }
 
-        final OnRequestAdapter callback = request.getRequestListener();
-
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                if (callback != null) {
-                    if (callback.onRequestPrepare(request)) {
-                        // no need handle continue
-                        return;
-                    }
+                OnRequestAdapter callback = request.getRequestListener();
+
+                if (callback != null && callback.onRequestPrepare(request)) {
+                    // no need handle continue
+                    return;
                 }
                 // get response
                 Response response = null;
                 try {
                     response = execute(request);
-                    if (callback != null) {
-                        if (callback.onRequestResponse(response)) {
-                            // no need handle continue
-                            return;
-                        }
+                    if (callback != null && callback.onRequestResponse(response)) {
+                        // no need handle continue
+                        return;
                     }
                     if (response.code() != HttpURLConnection.HTTP_OK) {
                         throw new IllegalStateException("Response code: " + response.code() + "; message: " + response.message());
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    if (callback != null) {
-                        callback.dispatchOnError(e);
-                    }
+                    dispatchError(callback, e);
                     // break; request error
                     return;
                 }
                 // parse
                 IDataParser parser = request.getResponseParser();
                 if (parser == null) {
-                    if (callback != null) {
-                        callback.dispatchOnSuccess(null);
+                    dispatchSuccess(callback, null);
+                } else {
+                    try {
+                        parser.parse(response.body().byteStream());
+                        dispatchSuccess(callback, parser.getResult());
+                    } catch (Exception e) {
+                        dispatchError(callback, e);
                     }
-                    // break; no need parse
-                    return;
-                }
-                try {
-                    parser.parse(response.body().byteStream());
-                    if (callback != null) {
-                        callback.dispatchOnSuccess(parser.getResult());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    if (callback != null) {
-                        callback.dispatchOnError(e);
-                    }
-                } finally {
                 }
             }
         });

@@ -59,16 +59,14 @@ public class HttpConnectionAgent extends HttpClientAgent {
             return;
         }
 
-        final OnRequestAdapter callback = request.getRequestListener();
-
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                if (callback != null) {
-                    if (callback.onRequestPrepare(request)) {
-                        // no need handle continue
-                        return;
-                    }
+                OnRequestAdapter callback = request.getRequestListener();
+
+                if (callback != null && callback.onRequestPrepare(request)) {
+                    // no need handle continue
+                    return;
                 }
                 // get response
                 HttpURLConnection connection = null;
@@ -87,24 +85,20 @@ public class HttpConnectionAgent extends HttpClientAgent {
                     }
                     int code = connection.getResponseCode();
                     String message = connection.getResponseMessage();
-                    if (callback != null) {
-                        if (callback.onRequestResponse(connection)) {
-                            // no need handle continue
-                            connection.disconnect();
-                            return;
-                        }
+
+                    if (callback != null && callback.onRequestResponse(connection)) {
+                        connection.disconnect();
+                        // no need handle continue
+                        return;
                     }
                     if (code != HttpURLConnection.HTTP_OK) {
                         throw new IllegalStateException("Response code: " + code + "; message: " + message);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
                     if (connection != null) {
                         connection.disconnect();
                     }
-                    if (callback != null) {
-                        callback.dispatchOnError(e);
-                    }
+                    dispatchError(callback, e);
                     // break; request error
                     return;
                 }
@@ -112,24 +106,16 @@ public class HttpConnectionAgent extends HttpClientAgent {
                 IDataParser parser = request.getResponseParser();
                 if (parser == null) {
                     connection.disconnect();
-                    if (callback != null) {
-                        callback.dispatchOnSuccess(null);
+                    dispatchSuccess(callback, null);
+                } else {
+                    try {
+                        parser.parse(connection.getInputStream());
+                        dispatchSuccess(callback, parser.getResult());
+                    } catch (Exception e) {
+                        dispatchError(callback, e);
+                    } finally {
+                        connection.disconnect();
                     }
-                    // break; no need parse
-                    return;
-                }
-                try {
-                    parser.parse(connection.getInputStream());
-                    if (callback != null) {
-                        callback.dispatchOnSuccess(parser.getResult());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    if (callback != null) {
-                        callback.dispatchOnError(e);
-                    }
-                } finally {
-                    connection.disconnect();
                 }
             }
         });

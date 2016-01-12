@@ -18,11 +18,6 @@ public abstract class DataParserAdapter<T> implements IDataParser<T> {
     private OnParseListener listener;
 
     @Override
-    public void parse(String dataString) throws Exception {
-
-    }
-
-    @Override
     public void parse(byte[] dataBytes) throws Exception {
 
     }
@@ -45,8 +40,13 @@ public abstract class DataParserAdapter<T> implements IDataParser<T> {
         this.listener = listener;
     }
 
-    protected final void dispatchOnProgress(final long progress, final long total) {
-        if (listener != null) {
+    protected final void dispatchProgress(final long progress, final long total) {
+        if (listener == null) {
+            return;
+        }
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            listener.onProgress(progress, total);
+        } else {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
@@ -56,14 +56,18 @@ public abstract class DataParserAdapter<T> implements IDataParser<T> {
         }
     }
 
-    protected final void dispatchOnComplete() {
-        if (listener != null) {
+    protected final void dispatchComplete() {
+        if (listener == null) {
+            return;
+        }
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            listener.onComplete();
+        } else {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
                     listener.onComplete();
                 }
-
             });
         }
     }
@@ -73,9 +77,9 @@ public abstract class DataParserAdapter<T> implements IDataParser<T> {
      */
     public interface OnParseListener {
 
-        public void onProgress(long progress, long total);
+        void onProgress(long progress, long total);
 
-        public void onComplete();
+        void onComplete();
 
     }
 

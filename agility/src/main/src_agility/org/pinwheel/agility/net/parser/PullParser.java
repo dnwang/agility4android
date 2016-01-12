@@ -31,12 +31,6 @@ public abstract class PullParser<T> extends DataParserAdapter<T> {
     }
 
     @Override
-    public final void parse(String dataString) throws Exception {
-        this.parser.setInput(new StringReader(dataString));
-        this.parse();
-    }
-
-    @Override
     public final void parse(byte[] dataBytes) throws Exception {
         this.parser.setInput(new StringReader(new String(dataBytes, "UTF-8")));
         this.parse();

@@ -110,7 +110,7 @@ public class VolleyAgent extends HttpClientAgent {
         queue = null;
     }
 
-    protected static class RequestWrapper<T> extends com.android.volley.Request<T> {
+    protected class RequestWrapper<T> extends com.android.volley.Request<T> {
         private Request request;
 
         public RequestWrapper(int method, Request request) {
@@ -118,20 +118,22 @@ public class VolleyAgent extends HttpClientAgent {
             setRetryPolicy(new DefaultRetryPolicy(request.getTimeout(), request.getNumOfRetries(), 1.0f));
             Object tag = request.getTag();
             if (tag != null) {
-                setTag(tag);
+                try {
+                    setTag(tag);
+                } catch (Exception e) {
+                }
             }
             this.request = request;
         }
 
         @Override
         protected Response<T> parseNetworkResponse(NetworkResponse response) {
-            OnRequestAdapter listener = request.getRequestListener();
-            if (listener != null && listener.onRequestResponse(response)) {
+            OnRequestAdapter adapter = request.getRequestListener();
+            if (adapter != null && adapter.onRequestResponse(response)) {
                 // no need handle continue
                 return Response.success(null, HttpHeaderParser.parseCacheHeaders(response));
             }
             try {
-                request.getResponseParser().parse(response.data);
                 IDataParser<T> parser = request.getResponseParser();
                 if (parser == null) {
                     return Response.success(null, HttpHeaderParser.parseCacheHeaders(response));
@@ -149,19 +151,15 @@ public class VolleyAgent extends HttpClientAgent {
 
         @Override
         protected void deliverResponse(T response) {
-            OnRequestAdapter listener = request.getRequestListener();
-            if (listener != null) {
-                listener.dispatchOnSuccess(response);
-            }
+            OnRequestAdapter adapter = request.getRequestListener();
+            dispatchSuccess(adapter, response);
         }
 
         @Override
         public void deliverError(VolleyError error) {
             super.deliverError(error);
-            OnRequestAdapter listener = request.getRequestListener();
-            if (listener != null) {
-                listener.dispatchOnError(error);
-            }
+            OnRequestAdapter adapter = request.getRequestListener();
+            dispatchError(adapter, error);
         }
 
         @Override
