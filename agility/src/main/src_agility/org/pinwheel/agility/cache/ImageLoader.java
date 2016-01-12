@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
-
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.HttpConnectionAgent;
 import org.pinwheel.agility.net.OkHttpAgent;
@@ -14,17 +13,8 @@ import org.pinwheel.agility.net.Request;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.util.IOUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -368,12 +358,16 @@ public class ImageLoader {
             if (receiver == null) {
                 return;
             }
-            mainThreadHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    receiver.dispatch(bitmap);
-                }
-            });
+            if (Looper.myLooper() != Looper.getMainLooper()) {
+                mainThreadHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        receiver.dispatch(bitmap);
+                    }
+                });
+            } else {
+                receiver.dispatch(bitmap);
+            }
         }
 
         /**
@@ -392,7 +386,27 @@ public class ImageLoader {
                             BitmapReceiver receiver = iterator.next();
                             BitmapReceiver.Options options = receiver.getOptions();
                             Bitmap bitmap = getBitmapToMemory(getMemoryKey(diskKey, options), bytes, options);
+                            // notify update
                             postToReceiver(receiver, bitmap);
+                            iterator.remove();
+                        }
+                        removeTask(diskKey);
+                    }
+                }
+            }, new HttpClientAgent.OnRequestAdapter() {
+                @Override
+                public void onDeliverSuccess(Object obj) {
+                    // nothing to do; already notify in parse() method;
+                }
+
+                @Override
+                public void onDeliverError(Exception e) {
+                    synchronized (receivers) {
+                        Iterator<BitmapReceiver> iterator = receivers.iterator();
+                        while (iterator.hasNext()) {
+                            BitmapReceiver receiver = iterator.next();
+                            // notify update
+                            postToReceiver(receiver, null);
                             iterator.remove();
                         }
                         removeTask(diskKey);
@@ -403,9 +417,13 @@ public class ImageLoader {
         }
 
         private void getBitmapFromNativePath() {
+            byte[] bytes = null;
             try {
                 FileInputStream fileInStream = new FileInputStream(new File(uri));
-                byte[] bytes = IOUtils.stream2Bytes(fileInStream);
+                bytes = IOUtils.stream2Bytes(fileInStream);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } finally {
                 synchronized (receivers) {
                     Iterator<BitmapReceiver> iterator = receivers.iterator();
                     while (iterator.hasNext()) {
@@ -417,8 +435,6 @@ public class ImageLoader {
                     }
                     removeTask(diskKey);
                 }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             }
         }
 
