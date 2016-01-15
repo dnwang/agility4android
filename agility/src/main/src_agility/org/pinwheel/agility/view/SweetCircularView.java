@@ -323,7 +323,7 @@ public class SweetCircularView extends ViewGroup {
     }
 
     protected final void recycleItem(ItemWrapper item, int targetDataIndex) {
-        if (adapter == null || adapter.getCount() < 1) {
+        if (adapter == null) {
             return;
         }
         if (item.getDataIndex() == targetDataIndex && item.isUsing()) {
@@ -331,8 +331,12 @@ public class SweetCircularView extends ViewGroup {
         }
         // refresh item
         noNeedLayout = true;
-        View convertView = adapter.getView(targetDataIndex, item.getView(), this);
-        item.setView(convertView, targetDataIndex);
+        if (targetDataIndex >= adapter.getCount()) {
+            item.setView(null, targetDataIndex);
+        } else {
+            View convertView = adapter.getView(targetDataIndex, item.getView(), this);
+            item.setView(convertView, targetDataIndex);
+        }
         noNeedLayout = false;
     }
 
@@ -719,7 +723,12 @@ public class SweetCircularView extends ViewGroup {
 
         @Override
         public void onInvalidated() {
-            setCurrentDataIndex(0);
+            currentItemIndex = 0;
+            for (ItemWrapper item : items) {
+                item.setView(null, 0);
+                item.setForceRefresh();
+            }
+            requestLayout();
         }
     }
 
