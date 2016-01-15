@@ -5,8 +5,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
@@ -20,11 +18,10 @@ import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.view.SweetCircularView;
+import org.pinwheel.agility.view.SweetProgress;
+import org.pinwheel.agility.view.drag.DragListView;
 import org.pinwheel.demo4agility.R;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class CycleGalleryActivity extends AbsTestActivity {
@@ -104,7 +101,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
 
     @Override
     protected View getContentView() {
-        FrameLayout container = new FrameLayout(this);
+        final FrameLayout container = new FrameLayout(this);
 
         gallery = new SweetCircularView(this);
         gallery.setAdapter(adapter);
@@ -120,17 +117,23 @@ public class CycleGalleryActivity extends AbsTestActivity {
         LinearLayout c2 = new LinearLayout(this);
         c2.addView(c1);
         c1.addView(gallery, gParams);
-        ListView listView = new ListView(this);
+        ListView listView = new DragListView(this);
         listView.addHeaderView(c2);
 
-        List<String> array = new ArrayList<String>();
-        for (int i = 0; i < 10; i++) {
-            array.add("" + i);
+        SimpleArrayAdapter dataAdapter = new SimpleArrayAdapter<Integer>() {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                if (convertView == null) {
+                    convertView = new SweetProgress(parent.getContext());
+                }
+                return convertView;
+            }
+        };
+        for (int i = 0; i < 20; i++) {
+            dataAdapter.addItem(i);
         }
-        BaseAdapter arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, array);
-        listView.setAdapter(arrayAdapter);
+        listView.setAdapter(dataAdapter);
         container.addView(listView);
-//        container.addView(gallery);
 
         gallery.setOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
             @Override
@@ -206,7 +209,6 @@ public class CycleGalleryActivity extends AbsTestActivity {
             public void onClick(View v) {
                 int size = gallery.getRecycleItemSize();
                 gallery.setRecycleItemSize(size + 2);
-//                adapter.notifyDataSetChanged();
             }
         });
         func5.setOnClickListener(new View.OnClickListener() {

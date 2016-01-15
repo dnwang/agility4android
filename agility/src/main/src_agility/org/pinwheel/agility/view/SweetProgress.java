@@ -3,6 +3,7 @@ package org.pinwheel.agility.view;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DrawFilter;
 import android.graphics.Paint;
 import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.Point;
@@ -42,11 +43,13 @@ public class SweetProgress extends View {
     private float innerRadius;
 
     private float pointWidth;
+    private DrawFilter drawFilter;
 
     private final Runnable loop = new Runnable() {
         @Override
         public void run() {
-            if (isSpinMode && isShown()) {
+            if (isSpinMode && getVisibility() == VISIBLE) {
+                removeCallbacks(this);
                 postDelayed(this, INTERVAL);
             }
             currentOffset += angleOffset;
@@ -83,10 +86,41 @@ public class SweetProgress extends View {
     }
 
     private void init() {
+        drawFilter = new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
         center = new Point();
         paint = new Paint();
         paint.setColor(Color.GRAY);
         isSpinMode = true;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        final int defaultRadius = UIUtils.dip2px(getContext(), 16);
+
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        switch (MeasureSpec.getMode(widthMeasureSpec)) {
+            case MeasureSpec.UNSPECIFIED:
+                width = defaultRadius * 2 + this.getPaddingLeft() + this.getPaddingRight();
+                break;
+            case MeasureSpec.AT_MOST:
+                break;
+            case MeasureSpec.EXACTLY:
+                break;
+        }
+
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+        switch (MeasureSpec.getMode(heightMeasureSpec)) {
+            case MeasureSpec.UNSPECIFIED:
+                height = defaultRadius * 2 + this.getPaddingTop() + this.getPaddingBottom();
+                break;
+            case MeasureSpec.AT_MOST:
+                break;
+            case MeasureSpec.EXACTLY:
+                break;
+        }
+
+        setMeasuredDimension(width, height);
     }
 
     @Override
@@ -165,10 +199,11 @@ public class SweetProgress extends View {
         isSpinMode = false;
     }
 
+    private RectF rectF = new RectF();
+
     @Override
-    public void draw(Canvas canvas) {
-        super.draw(canvas);
-        canvas.setDrawFilter(new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
+    protected void onDraw(Canvas canvas) {
+        canvas.setDrawFilter(drawFilter);
         float angle;
         for (int i = 0; i < pointSize; i++) {
             if (isSpinMode) {
@@ -180,8 +215,7 @@ public class SweetProgress extends View {
             }
             canvas.save();
             canvas.rotate(angle, center.x, center.y);
-            RectF rectF = new RectF(center.x - pointWidth / 2, center.y - outerRadius, center.x + pointWidth / 2, center.y - innerRadius);
-//            canvas.drawOval(rectF, paint);
+            rectF.set(center.x - pointWidth / 2, center.y - outerRadius, center.x + pointWidth / 2, center.y - innerRadius);
             canvas.drawRoundRect(rectF, 5, 5, paint);
             canvas.restore();
         }
