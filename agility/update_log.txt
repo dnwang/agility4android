@@ -98,3 +98,6 @@ v4.1.0.72;20160112;dnwang;
 
 v4.1.0.73;20160115;dnwng;
 1.修复SweetCircularView若干细节Bug;
+
+v4.1.1.74;20160117;dnwang;
+1.添加SweetIndicatorView滑动页面圆点指示器;
