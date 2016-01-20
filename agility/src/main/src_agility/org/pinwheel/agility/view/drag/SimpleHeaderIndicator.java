@@ -47,7 +47,7 @@ class SimpleHeaderIndicator extends BaseDragIndicator {
         getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                moveTo(0);
+                moveTo(0.0f);
                 getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
         });
@@ -86,6 +86,7 @@ class SimpleHeaderIndicator extends BaseDragIndicator {
     @Override
     public void reset() {
         super.reset();
+        moveTo(0.0f);
     }
 
     private void moveTo(float percent) {

@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @author dnwang
  */
-class DragHelper implements Draggable {
+public final class DragHelper implements Draggable {
 
     private int topHoldDistance;
     private int bottomHoldDistance;
