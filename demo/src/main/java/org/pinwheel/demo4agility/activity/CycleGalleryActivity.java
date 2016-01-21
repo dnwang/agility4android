@@ -5,15 +5,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.widget.*;
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.util.BaseUtils;
@@ -22,7 +14,6 @@ import org.pinwheel.agility.view.SweetIndicatorView;
 import org.pinwheel.agility.view.SweetProgress;
 import org.pinwheel.agility.view.drag.DragListView;
 import org.pinwheel.demo4agility.R;
-import org.pinwheel.demo4agility.test.GalleryAnimatorAdapter;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
 
 
@@ -85,7 +76,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
             ImageView image = BaseUtils.getViewByHolder(convertView, R.id.image);
             TextView txt = BaseUtils.getViewByHolder(convertView, R.id.text);
             txt.setText(String.valueOf(position));
-            ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader(image, urls[position % urls.length]);
+//            ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader(image, urls[position % urls.length]);
             convertView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -107,7 +98,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
 
         gallery = new SweetCircularView(this);
         gallery.setAdapter(adapter);
-        gallery.setAnimatorAdapter(new GalleryAnimatorAdapter(this));
+//        gallery.setAnimatorAdapter(new GalleryAnimatorAdapter(this));
         gallery.setMinimumHeight(600);
         gallery.setOrientation(LinearLayout.HORIZONTAL);
 //        gallery.setOrientation(LinearLayout.VERTICAL);
@@ -249,15 +240,15 @@ public class CycleGalleryActivity extends AbsTestActivity {
         pagerAdapter.add(simpleTestBtn);
         pagerAdapter.add(container);
 
-        gallery.setOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
+        gallery.addOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
             @Override
-            public void onItemSelected(int newDataIndex, int oldDataIndex) {
-                logout("Listener: onItemSelected(" + newDataIndex + ", " + oldDataIndex + ")");
-                indicatorView.setCurrentIndex(newDataIndex);
+            public void onItemSelected(SweetCircularView v, int dataIndex) {
+                logout("Listener: onItemSelected(" + dataIndex + ")");
+                indicatorView.setCurrentIndex(dataIndex);
             }
 
             @Override
-            public void onItemScrolled(int dataIndex, float offset) {
+            public void onItemScrolled(SweetCircularView v, int dataIndex, float offset) {
                 logout("Listener: onItemScrolled(" + dataIndex + ", " + offset + ")");
             }
         });
