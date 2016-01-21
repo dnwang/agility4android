@@ -5,7 +5,15 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.util.BaseUtils;
@@ -14,7 +22,6 @@ import org.pinwheel.agility.view.SweetIndicatorView;
 import org.pinwheel.agility.view.SweetProgress;
 import org.pinwheel.agility.view.drag.DragListView;
 import org.pinwheel.demo4agility.R;
-import org.pinwheel.demo4agility.test.ImageLoaderManager;
 
 
 public class CycleGalleryActivity extends AbsTestActivity {
@@ -98,7 +105,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
 
         gallery = new SweetCircularView(this);
         gallery.setAdapter(adapter);
-//        gallery.setAnimatorAdapter(new GalleryAnimatorAdapter(this));
+//        gallery.addOnItemSwitchListener(new GalleryAnimatorAdapter(this));
         gallery.setMinimumHeight(600);
         gallery.setOrientation(LinearLayout.HORIZONTAL);
 //        gallery.setOrientation(LinearLayout.VERTICAL);

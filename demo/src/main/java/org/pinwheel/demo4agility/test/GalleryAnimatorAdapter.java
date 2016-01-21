@@ -50,6 +50,9 @@ public class GalleryAnimatorAdapter implements SweetCircularView.OnItemSwitchLis
         value = 0;
 
         View currentView = v.getItemView(dataIndex);
+        if (currentView == null){
+            return;
+        }
         currentView.setScaleX(1);
         currentView.setScaleY(1);
         currentView.setRotationY(0);
@@ -87,6 +90,10 @@ public class GalleryAnimatorAdapter implements SweetCircularView.OnItemSwitchLis
         value += offset;
         float temp = Math.min(width, Math.abs(value));
         View currentView = v.getItemView(dataIndex);
+        if (currentView == null){
+            return;
+        }
+
         float percent = Math.min(1, Math.max(0.0f, temp / width));
 
         View preView = v.getItemView(dataIndex - 1);

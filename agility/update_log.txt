@@ -101,3 +101,7 @@ v4.1.0.73;20160115;dnwng;
 
 v4.1.1.74;20160117;dnwang;
 1.添加SweetIndicatorView滑动页面圆点指示器;
+
+v4.1.1.75;20160122;dnwng;
+1.重构SweetCircularView,修复过度重绘,优化滑动性能;
+2.设置SweetIndicatorView默认指示器格数为0;
