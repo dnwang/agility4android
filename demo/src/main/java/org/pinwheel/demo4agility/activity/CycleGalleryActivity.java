@@ -78,7 +78,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
         public View getView(final int position, View convertView, ViewGroup parent) {
             logout("Adapter: getView() position:" + position);
             if (convertView == null) {
-                convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_item, null);
+                convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_item, parent, false);
             }
             ImageView image = BaseUtils.getViewByHolder(convertView, R.id.image);
             TextView txt = BaseUtils.getViewByHolder(convertView, R.id.text);

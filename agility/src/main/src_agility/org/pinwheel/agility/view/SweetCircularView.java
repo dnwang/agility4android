@@ -798,7 +798,8 @@ public class SweetCircularView extends ViewGroup {
                         if (convertView.getParent() != SweetCircularView.this) {
                             addView(convertView);
                         }
-                        LayoutParams params = convertView.getLayoutParams();
+                        LayoutParams params = generateDefaultLayoutParams();
+                        updateViewLayout(convertView, params);
                         convertView.measure(MeasureSpec.makeMeasureSpec(params.width, MeasureSpec.EXACTLY),
                                 MeasureSpec.makeMeasureSpec(params.height, MeasureSpec.EXACTLY));
                     }
