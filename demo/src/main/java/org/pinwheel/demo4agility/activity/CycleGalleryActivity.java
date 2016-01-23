@@ -16,13 +16,13 @@ import android.widget.Toast;
 
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
+import org.pinwheel.agility.animation.SimpleCircularAnimator;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.view.SweetCircularView;
 import org.pinwheel.agility.view.SweetIndicatorView;
 import org.pinwheel.agility.view.SweetProgress;
 import org.pinwheel.agility.view.drag.DragListView;
 import org.pinwheel.demo4agility.R;
-import org.pinwheel.demo4agility.test.GalleryAnimatorAdapter;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
 
 
@@ -107,11 +107,13 @@ public class CycleGalleryActivity extends AbsTestActivity {
 
         gallery = new SweetCircularView(this);
         gallery.setAdapter(adapter);
-        gallery.addOnItemSwitchListener(new GalleryAnimatorAdapter());
+        gallery.addOnItemSwitchListener(new SimpleCircularAnimator());
         gallery.setMinimumHeight(600);
         gallery.setOrientation(LinearLayout.HORIZONTAL);
 //        gallery.setOrientation(LinearLayout.VERTICAL);
+        gallery.setIndent(200, 40, 200, 40);
         gallery.setSensibility(0.2f);
+        gallery.setAutoCycle(true, true);
         // test nested
         LinearLayout.LayoutParams gParams = new LinearLayout.LayoutParams(-1, -1);
         gParams.setMargins(0, 60, 0, 0);
@@ -218,19 +220,23 @@ public class CycleGalleryActivity extends AbsTestActivity {
             @Override
             public void onClick(View v) {
                 gallery.setSpaceBetweenItems(40);
-                gallery.setIndent(200, 40, 200, 40);
+                gallery.setIndent(
+                        (int) (gallery.getLeftIndent() * 1.2),
+                        (int) (gallery.getTopIndent() * 1.2),
+                        (int) (gallery.getRightIndent() * 1.2),
+                        (int) (gallery.getBottomIndent() * 1.2));
             }
         });
         leftBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                gallery.moveNext();
+                gallery.movePrevious();
             }
         });
         rightBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                gallery.movePrevious();
+                gallery.moveNext();
             }
         });
 

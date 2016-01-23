@@ -124,10 +124,11 @@ public class SweetCircularView extends ViewGroup {
             Log.i(TAG, "setCurrentDataIndex() params error");
             return;
         }
-        dataIndex = cycleDataIndex(dataIndex);
         currentDataIndex = dataIndex;
         currentItemIndex = alignAndRefreshItems(currentDataIndex);
         layoutItems(currentItemIndex, getLeft(), getTop(), getRight(), getBottom());
+        // notify
+        onItemSelected(currentDataIndex);
     }
 
     /**
@@ -565,6 +566,7 @@ public class SweetCircularView extends ViewGroup {
                         break;
                     }
                     if (currentItemIndex < 0) {
+                        isMoving = false;
                         break;
                     }
                     ItemWrapper item = items.get(currentItemIndex);
@@ -643,12 +645,7 @@ public class SweetCircularView extends ViewGroup {
             @Override
             public void onAnimationEnd(Animator animation) {
                 isMoving = false;
-                // only this change currentDataIndex
-                currentDataIndex = cycleDataIndex(currentDataIndex + changeIndex);
-                currentItemIndex = alignAndRefreshItems(currentDataIndex);
-                layoutItems(currentItemIndex, getLeft(), getTop(), getRight(), getBottom());
-
-                onItemSelected(currentDataIndex);
+                setCurrentDataIndex(cycleDataIndex(currentDataIndex + changeIndex));
             }
         });
         autoScroller.start();
@@ -677,7 +674,7 @@ public class SweetCircularView extends ViewGroup {
         } else if (orientation == LinearLayout.VERTICAL) {
             offset = centerView.getHeight() + spaceBetweenItems;
         }
-        autoMove(offset, durationOnAutoScroll, -1);
+        autoMove(-offset, durationOnAutoScroll, 1);
     }
 
     /**
@@ -703,7 +700,7 @@ public class SweetCircularView extends ViewGroup {
         } else if (orientation == LinearLayout.VERTICAL) {
             offset = centerView.getHeight() + spaceBetweenItems;
         }
-        autoMove(-offset, durationOnAutoScroll, 1);
+        autoMove(offset, durationOnAutoScroll, -1);
     }
 
     public final int cycleDataIndex(int dataIndex) {
@@ -741,10 +738,9 @@ public class SweetCircularView extends ViewGroup {
             for (ItemWrapper item : items) {
                 item.recycle();
             }
-            currentDataIndex = 0;
-            currentItemIndex = alignAndRefreshItems(currentDataIndex);
-
             requestLayout();
+
+            setCurrentDataIndex(0);
         }
 
         @Override

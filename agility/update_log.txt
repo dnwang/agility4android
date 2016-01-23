@@ -105,3 +105,7 @@ v4.1.1.74;20160117;dnwang;
 v4.1.1.75;20160122;dnwng;
 1.重构SweetCircularView,修复过度重绘,优化滑动性能;
 2.设置SweetIndicatorView默认指示器格数为0;
+
+v4.1.1.76;20160123;dnwang;
+1.增加SimpleCircularAnimator辅助动画类;
+2.修复SweetCircularView显示效果bug;
