@@ -6,7 +6,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -46,10 +45,11 @@ public class SweetCircularView extends ViewGroup {
     private int spaceBetweenItems;
     private int leftIndent, topIndent, rightIndent, bottomIndent;
 
-    protected AdapterDataSetObserver dataSetObserver;
-    protected BaseAdapter adapter;
-    protected ArrayList<ItemWrapper> items = null;
-    protected int currentDataIndex = 0;
+    private AdapterDataSetObserver dataSetObserver;
+    private BaseAdapter adapter;
+    private ArrayList<ItemWrapper> items = null;
+    private int currentDataIndex = 0;
+    private int currentItemIndex = 0;
 
     private Runnable autoCycleRunnable = new Runnable() {
         @Override
@@ -82,6 +82,7 @@ public class SweetCircularView extends ViewGroup {
 
     private void init() {
         currentDataIndex = 0;
+        currentItemIndex = 0;
         items = new ArrayList<>(DEFAULT_ITEM_SIZE);
         for (int i = 0; i < DEFAULT_ITEM_SIZE; i++) {
             items.add(new ItemWrapper());
@@ -111,6 +112,10 @@ public class SweetCircularView extends ViewGroup {
         return currentDataIndex;
     }
 
+    public int getCurrentItemIndex() {
+        return currentItemIndex;
+    }
+
     /**
      * @param dataIndex dataIndex
      */
@@ -121,7 +126,8 @@ public class SweetCircularView extends ViewGroup {
         }
         dataIndex = cycleDataIndex(dataIndex);
         currentDataIndex = dataIndex;
-        align(currentDataIndex);
+        currentItemIndex = alignAndRefreshItems(currentDataIndex);
+        layoutItems(currentItemIndex, getLeft(), getTop(), getRight(), getBottom());
     }
 
     /**
@@ -246,11 +252,6 @@ public class SweetCircularView extends ViewGroup {
         topIndent = top;
         rightIndent = right;
         bottomIndent = bottom;
-
-        int size = getChildCount();
-        for (int i = 0; i < size; i++) {
-            updateViewLayout(getChildAt(i), generateDefaultLayoutParams());
-        }
         requestLayout();
     }
 
@@ -281,9 +282,11 @@ public class SweetCircularView extends ViewGroup {
         return spaceBetweenItems;
     }
 
-    public final View getItemView(int dataIndex) {
-        int itemIndex = findItemIndex(dataIndex);
-        if (itemIndex < 0) {
+    /**
+     * @param itemIndex
+     */
+    public final View getView(int itemIndex) {
+        if (itemIndex < 0 || itemIndex >= items.size()) {
             return null;
         }
         return items.get(itemIndex).getView();
@@ -307,7 +310,7 @@ public class SweetCircularView extends ViewGroup {
         }
     }
 
-    protected final void onItemScrolled(int dataIndex, float offset) {
+    protected void onItemScrolled(int dataIndex, float offset) {
         if (listeners != null) {
             for (OnItemSwitchListener listener : listeners) {
                 listener.onItemScrolled(this, dataIndex, offset);
@@ -315,7 +318,7 @@ public class SweetCircularView extends ViewGroup {
         }
     }
 
-    protected final void onItemSelected(int dataIndex) {
+    protected void onItemSelected(int dataIndex) {
         if (listeners != null) {
             for (OnItemSwitchListener listener : listeners) {
                 listener.onItemSelected(this, dataIndex);
@@ -347,12 +350,17 @@ public class SweetCircularView extends ViewGroup {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        measureChildren(widthMeasureSpec, heightMeasureSpec);
+        int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(getMeasuredWidth() - leftIndent - rightIndent, MeasureSpec.EXACTLY);
+        int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(getMeasuredHeight() - topIndent - bottomIndent, MeasureSpec.EXACTLY);
+        int size = getChildCount();
+        for (int i = 0; i < size; i++) {
+            getChildAt(i).measure(childWidthMeasureSpec, childHeightMeasureSpec);
+        }
     }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        align(currentDataIndex);
+        layoutItems(currentItemIndex, l, t, r, b);
     }
 
     public final int findItemIndex(int dataIndex) {
@@ -366,49 +374,70 @@ public class SweetCircularView extends ViewGroup {
         return -1;
     }
 
-    protected final void align(int centerDataIndex) {
-        Rect rect = new Rect(getLeft(), getTop(), getRight(), getBottom());
-        layoutChildByDataIndex(centerDataIndex, rect);
+    private int alignAndRefreshItems(final int centerDataIndex) {
+        final int sizeOfItem = getRecycleItemSize();
+        if (sizeOfItem == 0) {
+            Log.i(TAG, "alignItemDataIndex() have no move item");
+            return -1;
+        }
+        final int sizeOfSideItem = sizeOfItem / 2; // 3,5,7,9 ...
+        final int centerItemIndex = cycleItemIndex(findItemIndex(centerDataIndex));
+
+        ItemWrapper item;
+        //center
+        item = items.get(centerItemIndex);
+        item.setDataIndex(centerDataIndex);
+        item.refreshView();
+        // left/top
+        for (int i = 1; i <= sizeOfSideItem; i++) {
+            item = items.get(cycleItemIndex(centerItemIndex - i));
+            item.setDataIndex(cycleDataIndex(centerDataIndex - i));
+            item.refreshView();
+        }
+        // right/bottom
+        for (int i = 1; i <= sizeOfSideItem; i++) {
+            item = items.get(cycleItemIndex(centerItemIndex + i));
+            item.setDataIndex(cycleDataIndex(centerDataIndex + i));
+            item.refreshView();
+        }
+        return centerItemIndex;
     }
 
-    protected final void layoutChildByDataIndex(int centerDataIndex, Rect rect) {
+    private void layoutItems(final int centerItemIndex, int l, int t, int r, int b) {
+        if (centerItemIndex < 0) {
+            Log.i(TAG, "layoutChildByDataIndex() params error");
+            return;
+        }
         final int sizeOfItem = getRecycleItemSize();
         if (sizeOfItem == 0) {
             Log.i(TAG, "layoutChildByDataIndex() have no move item");
             return;
         }
-
-        final int sizeOfSideItem = sizeOfItem / 2; // 3,5,7,9 ...
-        final int centerItemIndex = cycleItemIndex(findItemIndex(centerDataIndex));
-
-        final int itemWidth = (rect.right - rightIndent) - (rect.left + leftIndent);
-        final int itemHeight = (rect.bottom - bottomIndent) - (rect.top + topIndent);
-        final int centerItemLeft = 0 + leftIndent;
-        final int centerItemTop = 0 + topIndent;
-        final int centerItemRight = (rect.right - rect.left) - rightIndent;
-        final int centerItemBottom = (rect.bottom - rect.top) - bottomIndent;
-
         // reset offset
         for (ItemWrapper item : items) {
             item.moveX(0.0f);
             item.moveY(0.0f);
         }
 
-        //center
-        final ItemWrapper centerItem = items.get(centerItemIndex);
-        centerItem.setDataIndex(centerDataIndex);
-        centerItem.refreshView();
-        if (centerItem.getView() != null) {
-            centerItem.getView().layout(centerItemLeft, centerItemTop, centerItemRight, centerItemBottom);
-        }
+        final int sizeOfSideItem = sizeOfItem / 2; // 3,5,7,9 ...
+
+        final int itemWidth = (r - rightIndent) - (l + leftIndent);
+        final int itemHeight = (b - bottomIndent) - (t + topIndent);
+        final int centerItemLeft = 0 + leftIndent;
+        final int centerItemTop = 0 + topIndent;
+        final int centerItemRight = (r - l) - rightIndent;
+        final int centerItemBottom = (b - t) - bottomIndent;
 
         ItemWrapper item;
         int left, top, right, bottom;
+        //center
+        item = items.get(centerItemIndex);
+        if (item.getView() != null) {
+            item.getView().layout(centerItemLeft, centerItemTop, centerItemRight, centerItemBottom);
+        }
         // left/top
         for (int i = 1; i <= sizeOfSideItem; i++) {
             item = items.get(cycleItemIndex(centerItemIndex - i));
-            item.setDataIndex(cycleDataIndex(centerDataIndex - i));
-            item.refreshView();
             if (item.getView() != null) {
                 if (orientation == LinearLayout.HORIZONTAL) {
                     // left
@@ -424,8 +453,6 @@ public class SweetCircularView extends ViewGroup {
         // right/bottom
         for (int i = 1; i <= sizeOfSideItem; i++) {
             item = items.get(cycleItemIndex(centerItemIndex + i));
-            item.setDataIndex(cycleDataIndex(centerDataIndex + i));
-            item.refreshView();
             if (item.getView() != null) {
                 if (orientation == LinearLayout.HORIZONTAL) {
                     // right
@@ -537,11 +564,10 @@ public class SweetCircularView extends ViewGroup {
                         isMoving = false;
                         break;
                     }
-                    int centerItemIndex = findItemIndex(currentDataIndex);
-                    if (centerItemIndex < 0) {
+                    if (currentItemIndex < 0) {
                         break;
                     }
-                    ItemWrapper item = items.get(centerItemIndex);
+                    ItemWrapper item = items.get(currentItemIndex);
                     int changeIndex = 0;
                     float offset = 0;
                     float maxOffset = 0;
@@ -570,7 +596,7 @@ public class SweetCircularView extends ViewGroup {
         return true;
     }
 
-    protected final void moveX(float offset) {
+    private void moveX(float offset) {
         isMoving = true;
         for (ItemWrapper item : items) {
             item.moveX(item.getOffsetX() + offset);
@@ -578,7 +604,7 @@ public class SweetCircularView extends ViewGroup {
         onItemScrolled(currentDataIndex, offset);
     }
 
-    protected final void moveY(float offset) {
+    private void moveY(float offset) {
         isMoving = true;
         for (ItemWrapper item : items) {
             item.moveY(item.getOffsetY() + offset);
@@ -586,11 +612,12 @@ public class SweetCircularView extends ViewGroup {
         onItemScrolled(currentDataIndex, offset);
     }
 
-    private ValueAnimator autoScroller;
+    private ValueAnimator autoScroller = null;
 
-    protected final void autoMove(float offset, long duration, final int changeIndex) {
+    private void autoMove(float offset, long duration, final int changeIndex) {
         if (autoScroller != null && autoScroller.isStarted()) {
             autoScroller.cancel();
+            autoScroller = null;
         }
         if (offset == 0) {
             return;
@@ -616,9 +643,11 @@ public class SweetCircularView extends ViewGroup {
             @Override
             public void onAnimationEnd(Animator animation) {
                 isMoving = false;
-                // only this change currentItemIndex
+                // only this change currentDataIndex
                 currentDataIndex = cycleDataIndex(currentDataIndex + changeIndex);
-                align(currentDataIndex);
+                currentItemIndex = alignAndRefreshItems(currentDataIndex);
+                layoutItems(currentItemIndex, getLeft(), getTop(), getRight(), getBottom());
+
                 onItemSelected(currentDataIndex);
             }
         });
@@ -633,12 +662,11 @@ public class SweetCircularView extends ViewGroup {
             Log.i(TAG, "moveNext() have not move item");
             return;
         }
-        int centerItemIndex = findItemIndex(currentDataIndex);
-        if (centerItemIndex < 0) {
+        if (currentItemIndex < 0) {
             Log.i(TAG, "moveNext() can not find centerDataIndex");
             return;
         }
-        View centerView = items.get(centerItemIndex).getView();
+        View centerView = items.get(currentItemIndex).getView();
         if (centerView == null) {
             Log.i(TAG, "moveNext() can not find centerView");
             return;
@@ -660,12 +688,11 @@ public class SweetCircularView extends ViewGroup {
             Log.i(TAG, "movePrevious() have not move item");
             return;
         }
-        int centerItemIndex = findItemIndex(currentDataIndex);
-        if (centerItemIndex < 0) {
+        if (currentItemIndex < 0) {
             Log.i(TAG, "movePrevious() can not find centerDataIndex");
             return;
         }
-        View centerView = items.get(centerItemIndex).getView();
+        View centerView = items.get(currentItemIndex).getView();
         if (centerView == null) {
             Log.i(TAG, "movePrevious() can not find centerView");
             return;
@@ -708,25 +735,20 @@ public class SweetCircularView extends ViewGroup {
         return itemIndex;
     }
 
-    protected LayoutParams generateDefaultLayoutParams() {
-        int width = getMeasuredWidth() - leftIndent - rightIndent;
-        int height = getMeasuredHeight() - topIndent - bottomIndent;
-        return new ViewGroup.LayoutParams(width, height);
-    }
-
     private final class AdapterDataSetObserver extends DataSetObserver {
         @Override
         public void onChanged() {
-            currentDataIndex = 0;
             for (ItemWrapper item : items) {
                 item.recycle();
             }
+            currentDataIndex = 0;
+            currentItemIndex = alignAndRefreshItems(currentDataIndex);
+
             requestLayout();
         }
 
         @Override
         public void onInvalidated() {
-            align(currentDataIndex);
             invalidate();
         }
     }
@@ -798,10 +820,6 @@ public class SweetCircularView extends ViewGroup {
                         if (convertView.getParent() != SweetCircularView.this) {
                             addView(convertView);
                         }
-                        LayoutParams params = generateDefaultLayoutParams();
-                        updateViewLayout(convertView, params);
-                        convertView.measure(MeasureSpec.makeMeasureSpec(params.width, MeasureSpec.EXACTLY),
-                                MeasureSpec.makeMeasureSpec(params.height, MeasureSpec.EXACTLY));
                     }
                 }
                 view = convertView;

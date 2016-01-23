@@ -22,6 +22,8 @@ import org.pinwheel.agility.view.SweetIndicatorView;
 import org.pinwheel.agility.view.SweetProgress;
 import org.pinwheel.agility.view.drag.DragListView;
 import org.pinwheel.demo4agility.R;
+import org.pinwheel.demo4agility.test.GalleryAnimatorAdapter;
+import org.pinwheel.demo4agility.test.ImageLoaderManager;
 
 
 public class CycleGalleryActivity extends AbsTestActivity {
@@ -83,7 +85,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
             ImageView image = BaseUtils.getViewByHolder(convertView, R.id.image);
             TextView txt = BaseUtils.getViewByHolder(convertView, R.id.text);
             txt.setText(String.valueOf(position));
-//            ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader(image, urls[position % urls.length]);
+            ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader(image, urls[position % urls.length]);
             convertView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -105,7 +107,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
 
         gallery = new SweetCircularView(this);
         gallery.setAdapter(adapter);
-//        gallery.addOnItemSwitchListener(new GalleryAnimatorAdapter(this));
+        gallery.addOnItemSwitchListener(new GalleryAnimatorAdapter());
         gallery.setMinimumHeight(600);
         gallery.setOrientation(LinearLayout.HORIZONTAL);
 //        gallery.setOrientation(LinearLayout.VERTICAL);
