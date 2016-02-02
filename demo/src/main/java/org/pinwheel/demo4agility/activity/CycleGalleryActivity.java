@@ -18,9 +18,11 @@ import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.view.SweetCircularView;
+import org.pinwheel.agility.view.SweetIndicatorView;
 import org.pinwheel.agility.view.SweetProgress;
 import org.pinwheel.agility.view.drag.DragListView;
 import org.pinwheel.demo4agility.R;
+import org.pinwheel.demo4agility.test.GalleryAnimatorAdapter;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
 
 
@@ -105,7 +107,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
 
         gallery = new SweetCircularView(this);
         gallery.setAdapter(adapter);
-        gallery.setAnimatorAdapter(new GalleryAnimatorAdapter());
+        gallery.setAnimatorAdapter(new GalleryAnimatorAdapter(this));
         gallery.setMinimumHeight(600);
         gallery.setOrientation(LinearLayout.HORIZONTAL);
 //        gallery.setOrientation(LinearLayout.VERTICAL);
@@ -135,18 +137,6 @@ public class CycleGalleryActivity extends AbsTestActivity {
         listView.setAdapter(dataAdapter);
         container.addView(listView);
 
-        gallery.setOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
-            @Override
-            public void onItemSelected(int newDataIndex, int oldDataIndex) {
-                logout("Listener: onItemSelected(" + newDataIndex + ", " + oldDataIndex + ")");
-            }
-
-            @Override
-            public void onItemScrolled(int dataIndex, float offset) {
-                logout("Listener: onItemScrolled(" + dataIndex + ", " + offset + ")");
-            }
-        });
-
         FrameLayout.LayoutParams left = new FrameLayout.LayoutParams(-2, -2, Gravity.LEFT | Gravity.CENTER_VERTICAL);
         Button leftBtn = new Button(this);
         leftBtn.setText("<");
@@ -156,6 +146,10 @@ public class CycleGalleryActivity extends AbsTestActivity {
         Button rightBtn = new Button(this);
         rightBtn.setText(">");
         container.addView(rightBtn, right);
+
+        FrameLayout.LayoutParams indicator = new FrameLayout.LayoutParams(-2, -2, Gravity.CENTER);
+        final SweetIndicatorView indicatorView = new SweetIndicatorView(this);
+        container.addView(indicatorView, indicator);
 
         HorizontalScrollView scrollView = new HorizontalScrollView(this);
         LinearLayout funcContainer = new LinearLayout(this);
@@ -176,7 +170,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
         funcContainer.addView(func4);
         funcContainer.addView(func5);
         scrollView.addView(funcContainer);
-        container.addView(scrollView, new FrameLayout.LayoutParams(-1, 100));
+        container.addView(scrollView, new FrameLayout.LayoutParams(-1, -2));
 
         func1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -186,6 +180,9 @@ public class CycleGalleryActivity extends AbsTestActivity {
                 adapter.addItem(android.R.color.holo_blue_dark);
                 adapter.addItem(android.R.color.holo_green_dark);
                 adapter.notifyDataSetChanged();
+
+                indicatorView.setPointerSize(adapter.getCount());
+                indicatorView.setCurrentIndex(0);
             }
         });
         func2.setOnClickListener(new View.OnClickListener() {
@@ -193,6 +190,9 @@ public class CycleGalleryActivity extends AbsTestActivity {
             public void onClick(View v) {
                 adapter.removeAll();
                 adapter.notifyDataSetChanged();
+
+                indicatorView.setPointerSize(adapter.getCount());
+                indicatorView.setCurrentIndex(0);
             }
         });
         func3.setOnClickListener(new View.OnClickListener() {
@@ -202,6 +202,9 @@ public class CycleGalleryActivity extends AbsTestActivity {
                 adapter.addItem(android.R.color.darker_gray);
                 adapter.addItem(android.R.color.holo_purple);
                 adapter.notifyDataSetChanged();
+
+                indicatorView.setPointerSize(adapter.getCount());
+                indicatorView.setCurrentIndex(0);
             }
         });
         func4.setOnClickListener(new View.OnClickListener() {
@@ -245,25 +248,26 @@ public class CycleGalleryActivity extends AbsTestActivity {
         simpleTestBtn.setText("Just test for pager");
         pagerAdapter.add(simpleTestBtn);
         pagerAdapter.add(container);
+
+        gallery.setOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
+            @Override
+            public void onItemSelected(int newDataIndex, int oldDataIndex) {
+                logout("Listener: onItemSelected(" + newDataIndex + ", " + oldDataIndex + ")");
+                indicatorView.setCurrentIndex(newDataIndex);
+            }
+
+            @Override
+            public void onItemScrolled(int dataIndex, float offset) {
+                logout("Listener: onItemScrolled(" + dataIndex + ", " + offset + ")");
+            }
+        });
+
         return viewPager;
     }
 
     @Override
     protected void doSomethingAfterCreated() {
 
-    }
-
-    private class GalleryAnimatorAdapter extends SweetCircularView.AnimatorAdapter {
-
-        @Override
-        public void onItemSelected(int newItemIndex, int oldItemIndex) {
-            logout("Animator: onItemSelected(" + newItemIndex + ", " + oldItemIndex + ")");
-        }
-
-        @Override
-        public void onItemScrolled(int itemIndex, float offset) {
-            logout("Animator: onItemScrolled(" + itemIndex + ", " + offset + ")");
-        }
     }
 
 }

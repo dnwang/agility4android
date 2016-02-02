@@ -40,6 +40,7 @@ import android.widget.BaseAdapter;
 import android.widget.Gallery;
 import android.widget.SpinnerAdapter;
 
+@Deprecated
 public class SweetCoverFlow extends Gallery {
 
     // =============================================================================

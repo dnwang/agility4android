@@ -95,32 +95,22 @@ public class SweetProgress extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        final int defaultRadius = UIUtils.dip2px(getContext(), 16);
+        int defaultRadius = UIUtils.dip2px(getContext(), 16);
 
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        switch (MeasureSpec.getMode(widthMeasureSpec)) {
-            case MeasureSpec.UNSPECIFIED:
-                width = defaultRadius * 2 + this.getPaddingLeft() + this.getPaddingRight();
-                break;
-            case MeasureSpec.AT_MOST:
-                break;
-            case MeasureSpec.EXACTLY:
-                break;
+        float width = MeasureSpec.getSize(widthMeasureSpec);
+        float height = MeasureSpec.getSize(heightMeasureSpec);
+
+        if (MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.UNSPECIFIED) {
+            width = defaultRadius * 2;
         }
 
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        switch (MeasureSpec.getMode(heightMeasureSpec)) {
-            case MeasureSpec.UNSPECIFIED:
-                height = defaultRadius * 2 + this.getPaddingTop() + this.getPaddingBottom();
-                break;
-            case MeasureSpec.AT_MOST:
-                break;
-            case MeasureSpec.EXACTLY:
-                break;
+        if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.UNSPECIFIED) {
+            height = defaultRadius * 2;
         }
 
-        setMeasuredDimension(width, height);
+        setMeasuredDimension(
+                (int) width + getPaddingLeft() + getPaddingRight(),
+                (int) height + getPaddingTop() + getPaddingBottom());
     }
 
     @Override
