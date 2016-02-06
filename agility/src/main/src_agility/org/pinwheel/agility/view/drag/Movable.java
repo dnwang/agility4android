@@ -8,7 +8,7 @@ package org.pinwheel.agility.view.drag;
  *
  * @author dnwang
  */
-abstract class Movable {
+public abstract class Movable {
 
     public abstract void move(float offset);
 

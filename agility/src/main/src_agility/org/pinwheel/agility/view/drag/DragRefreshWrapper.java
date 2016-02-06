@@ -38,11 +38,8 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
     }
 
     private void init() {
-        footerIndicator = new SimpleFooterIndicator(getContext());
-
         resetFooterIndicator(new SimpleFooterIndicator(getContext()));
         resetHeaderIndicator(new SimpleHeaderIndicator(getContext()));
-
         getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -57,12 +54,27 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
         if (draggable == null) {
             throw new IllegalStateException(getClass().getSimpleName() + " must contains draggable view.");
         }
+        draggable.addOnDragListener(this);
         headerIndicator.bindDraggable(draggable);
         footerIndicator.bindDraggable(draggable);
-        draggable.addOnDragListener(this);
-        draggable.setHoldDistance(
-                headerIndicator.getVisibility() == VISIBLE ? headerIndicator.getMeasuredHeight() : 0,
-                footerIndicator.getVisibility() == VISIBLE ? footerIndicator.getMeasuredHeight() : 0);
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int topHold = 0, bottomHold = 0;
+        int size = getChildCount();
+        for (int i = 0; i < size; i++) {
+            View v = getChildAt(i);
+            if (headerIndicator == v) {
+                topHold = headerIndicator.getVisibility() == VISIBLE ? headerIndicator.getMeasuredHeight() : 0;
+            } else if (footerIndicator == v) {
+                bottomHold = footerIndicator.getVisibility() == VISIBLE ? footerIndicator.getMeasuredHeight() : 0;
+            }
+        }
+        if (draggable != null) {
+            draggable.setHoldDistance(topHold, bottomHold);
+        }
     }
 
     private void resetHeaderIndicator(BaseDragIndicator indicator) {
@@ -81,7 +93,7 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
 
     private void resetFooterIndicator(BaseDragIndicator indicator) {
         if (indicator == null) {
-            return;
+            throw new IllegalStateException("Can not set empty indicator.");
         }
         if (footerIndicator != null) {
             removeView(footerIndicator);
@@ -164,17 +176,23 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
     }
 
     public void doRefresh() {
-        draggable.hold(true);
+        if (draggable != null) {
+            draggable.hold(true);
+        }
     }
 
     public void onRefreshComplete() {
         headerIndicator.reset();
-        draggable.resetToBorder();
+        if (draggable != null) {
+            draggable.resetToBorder();
+        }
     }
 
     public void onLoadComplete() {
         footerIndicator.reset();
-        draggable.resetToBorder();
+        if (draggable != null) {
+            draggable.resetToBorder();
+        }
     }
 
     public interface OnRefreshListener {

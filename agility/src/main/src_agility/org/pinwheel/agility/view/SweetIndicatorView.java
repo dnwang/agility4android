@@ -25,7 +25,7 @@ public class SweetIndicatorView extends View {
     private static final int FOREGROUND = 0x01;
     private static final int BACKGROUND = 0x00;
 
-    private int pointerSize = 2;
+    private int pointerSize = 0;
     private int[] pointerColor = new int[]{Color.WHITE, Color.rgb(23, 132, 215)};
     private int currentIndex = 0;
     private int orientation = LinearLayout.HORIZONTAL;

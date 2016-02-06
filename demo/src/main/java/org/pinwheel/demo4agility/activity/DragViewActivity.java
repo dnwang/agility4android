@@ -22,11 +22,11 @@ import android.widget.Toast;
 
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.util.UIUtils;
-import org.pinwheel.agility.view.SweetProgress;
 import org.pinwheel.agility.view.drag.BaseDragIndicator;
 import org.pinwheel.agility.view.drag.DragRefreshWrapper;
 import org.pinwheel.agility.view.drag.Draggable;
 import org.pinwheel.demo4agility.R;
+import org.pinwheel.demo4agility.test.CustomProgress;
 
 import java.util.ArrayList;
 
@@ -66,8 +66,8 @@ public class DragViewActivity extends AbsTestActivity implements AdapterView.OnI
 
         final DragRefreshWrapper dragRefreshWrapper = (DragRefreshWrapper) contentView.findViewById(R.id.drag_wrapper);
         dragRefreshWrapper.getHeaderIndicator().setBackgroundColor(Color.RED);
-        dragRefreshWrapper.setHeaderIndicator(new CustomProgress(this));
-//        dragRefreshWrapper.setFooterVisibility(false);
+        dragRefreshWrapper.setHeaderIndicator(new CustomIndicator(this));
+        dragRefreshWrapper.setFooterVisibility(false);
 
         dragRefreshWrapper.setOnRefreshListener(new DragRefreshWrapper.OnRefreshListener() {
             @Override
@@ -166,40 +166,32 @@ public class DragViewActivity extends AbsTestActivity implements AdapterView.OnI
     /**
      * Custom progress
      */
-    private class CustomProgress extends BaseDragIndicator {
+    private class CustomIndicator extends BaseDragIndicator {
 
-        private SweetProgress progress;
-        private TextView text;
+        private CustomProgress progress;
 
-        public CustomProgress(Context context) {
+        public CustomIndicator(Context context) {
             super(context);
             this.init();
         }
 
-        public CustomProgress(Context context, AttributeSet attrs) {
+        public CustomIndicator(Context context, AttributeSet attrs) {
             super(context, attrs);
             this.init();
         }
 
-        public CustomProgress(Context context, AttributeSet attrs, int defStyleAttr) {
+        public CustomIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
             super(context, attrs, defStyleAttr);
             this.init();
         }
 
         private void init() {
-            progress = new SweetProgress(getContext());
-            final int edges = UIUtils.dip2px(getContext(), 32);
-            LayoutParams params = new LayoutParams(edges, edges);
+            progress = new CustomProgress(getContext());
+            LayoutParams params = new LayoutParams(-2, -2);
             params.gravity = Gravity.CENTER | Gravity.LEFT;
             final int margin = UIUtils.dip2px(getContext(), 8);
             params.setMargins(margin, margin, margin, margin);
             addView(progress, params);
-
-            text = new TextView(getContext());
-            LayoutParams p2 = new LayoutParams(-2, -2);
-            p2.gravity = Gravity.CENTER;
-            p2.setMargins(0, margin, 0, margin);
-            addView(text, p2);
 
             getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -213,14 +205,7 @@ public class DragViewActivity extends AbsTestActivity implements AdapterView.OnI
         @Override
         public void setVisibility(int visibility) {
             super.setVisibility(visibility);
-            text.setVisibility(visibility);
             progress.setVisibility(visibility);
-        }
-
-        @Override
-        public void setBackgroundColor(int color) {
-            text.setBackgroundColor(color);
-            progress.setBackgroundColor(color);
         }
 
         @Override
@@ -232,14 +217,12 @@ public class DragViewActivity extends AbsTestActivity implements AdapterView.OnI
             }
             final int height = getMeasuredHeight();
             final float percent = Math.min(Math.abs(distance), height) / height;
-
             moveTo(percent);
         }
 
         @Override
         public void onHold() {
             super.onHold();
-            text.setText("Loading...");
             progress.spin();
         }
 
@@ -250,14 +233,6 @@ public class DragViewActivity extends AbsTestActivity implements AdapterView.OnI
 
         private void moveTo(float percent) {
             setTranslationY(-getMeasuredHeight() * (1 - percent));
-            if (!isHolding()) {
-                progress.setProgress(percent);
-                if (percent == 1.0f) {
-                    text.setText("Release to loading");
-                } else {
-                    text.setText("Pull to load more");
-                }
-            }
         }
     }
 
