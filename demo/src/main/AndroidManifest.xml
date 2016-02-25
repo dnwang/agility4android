@@ -50,5 +50,8 @@
         <activity
             android:name="org.pinwheel.demo4agility.activity.Json2ClassActivity"
             android:label="Json反射生成Class Json2Class" />
+        <activity
+            android:name="org.pinwheel.demo4agility.activity.TestActivity"
+            android:label="Test" />
     </application>
 </manifest>

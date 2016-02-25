@@ -15,29 +15,29 @@ import java.util.List;
  */
 public abstract class SimpleArrayAdapter<T> extends BaseAdapter {
 
-    protected ArrayList<T> mDatas;
+    protected ArrayList<T> data;
 
     protected SimpleArrayAdapter() {
         super();
-        mDatas = new ArrayList<T>(0);
+        data = new ArrayList<>(0);
     }
 
     protected SimpleArrayAdapter(List<T> datas) {
         super();
-        mDatas = new ArrayList<T>(datas);
+        data = new ArrayList<>(datas);
     }
 
     @Override
     public int getCount() {
-        return mDatas.size();
+        return data.size();
     }
 
     @Override
     public T getItem(int position) {
-        if (position < 0 || position >= mDatas.size()) {
+        if (position < 0 || position >= data.size()) {
             return null;
         }
-        return mDatas.get(position);
+        return data.get(position);
     }
 
     @Override
@@ -46,34 +46,48 @@ public abstract class SimpleArrayAdapter<T> extends BaseAdapter {
     }
 
     public ArrayList<T> getDatas() {
-        return mDatas;
+        return data;
     }
 
-    public void addItem(T obj) {
-        this.mDatas.add(obj);
+    public SimpleArrayAdapter<T> addItem(T obj) {
+        this.data.add(obj);
+        return this;
     }
 
-    public void addItem(T obj, int index) {
-        this.mDatas.add(index, obj);
+    public SimpleArrayAdapter<T> addItem(T obj, int index) {
+        this.data.add(index, obj);
+        return this;
     }
 
-    public void addAll(List<T> datas) {
-        this.mDatas.addAll(datas);
+    public SimpleArrayAdapter<T> addAll(List<T> datas) {
+        this.data.addAll(datas);
+        return this;
     }
 
-    public void remove(int index) {
-        if (index < 0 || index >= mDatas.size()) {
-            return;
+    public SimpleArrayAdapter<T> addAll(T... datas) {
+        if (datas != null && datas.length > 0) {
+            for (T t : datas) {
+                data.add(t);
+            }
         }
-        this.mDatas.remove(index);
+        return this;
     }
 
-    public void removeAll() {
-        this.mDatas.clear();
+    public T remove(int index) {
+        if (index < 0 || index >= data.size()) {
+            return null;
+        }
+        return this.data.remove(index);
     }
 
-    public void removeAll(List<T> datas) {
-        this.mDatas.removeAll(datas);
+    public SimpleArrayAdapter<T> removeAll() {
+        this.data.clear();
+        return this;
+    }
+
+    public SimpleArrayAdapter<T> removeAll(List<T> datas) {
+        this.data.removeAll(datas);
+        return this;
     }
 
 }

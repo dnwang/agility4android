@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
+
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.HttpConnectionAgent;
 import org.pinwheel.agility.net.OkHttpAgent;
@@ -13,8 +14,17 @@ import org.pinwheel.agility.net.Request;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.util.IOUtils;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -111,7 +121,7 @@ public class ImageLoader {
     }
 
     public void setImage(View view, String uri) {
-        setImage(view, uri, new ViewReceiver.OptionsBuilder().copy(defaultOptions));
+        setImage(view, uri, defaultOptions != null ? new ViewReceiver.OptionsBuilder().copy(defaultOptions) : null);
     }
 
     /**

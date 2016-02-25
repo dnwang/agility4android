@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -97,6 +98,18 @@ abstract class AbsTestActivity extends Activity {
 
         showLog(false);
         return container;
+    }
+
+    protected final View createView(int layout) {
+        return LayoutInflater.from(getBaseContext()).inflate(layout, null);
+    }
+
+    protected final <T extends View> T getView(View contentView, int id) {
+        return (T) contentView.findViewById(id);
+    }
+
+    protected final <T extends View> T getView(Activity activity, int id) {
+        return (T) activity.findViewById(id);
     }
 
     protected abstract void onInitInCreate();
