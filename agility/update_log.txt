@@ -109,3 +109,6 @@ v4.1.1.75;20160122;dnwng;
 v4.1.1.76;20160123;dnwang;
 1.增加SimpleCircularAnimator辅助动画类;
 2.修复SweetCircularView显示效果bug;
+
+v4.1.2.77;20160226;dnwang;
+1.增加SimpleRecycleAdapter通用适配器;
