@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://github.com/dnwang/'
     gitUrl = 'https://github.com/dnwang/android_agility_framework.git'
 
-    libraryVersion = '4.1.2.77'
+    libraryVersion = '4.1.2.78'
 
     developerId = 'dnwang'
     developerName = 'Denan.Wang'
@@ -30,8 +30,8 @@ android {
 
     defaultConfig {
         minSdkVersion 15
-        versionCode 77
-        versionName '4.1.2.77'
+        versionCode 78
+        versionName '4.1.2.78'
     }
 
     buildTypes {

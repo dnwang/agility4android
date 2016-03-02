@@ -53,10 +53,13 @@ public final class SimplePagerAdapter extends PagerAdapter {
     }
 
     public View getItem(int index) {
+        if (index < 0 || index >= mViews.size()) {
+            return null;
+        }
         return mViews.get(index);
     }
 
-    public int getIndexOfItem(View view){
+    public int getIndexOfItem(View view) {
         return mViews.indexOf(view);
     }
 
@@ -77,7 +80,7 @@ public final class SimplePagerAdapter extends PagerAdapter {
 
     @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
-        container.removeView((View)object);
+        container.removeView((View) object);
     }
 
     @Override

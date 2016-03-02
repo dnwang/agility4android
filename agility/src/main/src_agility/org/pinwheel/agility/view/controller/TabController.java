@@ -349,6 +349,9 @@ public final class TabController {
     public int getCurrentTab() {
         int index = -1;
         int size = tabs.size();
+        if (size == 0 || adapter.getCount() == 0) {
+            return index;
+        }
         View page = adapter.getItem(pager.getCurrentItem());
         for (int i = 0; i < size; i++) {
             Pair<View, View> tab = tabs.get(i);
