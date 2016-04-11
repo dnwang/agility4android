@@ -20,9 +20,13 @@ public final class DataCacheManager {
 
     private static DataCacheManager instance = null;
 
-    public synchronized static DataCacheManager getInstance(Context context) {
+    public static DataCacheManager getInstance(Context context) {
         if (instance == null) {
-            instance = new DataCacheManager(context);
+            synchronized (DataCacheManager.class) {
+                if (instance == null) {
+                    instance = new DataCacheManager(context);
+                }
+            }
         }
         return instance;
     }
