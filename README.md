@@ -1,5 +1,5 @@
-# android_agility
-库内包括主流UI控件,网络请求,数据缓存,位图加载,常用工具等模块,有助于应用快速研发和框架搭建<br>
+# Agility
+  包括主流UI控件,网络请求,数据缓存,位图加载,常用工具等模块,有助于应用快速研发和框架搭建<br>
 <br>
 <h3>网络请求</h3>
   1."HttpClientAgent":将HttpConnection,OKHttp,Volley主流请求框架统一接口调用,支持动态切换<br>
@@ -31,8 +31,7 @@
 <h3>HTTP服务器组件</h3>
   1.整合NanoHTTPPD框架，实现Android本地搭建HTTP服务器；<br>
 <br>
-
 <br>
-Agility的设计在于简化开发过程中的基础模块，做到功能借口标准，简介，使调用者能一行代码实现复杂的功能。<br>
+  Agility的设计在于帮助开发者能更专注业务逻辑,简化基础功能实现逻辑,快速搭建基础框架<br>
 <br>
     
