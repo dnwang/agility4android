@@ -14,6 +14,13 @@
 <br>
 <h3>通用工具</h3>
   1."BaseUtils":网络状态,数据类型转换,存储空间,反射资源等<br>
+  2."BitmapUtils":位图处理:放缩,透明度,缩略图,阴影,圆角<br>
+  3."DigestUtils":加解密:MD5<br>
+  4."FastBlur":<br>
+  5."FileUtils":文件处理:删除整个目录,查找指定文件,拷贝,追加文本类容<br>
+  6."IOUtils":I/O流相互转换<br>
+  7."UIUtils":Android屏幕单位转换dp,px,sp<br>
+  8.ex扩展包,通用工具功能扩展模块<br>
 <br>
 <h3>数据缓存</h3>
   1."DataCacheManager":支持任意数据类型本地存储,采用LRU算法二级缓存，网络接口数据缓存是应用场景之一<br>
