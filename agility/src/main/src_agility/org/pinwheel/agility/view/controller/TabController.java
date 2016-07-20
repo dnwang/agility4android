@@ -175,7 +175,7 @@ public final class TabController {
             } else {
                 itemBar.addView(item, itemParams);
             }
-            adapter.add(page);
+            adapter.add(page).notifyDataSetChanged();
         } else {
             ViewGroup.LayoutParams itemParams = tabInfo.getItemParams();
             if (itemParams == null) {
@@ -183,7 +183,7 @@ public final class TabController {
             } else {
                 itemBar.addView(item, index, itemParams);
             }
-            adapter.add(index, page);
+            adapter.add(index, page).notifyDataSetChanged();
         }
 
         tabs.add(new Pair<View, View>(item, page));
@@ -216,7 +216,7 @@ public final class TabController {
             } else {
                 itemBar.addView(item, itemParams);
             }
-            adapter.add(page);
+            adapter.add(page).notifyDataSetChanged();
 
             tabs.add(new Pair<View, View>(item, page));
         }
@@ -284,7 +284,7 @@ public final class TabController {
         Pair<View, View> tab = tabs.remove(index);
         if (tab != null) {
             itemBar.removeView(tab.first);
-            adapter.remove(adapter.getIndexOfItem(tab.second));
+            adapter.remove(adapter.getIndexOfItem(tab.second)).notifyDataSetChanged();
             if (selector != null) {
                 selector.remove(index);
             }
@@ -297,7 +297,7 @@ public final class TabController {
     public boolean removeAll() {
         tabs.clear();
         itemBar.removeAllViews();
-        adapter.removeAll();
+        adapter.removeAll().notifyDataSetChanged();
         if (selector != null) {
             selector.removeAll();
         }

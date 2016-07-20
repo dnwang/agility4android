@@ -27,9 +27,9 @@ public final class SimpleFragmentAdapter extends android.support.v4.app.Fragment
         this.fragments = new ArrayList<Fragment>(fragmentList);
     }
 
-    public void addFragment(Fragment fragment){
+    public SimpleFragmentAdapter addFragment(Fragment fragment) {
         this.fragments.add(fragment);
-        notifyDataSetChanged();
+        return this;
     }
 
     @Override

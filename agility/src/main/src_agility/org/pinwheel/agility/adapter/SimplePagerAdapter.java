@@ -27,29 +27,29 @@ public final class SimplePagerAdapter extends PagerAdapter {
         mViews = new ArrayList<View>(views);
     }
 
-    public void add(View v) {
+    public SimplePagerAdapter add(View v) {
         mViews.add(v);
-        notifyDataSetChanged();
+        return this;
     }
 
-    public void add(int index, View v) {
+    public SimplePagerAdapter add(int index, View v) {
         mViews.add(index, v);
-        notifyDataSetChanged();
+        return this;
     }
 
-    public void addAll(int index, List<View> v) {
+    public SimplePagerAdapter addAll(int index, List<View> v) {
         mViews.addAll(index, v);
-        notifyDataSetChanged();
+        return this;
     }
 
-    public void remove(int index) {
+    public SimplePagerAdapter remove(int index) {
         mViews.remove(index);
-        notifyDataSetChanged();
+        return this;
     }
 
-    public void removeAll() {
+    public SimplePagerAdapter removeAll() {
         mViews.clear();
-        notifyDataSetChanged();
+        return this;
     }
 
     public View getItem(int index) {

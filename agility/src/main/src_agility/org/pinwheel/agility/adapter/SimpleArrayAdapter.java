@@ -50,24 +50,34 @@ public abstract class SimpleArrayAdapter<T> extends BaseAdapter {
     }
 
     public SimpleArrayAdapter<T> addItem(T obj) {
-        this.data.add(obj);
+        if (obj != null) {
+            this.data.add(obj);
+        }
         return this;
     }
 
     public SimpleArrayAdapter<T> addItem(T obj, int index) {
-        this.data.add(index, obj);
+        if (obj != null && index >= 0 && index < data.size()) {
+            this.data.add(index, obj);
+        }
         return this;
     }
 
     public SimpleArrayAdapter<T> addAll(List<T> datas) {
-        this.data.addAll(datas);
+        if (datas != null && datas.size() > 0) {
+            data.addAll(datas);
+        }
         return this;
     }
 
     public SimpleArrayAdapter<T> addAll(T... datas) {
         if (datas != null && datas.length > 0) {
             for (T t : datas) {
-                data.add(t);
+                if (t instanceof List){
+                    addAll((List<T>)t);
+                } else {
+                    data.add(t);
+                }
             }
         }
         return this;

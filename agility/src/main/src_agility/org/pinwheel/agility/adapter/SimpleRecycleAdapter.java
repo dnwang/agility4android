@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -70,7 +71,11 @@ public abstract class SimpleRecycleAdapter<T> extends RecyclerView.Adapter<Simpl
     public SimpleRecycleAdapter<T> addAll(T... list) {
         if (list != null && list.length > 0) {
             for (T t : list) {
-                data.add(t);
+                if (t instanceof List){
+                    addAll((List<T>)t);
+                } else {
+                    data.add(t);
+                }
             }
         }
         return this;

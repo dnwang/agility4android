@@ -27,32 +27,39 @@ public final class SimpleViewAdapter extends BaseAdapter {
         views = new ArrayList<View>(datas);
     }
 
-    public void add(View v) {
+    public SimpleViewAdapter add(View v) {
         views.add(v);
+        return this;
     }
 
-    public void add(int index, View v) {
+    public SimpleViewAdapter add(int index, View v) {
         views.add(index, v);
+        return this;
     }
 
-    public void addAll(List<View> v) {
+    public SimpleViewAdapter addAll(List<View> v) {
         views.addAll(v);
+        return this;
     }
 
-    public void addAll(int index, List<View> v) {
+    public SimpleViewAdapter addAll(int index, List<View> v) {
         views.addAll(index, v);
+        return this;
     }
 
-    public void remove(int index) {
+    public SimpleViewAdapter remove(int index) {
         views.remove(index);
+        return this;
     }
 
-    public void removeAll(List<View> v) {
+    public SimpleViewAdapter removeAll(List<View> v) {
         views.removeAll(v);
+        return this;
     }
 
-    public void removeAll() {
+    public SimpleViewAdapter removeAll() {
         views.clear();
+        return this;
     }
 
     @Override

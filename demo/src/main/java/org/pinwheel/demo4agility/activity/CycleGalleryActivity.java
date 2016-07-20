@@ -252,8 +252,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
             }
         });
         simpleTestBtn.setText("Just test for pager");
-        pagerAdapter.add(simpleTestBtn);
-        pagerAdapter.add(container);
+        pagerAdapter.add(simpleTestBtn).add(container).notifyDataSetChanged();
 
         gallery.addOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
             @Override
