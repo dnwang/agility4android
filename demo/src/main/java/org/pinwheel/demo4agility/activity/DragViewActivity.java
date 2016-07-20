@@ -2,8 +2,6 @@ package org.pinwheel.demo4agility.activity;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
@@ -30,7 +28,7 @@ import org.pinwheel.demo4agility.test.CustomProgress;
 
 import java.util.ArrayList;
 
-public class DragViewActivity extends AbsTestActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
+public class DragViewActivity extends AbsTesterActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     private ArrayAdapter<String> adapter;
 
@@ -44,7 +42,7 @@ public class DragViewActivity extends AbsTestActivity implements AdapterView.OnI
     };
 
     @Override
-    protected void onInitInCreate() {
+    protected void beforeInitView() {
 
     }
 
@@ -53,12 +51,7 @@ public class DragViewActivity extends AbsTestActivity implements AdapterView.OnI
         View contentView = LayoutInflater.from(this).inflate(R.layout.activity_draggable, null);
 
         final Button button = (Button) contentView.findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(v.getContext(), ((TextView) v).getText(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        button.setOnClickListener(v -> Toast.makeText(v.getContext(), ((TextView) v).getText(), Toast.LENGTH_SHORT).show());
 
 //        final AbsListView dragView = (AbsListView) contentView.findViewById(R.id.drag_view);
 //        initHeader((ListView) dragView);
@@ -72,25 +65,19 @@ public class DragViewActivity extends AbsTestActivity implements AdapterView.OnI
         dragRefreshWrapper.setOnRefreshListener(new DragRefreshWrapper.OnRefreshListener() {
             @Override
             public void onTopRefresh() {
-                delay(3000, new Runnable() {
-                    @Override
-                    public void run() {
-                        dragRefreshWrapper.onRefreshComplete();
+                delay(3000, () -> {
+                    dragRefreshWrapper.onRefreshComplete();
 //                        adapter.insert("Im refresh", 0);
-                        button.setText("" + (Integer.parseInt(button.getText().toString()) + 1));
-                    }
+                    button.setText("" + (Integer.parseInt(button.getText().toString()) + 1));
                 });
             }
 
             @Override
             public void onBottomLoad() {
-                delay(1000, new Runnable() {
-                    @Override
-                    public void run() {
-                        dragRefreshWrapper.onLoadComplete();
+                delay(1000, () -> {
+                    dragRefreshWrapper.onLoadComplete();
 //                        adapter.add("Im added");
-                        button.setText("" + (Integer.parseInt(button.getText().toString()) - 1));
-                    }
+                    button.setText("" + (Integer.parseInt(button.getText().toString()) - 1));
                 });
             }
         });
@@ -99,7 +86,7 @@ public class DragViewActivity extends AbsTestActivity implements AdapterView.OnI
     }
 
     @Override
-    protected void doSomethingAfterCreated() {
+    protected void afterInitView() {
         ((DragRefreshWrapper) findViewById(R.id.drag_wrapper)).doRefresh();
     }
 
@@ -114,25 +101,17 @@ public class DragViewActivity extends AbsTestActivity implements AdapterView.OnI
             page.setText("" + i);
             page.setTextColor(Color.BLACK);
             pagers.add(page);
-            page.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(v.getContext(), "Page: " + v.getId(), Toast.LENGTH_SHORT).show();
-                }
-            });
+            page.setOnClickListener(v -> Toast.makeText(v.getContext(), "Page: " + v.getId(), Toast.LENGTH_SHORT).show());
         }
         PagerAdapter adapter = new SimplePagerAdapter(pagers);
         headerPager.setAdapter(adapter);
         list.addHeaderView(headerPager);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                ViewGroup.LayoutParams params = headerPager.getLayoutParams();
-                params.height = 300;
-                params.width = -1;
-                headerPager.setLayoutParams(params);
-            }
+        mainHandler.postDelayed(() -> {
+            ViewGroup.LayoutParams params = headerPager.getLayoutParams();
+            params.height = 300;
+            params.width = -1;
+            headerPager.setLayoutParams(params);
         }, 1000);
     }
 
@@ -149,7 +128,7 @@ public class DragViewActivity extends AbsTestActivity implements AdapterView.OnI
     }
 
     private void delay(long delay, Runnable runnable) {
-        new Handler(Looper.getMainLooper()).postDelayed(runnable, delay);
+        mainHandler.postDelayed(runnable, delay);
     }
 
     @Override

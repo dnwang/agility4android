@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import org.pinwheel.agility.view.TabSelectorView;
 import org.pinwheel.agility.view.controller.TabController;
 import org.pinwheel.demo4agility.R;
@@ -17,7 +18,7 @@ import org.pinwheel.demo4agility.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TabActivity extends AbsTestActivity {
+public class TabActivity extends AbsTesterActivity {
 
     private TabController controller;
 
@@ -33,7 +34,7 @@ public class TabActivity extends AbsTestActivity {
     };
 
     @Override
-    protected void onInitInCreate() {
+    protected void beforeInitView() {
 
     }
 
@@ -54,7 +55,7 @@ public class TabActivity extends AbsTestActivity {
     }
 
     @Override
-    protected void doSomethingAfterCreated() {
+    protected void afterInitView() {
 
     }
 

@@ -11,14 +11,15 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.view.drag.DragListView;
 
-public class LauncherActivity extends AbsTestActivity implements ListView.OnItemClickListener {
+public class LauncherActivity extends AbsTesterActivity implements ListView.OnItemClickListener {
 
     @Override
-    protected void onInitInCreate() {
+    protected void beforeInitView() {
 
     }
 
@@ -32,7 +33,7 @@ public class LauncherActivity extends AbsTestActivity implements ListView.OnItem
     }
 
     @Override
-    protected void doSomethingAfterCreated() {
+    protected void afterInitView() {
 
     }
 

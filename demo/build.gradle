@@ -1,32 +1,47 @@
 apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
 
 def currentTime() {
     return new Date().format("yyyyMMdd", TimeZone.getTimeZone("UTC"))
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+    compileSdkVersion 24
+    buildToolsVersion '24.0.1'
 
     defaultConfig {
         applicationId "org.pinwheel.demo"
         minSdkVersion 15
         versionCode 78
-        versionName "4.1.2.78"
+        versionName "4.1.3"
     }
 
     lintOptions {
         abortOnError false
     }
 
+    dataBinding{
+        enabled true
+    }
+
     dexOptions {
         javaMaxHeapSize "4g"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':agility')
+    compile 'com.google.guava:guava:18.0'
+    compile 'com.android.support:percent:24.0.0'
+    compile 'com.squareup.retrofit2:retrofit:2.1.0'
+    compile 'io.reactivex:rxandroid:1.2.1'
+    compile 'com.facebook.fresco:fresco:0.11.0'
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.3'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.3'
 }

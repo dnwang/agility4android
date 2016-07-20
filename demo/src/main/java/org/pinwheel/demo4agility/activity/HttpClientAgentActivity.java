@@ -6,10 +6,8 @@ import android.view.View;
 import android.widget.AdapterView;
 
 import org.pinwheel.agility.net.HttpClientAgent;
-import org.pinwheel.agility.net.HttpConnectionAgent;
 import org.pinwheel.agility.net.OkHttpAgent;
 import org.pinwheel.agility.net.Request;
-import org.pinwheel.agility.net.VolleyAgent;
 import org.pinwheel.agility.net.parser.BitmapParser;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.net.parser.FileParser;
@@ -25,7 +23,7 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
     HttpClientAgent httpClientAgent;
 
     @Override
-    protected void onInitInCreate() {
+    protected void beforeInitView() {
         httpClientAgent = new OkHttpAgent(6);
 //        httpClientAgent = new HttpConnectionAgent(6);
 //        httpClientAgent = new VolleyAgent(getApplicationContext());
@@ -33,13 +31,13 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
 
     @Override
     protected void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        showLog(!isShowLog());
+        showLogger(!isLoggerShown());
     }
 
     String finalTag;
 
     @Override
-    protected void doSomethingAfterCreated() {
+    protected void afterInitView() {
         // TODO: 10/15/15 cancel test (ok)
 //        for (int i = 0; i < 5; i++) {
 //            finalTag = System.currentTimeMillis() + i + "";

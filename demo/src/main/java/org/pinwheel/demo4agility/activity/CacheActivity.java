@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -27,7 +26,7 @@ import java.util.HashMap;
  *
  * @author dnwang
  */
-public class CacheActivity extends AbsTestActivity {
+public class CacheActivity extends AbsTesterActivity {
 
     private String[] urls = {
             "http://fujian.86516.com/forum/201201/05/1442483og4p90y34494azq.jpg",
@@ -84,12 +83,7 @@ public class CacheActivity extends AbsTestActivity {
         dismiss();
 
         ((ViewGroup) getWindow().getDecorView()).addView(poster, -1, -1);
-        poster.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
+        poster.setOnClickListener(v -> dismiss());
 
         ViewReceiver.OptionsBuilder optionsBuilder = new ViewReceiver.OptionsBuilder()// no limit
                 .setDefaultRes(android.R.drawable.stat_sys_download)
@@ -105,13 +99,14 @@ public class CacheActivity extends AbsTestActivity {
     }
 
     @Override
-    protected void onInitInCreate() {
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         ImageLoaderManager.release();
+    }
+
+    @Override
+    protected void beforeInitView() {
+
     }
 
     @Override
@@ -129,19 +124,15 @@ public class CacheActivity extends AbsTestActivity {
         gridView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         gridView.setVerticalScrollBarEnabled(false);
 
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                showPoster(urls[position % urls.length]);
+        gridView.setOnItemClickListener((parent, view, position, id) -> {
+            showPoster(urls[position % urls.length]);
 //                showPoster("/sdcard/bitmap.png");// support native uri
-            }
         });
-
         return gridView;
     }
 
     @Override
-    protected void doSomethingAfterCreated() {
+    protected void afterInitView() {
         Object obj = DataCacheManager.getInstance(this).getObject("test_cache");
         if (obj != null) {
             logout(obj);

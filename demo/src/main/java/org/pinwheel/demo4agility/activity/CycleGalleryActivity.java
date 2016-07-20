@@ -26,7 +26,7 @@ import org.pinwheel.demo4agility.R;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
 
 
-public class CycleGalleryActivity extends AbsTestActivity {
+public class CycleGalleryActivity extends AbsTesterActivity {
     private static final String TAG = CycleGalleryActivity.class.getSimpleName();
 
     private final static String[] urls = {
@@ -86,18 +86,13 @@ public class CycleGalleryActivity extends AbsTestActivity {
             TextView txt = BaseUtils.getViewByHolder(convertView, R.id.text);
             txt.setText(String.valueOf(position));
             ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader(image, urls[position % urls.length]);
-            convertView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(CycleGalleryActivity.this, position + "", Toast.LENGTH_SHORT).show();
-                }
-            });
+            convertView.setOnClickListener(v -> Toast.makeText(CycleGalleryActivity.this, position + "", Toast.LENGTH_SHORT).show());
             return convertView;
         }
     };
 
     @Override
-    protected void onInitInCreate() {
+    protected void beforeInitView() {
 
     }
 
@@ -174,83 +169,53 @@ public class CycleGalleryActivity extends AbsTestActivity {
         scrollView.addView(funcContainer);
         container.addView(scrollView, new FrameLayout.LayoutParams(-1, -2));
 
-        func1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                adapter.addItem(android.R.color.holo_red_dark);
-                adapter.addItem(android.R.color.holo_orange_dark);
-                adapter.addItem(android.R.color.holo_blue_dark);
-                adapter.addItem(android.R.color.holo_green_dark);
-                adapter.notifyDataSetChanged();
+        func1.setOnClickListener(v -> {
+            adapter.addItem(android.R.color.holo_red_dark);
+            adapter.addItem(android.R.color.holo_orange_dark);
+            adapter.addItem(android.R.color.holo_blue_dark);
+            adapter.addItem(android.R.color.holo_green_dark);
+            adapter.notifyDataSetChanged();
 
-                indicatorView.setPointerSize(adapter.getCount());
-                indicatorView.setCurrentIndex(0);
-            }
+            indicatorView.setPointerSize(adapter.getCount());
+            indicatorView.setCurrentIndex(0);
         });
-        func2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                adapter.removeAll();
-                adapter.notifyDataSetChanged();
+        func2.setOnClickListener(v -> {
+            adapter.removeAll();
+            adapter.notifyDataSetChanged();
 
-                indicatorView.setPointerSize(adapter.getCount());
-                indicatorView.setCurrentIndex(0);
-            }
+            indicatorView.setPointerSize(adapter.getCount());
+            indicatorView.setCurrentIndex(0);
         });
-        func3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                adapter.removeAll();
-                adapter.addItem(android.R.color.darker_gray);
-                adapter.addItem(android.R.color.holo_purple);
-                adapter.notifyDataSetChanged();
+        func3.setOnClickListener(v -> {
+            adapter.removeAll();
+            adapter.addItem(android.R.color.darker_gray);
+            adapter.addItem(android.R.color.holo_purple);
+            adapter.notifyDataSetChanged();
 
-                indicatorView.setPointerSize(adapter.getCount());
-                indicatorView.setCurrentIndex(0);
-            }
+            indicatorView.setPointerSize(adapter.getCount());
+            indicatorView.setCurrentIndex(0);
         });
-        func4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int size = gallery.getRecycleItemSize();
-                gallery.setRecycleItemSize(size + 2);
-            }
+        func4.setOnClickListener(v -> {
+            int size = gallery.getRecycleItemSize();
+            gallery.setRecycleItemSize(size + 2);
         });
-        func5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gallery.setSpaceBetweenItems(40);
-                gallery.setIndent(
-                        (int) (gallery.getLeftIndent() * 1.2),
-                        (int) (gallery.getTopIndent() * 1.2),
-                        (int) (gallery.getRightIndent() * 1.2),
-                        (int) (gallery.getBottomIndent() * 1.2));
-            }
+        func5.setOnClickListener(v -> {
+            gallery.setSpaceBetweenItems(40);
+            gallery.setIndent(
+                    (int) (gallery.getLeftIndent() * 1.2),
+                    (int) (gallery.getTopIndent() * 1.2),
+                    (int) (gallery.getRightIndent() * 1.2),
+                    (int) (gallery.getBottomIndent() * 1.2));
         });
-        leftBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gallery.movePrevious();
-            }
-        });
-        rightBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gallery.moveNext();
-            }
-        });
+        leftBtn.setOnClickListener(v -> gallery.movePrevious());
+        rightBtn.setOnClickListener(v -> gallery.moveNext());
 
         // create pager warapper
         final ViewPager viewPager = new ViewPager(this);
         SimplePagerAdapter pagerAdapter = new SimplePagerAdapter();
         viewPager.setAdapter(pagerAdapter);
         Button simpleTestBtn = new Button(this);
-        simpleTestBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                viewPager.setCurrentItem(1);
-            }
-        });
+        simpleTestBtn.setOnClickListener(v -> viewPager.setCurrentItem(1));
         simpleTestBtn.setText("Just test for pager");
         pagerAdapter.add(simpleTestBtn).add(container).notifyDataSetChanged();
 
@@ -271,7 +236,7 @@ public class CycleGalleryActivity extends AbsTestActivity {
     }
 
     @Override
-    protected void doSomethingAfterCreated() {
+    protected void afterInitView() {
 
     }
 

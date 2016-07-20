@@ -20,7 +20,7 @@ import org.pinwheel.demo4agility.R;
  *
  * @author dnwang
  */
-public class TestActivity extends AbsTestActivity {
+public class TestActivity extends AbsTesterActivity {
 
     private String[] urls = {
             "http://fujian.86516.com/forum/201201/05/1442483og4p90y34494azq.jpg",
@@ -69,7 +69,7 @@ public class TestActivity extends AbsTestActivity {
     private ImageLoader imageLoader;
 
     @Override
-    protected void onInitInCreate() {
+    protected void beforeInitView() {
         imageLoader = new ImageLoader(this);
         ViewReceiver.OptionsBuilder builder = new ViewReceiver.OptionsBuilder();
         builder.setMax(400, 400);
@@ -78,20 +78,18 @@ public class TestActivity extends AbsTestActivity {
 
     @Override
     protected View getContentView() {
-        View contentView = createView(R.layout.activity_recyclerview);
-        RecyclerView recyclerView = getView(contentView, R.id.list);
+        return inflate(R.layout.activity_recyclerview);
+    }
+
+    @Override
+    protected void afterInitView() {
+        RecyclerView recyclerView = holder.getView(R.id.list);
 
         GridLayoutManager layoutManager = new GridLayoutManager(this, 3);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
 
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(new Adapter().addAll(urls));
-        return contentView;
-    }
-
-    @Override
-    protected void doSomethingAfterCreated() {
-
     }
 
     private class Adapter extends SimpleRecycleAdapter<String> {

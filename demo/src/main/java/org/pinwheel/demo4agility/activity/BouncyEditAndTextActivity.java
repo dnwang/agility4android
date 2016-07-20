@@ -4,6 +4,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.view.View;
 import android.widget.LinearLayout;
+
 import org.pinwheel.agility.view.BouncyEditText;
 
 /**
@@ -13,12 +14,12 @@ import org.pinwheel.agility.view.BouncyEditText;
  *
  * @author dnwang
  */
-public class BouncyEditAndTextActivity extends AbsTestActivity {
+public class BouncyEditAndTextActivity extends AbsTesterActivity {
 
     BouncyEditText bouncyEditText;
 
     @Override
-    protected void onInitInCreate() {
+    protected void beforeInitView() {
 
     }
 
@@ -35,7 +36,7 @@ public class BouncyEditAndTextActivity extends AbsTestActivity {
     }
 
     @Override
-    protected void doSomethingAfterCreated() {
+    protected void afterInitView() {
 
     }
 
@@ -43,4 +44,5 @@ public class BouncyEditAndTextActivity extends AbsTestActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
     }
+
 }

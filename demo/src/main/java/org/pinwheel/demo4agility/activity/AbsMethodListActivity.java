@@ -23,7 +23,7 @@ import java.util.ArrayList;
  *
  * @author dnwang
  */
-abstract class AbsMethodListActivity extends AbsTestActivity {
+abstract class AbsMethodListActivity extends AbsTesterActivity {
 
     @Override
     protected final View getContentView() {
@@ -37,18 +37,15 @@ abstract class AbsMethodListActivity extends AbsTestActivity {
         ListView list = new DragListView(this);
         BaseAdapter adapter = new ArrayAdapter<>(getBaseContext(), android.R.layout.simple_list_item_1, requestMethods);
         list.setAdapter(adapter);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String methodName = String.valueOf(parent.getAdapter().getItem(position));
-                try {
-                    Method method = AbsMethodListActivity.this.getClass().getDeclaredMethod(methodName);
-                    method.setAccessible(true);
-                    method.invoke(AbsMethodListActivity.this);
-                    AbsMethodListActivity.this.onItemClick(parent, view, position, id);
-                } catch (Exception e) {
-                    logout(e.getClass().getSimpleName() + ": " + e.getMessage());
-                }
+        list.setOnItemClickListener((parent, view, position, id) -> {
+            String methodName = String.valueOf(parent.getAdapter().getItem(position));
+            try {
+                Method method = AbsMethodListActivity.this.getClass().getDeclaredMethod(methodName);
+                method.setAccessible(true);
+                method.invoke(AbsMethodListActivity.this);
+                AbsMethodListActivity.this.onItemClick(parent, view, position, id);
+            } catch (Exception e) {
+                logout(e.getClass().getSimpleName() + ": " + e.getMessage());
             }
         });
         return list;

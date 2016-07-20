@@ -2,7 +2,14 @@ package org.pinwheel.demo4agility.activity;
 
 import android.view.Gravity;
 import android.view.View;
-import android.widget.*;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ScrollView;
+import android.widget.Toast;
+
 import org.pinwheel.agility.view.InternalListView;
 
 import java.util.ArrayList;
@@ -15,10 +22,10 @@ import java.util.List;
  *
  * @author dnwang
  */
-public class InternalListActivity extends AbsTestActivity {
+public class InternalListActivity extends AbsTesterActivity {
 
     @Override
-    protected void onInitInCreate() {
+    protected void beforeInitView() {
 
     }
 
@@ -36,7 +43,7 @@ public class InternalListActivity extends AbsTestActivity {
     }
 
     @Override
-    protected void doSomethingAfterCreated() {
+    protected void afterInitView() {
 
     }
 
@@ -74,12 +81,7 @@ public class InternalListActivity extends AbsTestActivity {
         BaseAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1, data);
         InternalListView listView = new InternalListView(getBaseContext());
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(InternalListActivity.this, "" + position, Toast.LENGTH_SHORT).show();
-            }
-        });
+        listView.setOnItemClickListener((parent, view, position, id) -> Toast.makeText(InternalListActivity.this, "" + position, Toast.LENGTH_SHORT).show());
         return listView;
     }
 

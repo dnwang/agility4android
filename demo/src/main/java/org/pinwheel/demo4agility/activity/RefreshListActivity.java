@@ -6,25 +6,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.TextView;
+
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.view.swiperefresh.SwipeEventHelper;
 import org.pinwheel.agility.view.swiperefresh.SwipeGridView;
 import org.pinwheel.demo4agility.R;
 
-public class RefreshListActivity extends AbsTestActivity implements AdapterView.OnItemClickListener {
+public class RefreshListActivity extends AbsTesterActivity implements AdapterView.OnItemClickListener {
 
     SwipeEventHelper eventHelper;
 
     Adapter adapter;
 
     @Override
-    protected void onInitInCreate() {
+    protected void beforeInitView() {
 
     }
 
     @Override
     protected View getContentView() {
-        View contentView = LayoutInflater.from(this).inflate(R.layout.activity_refresh_list, null);
+        View contentView = inflate(R.layout.activity_refresh_list);
 
         SwipeGridView swipeList = (SwipeGridView) contentView.findViewById(R.id.swipe);
         adapter = new Adapter();
@@ -41,7 +42,7 @@ public class RefreshListActivity extends AbsTestActivity implements AdapterView.
     }
 
     @Override
-    protected void doSomethingAfterCreated() {
+    protected void afterInitView() {
 
     }
 

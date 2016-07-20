@@ -23,10 +23,10 @@ import java.util.Map;
  *
  * @author dnwang
  */
-public class FieldActivity extends AbsTestActivity {
+public class FieldActivity extends AbsTesterActivity {
 
     @Override
-    protected void onInitInCreate() {
+    protected void beforeInitView() {
 
     }
 
@@ -36,8 +36,8 @@ public class FieldActivity extends AbsTestActivity {
     }
 
     @Override
-    protected void doSomethingAfterCreated() {
-        showLog(true);
+    protected void afterInitView() {
+        showLogger(true);
         InjectStruct injectStruct = new InjectStruct();
         // 注入
         logout("-------------- Inject -----------------");
@@ -52,7 +52,6 @@ public class FieldActivity extends AbsTestActivity {
         logout("┌ " + reflex_obj.getClass().getSimpleName() + " {");
         reflexValue("│\t", reflex_obj);
         logout("└ }");
-
 
         // add method test 201506029
         Map<String, String> values = FieldUtils.obj2Map(new DemoEntity());
@@ -172,7 +171,7 @@ public class FieldActivity extends AbsTestActivity {
         } else {
             Object obj = null;
             Constructor[] constructors = cls.getConstructors();
-            if (constructors == null || constructors.length == 0){
+            if (constructors == null || constructors.length == 0) {
                 return obj;
             }
 
