@@ -2,9 +2,8 @@ package org.pinwheel.demo4agility.activity;
 
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
 
 import org.pinwheel.agility.view.drag.DragListView;
 
@@ -14,6 +13,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Copyright (C), 2015 <br>
@@ -27,20 +28,26 @@ abstract class AbsMethodListActivity extends AbsTesterActivity {
 
     @Override
     protected final View getContentView() {
-        ArrayList<String> requestMethods = new ArrayList<>();
-        Method[] methods = AbsMethodListActivity.this.getClass().getMethods();
-        for (Method method : methods) {
-            if (method.isAnnotationPresent(TestMethod.class)) {
-                requestMethods.add(method.getName());
+        ArrayList<Map<String, String>> flagMethodList = new ArrayList<>();
+        Method[] declaredMethods = AbsMethodListActivity.this.getClass().getDeclaredMethods();
+        for (Method method : declaredMethods) {
+            TestMethod testMethod = method.getAnnotation(TestMethod.class);
+            if (testMethod != null) {
+                Map<String, String> args = new HashMap<>();
+                args.put("title", testMethod.title());
+                args.put("name", method.getName());
+                flagMethodList.add(args);
             }
         }
         ListView list = new DragListView(this);
-        BaseAdapter adapter = new ArrayAdapter<>(getBaseContext(), android.R.layout.simple_list_item_1, requestMethods);
-        list.setAdapter(adapter);
+        list.setAdapter(new SimpleAdapter(
+                getBaseContext(), flagMethodList, android.R.layout.simple_list_item_2,
+                new String[]{"title", "name"},
+                new int[]{android.R.id.text1, android.R.id.text2}));
         list.setOnItemClickListener((parent, view, position, id) -> {
-            String methodName = String.valueOf(parent.getAdapter().getItem(position));
+            Map<String, String> flagMethod = (Map<String, String>) parent.getAdapter().getItem(position);
             try {
-                Method method = AbsMethodListActivity.this.getClass().getDeclaredMethod(methodName);
+                Method method = AbsMethodListActivity.this.getClass().getDeclaredMethod(flagMethod.get("name"));
                 method.setAccessible(true);
                 method.invoke(AbsMethodListActivity.this);
                 AbsMethodListActivity.this.onItemClick(parent, view, position, id);
@@ -58,6 +65,7 @@ abstract class AbsMethodListActivity extends AbsTesterActivity {
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     protected @interface TestMethod {
+        String title() default "";
     }
 
 }

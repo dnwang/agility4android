@@ -82,7 +82,7 @@ abstract class AbsTesterActivity extends Activity {
         emptyTips.setImageResource(android.R.drawable.ic_dialog_info);
         listView.setEmptyView(emptyTips);
         FrameLayout wrapper = new FrameLayout(this);
-        wrapper.setBackgroundColor(Color.parseColor("#88000000"));
+        wrapper.setBackgroundColor(Color.parseColor("#AA000000"));
         wrapper.addView(emptyTips, -1, -1);
         wrapper.addView(listView, -1, -1);
         loggerView = wrapper;
