@@ -24,8 +24,9 @@ import java.util.concurrent.Future;
  * All rights reserved
  *
  * @author dnwang
+ * {@link org.pinwheel.agility.tools.Downloader}
  */
-public class Downloader {
+public class MultiThreadDownloader {
 
     private Handler mainHandler;
     private ExecutorService executor;
@@ -40,7 +41,7 @@ public class Downloader {
     private Set<Callback<Long>> progressCallbacks;
     private Set<Callback<Long>> prepareCallbacks;
 
-    public Downloader() {
+    public MultiThreadDownloader() {
         this.prepareCallbacks = new HashSet<>(2);
         this.progressCallbacks = new HashSet<>(2);
         this.completeCallbacks = new HashSet<>(2);
@@ -51,19 +52,19 @@ public class Downloader {
     }
 
     @Deprecated
-    public Downloader setOnDownloadListener(OnDownloadListener listener) {
+    public MultiThreadDownloader setOnDownloadListener(OnDownloadListener listener) {
         this.downloadListener = listener;
         return this;
     }
 
-    public Downloader addCompleteCallback(Callback<Boolean> callable) {
+    public MultiThreadDownloader addCompleteCallback(Callback<Boolean> callable) {
         if (callable != null) {
             this.completeCallbacks.add(callable);
         }
         return this;
     }
 
-    public Downloader removeCompleteCallback(Callback<Boolean> callable) {
+    public MultiThreadDownloader removeCompleteCallback(Callback<Boolean> callable) {
         if (callable == null) {
             this.completeCallbacks.clear();
         } else {
@@ -72,14 +73,14 @@ public class Downloader {
         return this;
     }
 
-    public Downloader addProgressCallback(Callback<Long> callable) {
+    public MultiThreadDownloader addProgressCallback(Callback<Long> callable) {
         if (callable != null) {
             this.progressCallbacks.add(callable);
         }
         return this;
     }
 
-    public Downloader removeProgressCallback(Callback<Long> callable) {
+    public MultiThreadDownloader removeProgressCallback(Callback<Long> callable) {
         if (callable == null) {
             this.progressCallbacks.clear();
         } else {
@@ -88,14 +89,14 @@ public class Downloader {
         return this;
     }
 
-    public Downloader addPrepareCallback(Callback<Long> callable) {
+    public MultiThreadDownloader addPrepareCallback(Callback<Long> callable) {
         if (callable != null) {
             this.prepareCallbacks.add(callable);
         }
         return this;
     }
 
-    public Downloader removePrepareCallback(Callback<Long> callable) {
+    public MultiThreadDownloader removePrepareCallback(Callback<Long> callable) {
         if (callable == null) {
             this.prepareCallbacks.clear();
         } else {
@@ -104,7 +105,7 @@ public class Downloader {
         return this;
     }
 
-    public Downloader setFile(File file) {
+    public MultiThreadDownloader setFile(File file) {
         this.file = file;
         return this;
     }
@@ -113,7 +114,7 @@ public class Downloader {
         return file;
     }
 
-    public Downloader setThreadSize(int size) {
+    public MultiThreadDownloader setThreadSize(int size) {
         this.threadSize = Math.max(1, size);
         return this;
     }
@@ -126,7 +127,7 @@ public class Downloader {
         return contentLength;
     }
 
-    public Downloader clear() {
+    public MultiThreadDownloader clear() {
         contentLength = -1;
         workers.clear();
         return this;
@@ -143,21 +144,21 @@ public class Downloader {
         }
     }
 
-    public void open(final String urlStr) {
+    public MultiThreadDownloader open(final String urlStr) {
         clear();
         if (TextUtils.isEmpty(urlStr)) {
             dividerError(new NullPointerException("open url error, url is empty"));
-            return;
+            return this;
         }
         if (file == null) {
             dividerError(new NullPointerException("open url error, file is empty"));
-            return;
+            return this;
         }
         if (!file.exists()) {
             File path = file.getParentFile();
             if (!path.exists() && !path.mkdirs()) {
                 dividerError(new IllegalStateException("open url error, can't create dir"));
-                return;
+                return this;
             }
         } else {
             file.delete();
@@ -206,8 +207,8 @@ public class Downloader {
                     }
                 }
             }
-
         });
+        return this;
     }
 
     private void allotThread(final String url, final int threadSize, long contentLength) {

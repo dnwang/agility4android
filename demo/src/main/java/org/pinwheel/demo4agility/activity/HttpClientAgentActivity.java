@@ -12,9 +12,10 @@ import org.pinwheel.agility.net.parser.BitmapParser;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.net.parser.FileParser;
 import org.pinwheel.agility.net.parser.GsonParser;
+import org.pinwheel.agility.tools.Downloader;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.demo4agility.entity.WeatherEntity;
-import org.pinwheel.demo4agility.multithread.Downloader;
+import org.pinwheel.demo4agility.multithread.MultiThreadDownloader;
 
 import java.io.File;
 
@@ -133,7 +134,7 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
     public void bigFileRequest() {
         final long startTime = System.currentTimeMillis();
 
-        String url = "http://p.gdown.baidu.com/0c355e38510b236a7066785eddb99285bcbd3275d05b82c1b9908946f9936812d17598cf52da65f01978bca62553b1325a2b910649edc9fde30f366d437849deae132f4e24caeedf1660f269eeaa6570653b82067c53c2d2c94cce6a5afad89959e955386fb850ba0c8caad2b6ac77ca076fc5824259d6fafe334c52b82205f589014d58ebdb7525bc6188febcbf0be4541af18c4c08790f58a5c8d6e46537e0823a8a8e49a79f0125f54b944cbac19a707755cdf8fcea1f0fc862fbd339ce3b8bfff40f271403ee4dd4e14dc8d79310ce3a1a66707b30270c59da0a55cfe7a696ff28566e4dd788175b5b39e0e4d7243652748f66f4bbf99f80a189f78b47b140c7626c7c1af11ba660fdedf9982497";
+        String url = "https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_android.apk";
         final String tag = "bigFileRequest";
         DataParserAdapter parser = new FileParser(new File(Environment.getExternalStorageDirectory(), "file.apk"));
         parser.setOnParseListener(new DataParserAdapter.OnParseListener() {
@@ -172,13 +173,28 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
 
     @TestMethod(title = "多线程下载文件")
     public void multiThreadDownload() {
-        final String url = "http://p.gdown.baidu.com/0c355e38510b236a7066785eddb99285bcbd3275d05b82c1b9908946f9936812d17598cf52da65f01978bca62553b1325a2b910649edc9fde30f366d437849deae132f4e24caeedf1660f269eeaa6570653b82067c53c2d2c94cce6a5afad89959e955386fb850ba0c8caad2b6ac77ca076fc5824259d6fafe334c52b82205f589014d58ebdb7525bc6188febcbf0be4541af18c4c08790f58a5c8d6e46537e0823a8a8e49a79f0125f54b944cbac19a707755cdf8fcea1f0fc862fbd339ce3b8bfff40f271403ee4dd4e14dc8d79310ce3a1a66707b30270c59da0a55cfe7a696ff28566e4dd788175b5b39e0e4d7243652748f66f4bbf99f80a189f78b47b140c7626c7c1af11ba660fdedf9982497";
-        final File path = new File(Environment.getExternalStorageDirectory(), "multiDownloaded.apk");
-        new Downloader().setFile(path).setThreadSize(3)
+        final String url = "https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_android.apk";
+        MultiThreadDownloader multiThreadDownloader = new MultiThreadDownloader()
+                .setFile(new File(Environment.getExternalStorageDirectory(), "multiDownloaded.apk"))
+                .setThreadSize(3)
                 .addPrepareCallback(contentLength -> total = contentLength)
                 .addCompleteCallback(success -> logout((success ? "success" : "error")))
                 .addProgressCallback(progress -> logout("progress:" + BaseUtils.longSizeToStr(progress) + ", total:" + BaseUtils.longSizeToStr(total)))
                 .open(url);
+    }
+
+    long lastProgress = 0;
+
+    @TestMethod(title = "多线程断点下载")
+    public void continueDownload() {
+        final String url = "https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_android.apk";
+        final File file = new File(Environment.getExternalStorageDirectory(), "continueDownload.apk");
+        new Downloader().setMaxThreadSize(3)
+                .onComplete(arg0 -> logout(arg0 ? "success" : "error"))
+                .onProcess((arg0, arg1) -> {
+                    logout("percent:" + (arg0 * 100 / arg1) + ", speed:" + BaseUtils.longSizeToStr((arg0 - lastProgress) / 1000));
+                    lastProgress = arg0;
+                }).open(file, url);
     }
 
 }
