@@ -24,6 +24,7 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
+import org.pinwheel.agility.compat.GrantPermissionsHelper;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -45,11 +46,12 @@ abstract class AbsTesterActivity extends Activity {
     private static final DateFormat FORMAT = new SimpleDateFormat("[MM-dd HH:mm:ss]", Locale.PRC);
 
     protected int LOGGER_BUF_SIZE = -1;
-    protected Handler mainHandler = new Handler(Looper.getMainLooper());
+    protected final Handler mainHandler = new Handler(Looper.getMainLooper());
     protected ViewHolder holder;
 
     private View loggerView;
     private LoggerAdapter adapter = new LoggerAdapter();
+    private GrantPermissionsHelper grantPermissionsHelper = new GrantPermissionsHelper();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +110,20 @@ abstract class AbsTesterActivity extends Activity {
 
     protected final View inflate(int layout) {
         return View.inflate(this, layout, null);
+    }
+
+    protected final void requestPermissions(Runnable runner, String... permissions) {
+        grantPermissionsHelper.requestPermissions(this, runner, permissions);
+    }
+
+    protected final void postDelayed(Runnable runnable, long delay) {
+        mainHandler.postDelayed(runnable, delay);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        grantPermissionsHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override

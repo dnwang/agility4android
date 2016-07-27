@@ -1,5 +1,6 @@
 package org.pinwheel.demo4agility.activity;
 
+import android.Manifest;
 import android.graphics.Bitmap;
 import android.os.Environment;
 import android.view.View;
@@ -35,8 +36,6 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
     protected void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         showLogger(!isLoggerShown());
     }
-
-    String finalTag;
 
     @Override
     protected void afterInitView() {
@@ -193,7 +192,10 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
         }
         final String url = "https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_android.apk";
         final File file = new File(Environment.getExternalStorageDirectory(), "QQMobile.apk");
-        downloader.open(file, url);
+        // request running permissions in android M
+        requestPermissions(() -> {
+            downloader.open(file, url);
+        }, Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
     Downloader downloader;
