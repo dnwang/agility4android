@@ -183,18 +183,25 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
                 .open(url);
     }
 
-    long lastProgress = 0;
-
     @TestMethod(title = "多线程断点下载")
     public void continueDownload() {
+        if (downloader == null) {
+            downloader = new Downloader()
+                    .setMaxThreadSize(3)
+                    .onComplete(arg0 -> logout(arg0 ? "success" : "error"))
+                    .onProcess((arg0, arg1) -> logout("percent: " + (arg0 * 100 / arg1) + "% [" + BaseUtils.longSizeToStr(arg0) + "/" + BaseUtils.longSizeToStr(arg1) + "]"));
+        }
         final String url = "https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_android.apk";
-        final File file = new File(Environment.getExternalStorageDirectory(), "continueDownload.apk");
-        new Downloader().setMaxThreadSize(3)
-                .onComplete(arg0 -> logout(arg0 ? "success" : "error"))
-                .onProcess((arg0, arg1) -> {
-                    logout("percent:" + (arg0 * 100 / arg1) + ", speed:" + BaseUtils.longSizeToStr((arg0 - lastProgress) / 1000));
-                    lastProgress = arg0;
-                }).open(file, url);
+        final File file = new File(Environment.getExternalStorageDirectory(), "QQMobile.apk");
+        downloader.open(file, url);
+    }
+
+    Downloader downloader;
+
+    @TestMethod(title = "停止下载")
+    public void stopDownload() {
+        logout("call cancel");
+        downloader.cancel();
     }
 
 }

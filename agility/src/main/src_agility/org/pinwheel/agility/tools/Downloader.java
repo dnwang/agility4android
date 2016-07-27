@@ -42,10 +42,16 @@ public final class Downloader {
         void call(V arg0, K arg1);
     }
 
+    enum CallbackMode {
+        ONLY_CHANGED,// 相同的进度不重复回调
+        EVERY_MONITOR// 无视重复进度，取决于检测周期
+    }
+
     private Handler mainHandler;
     private ExecutorService executor;
     private CopyOnWriteArraySet<Worker> workers;
-    private int maxThreadSize;
+    private int maxThreadSize = 2;// default thread size
+    private int monitorPeriod = 999;// default value
 
     private DownloadInfo downloadInfo;
 
@@ -56,7 +62,6 @@ public final class Downloader {
         this.mainHandler = new Handler(Looper.getMainLooper());
         this.workers = new CopyOnWriteArraySet<>();
         this.executor = Executors.newCachedThreadPool();
-        this.maxThreadSize = 3;
     }
 
     public Downloader onProcess(Callback2<Long, Long> callable) {
@@ -74,22 +79,35 @@ public final class Downloader {
         return this;
     }
 
-    private long getContentLength() {
+    public Downloader setProgressCallbackMode(CallbackMode mode) {
+        progressCallbackMode = mode;
+        return this;
+    }
+
+    public Downloader setMonitorPeriod(int period) {
+        monitorPeriod = period;
+        return this;
+    }
+
+    public long getContentLength() {
         return null == downloadInfo ? -1 : downloadInfo.contentLength;
     }
 
-    private long getProgress() {
+    public long getProgress() {
         return null == downloadInfo ? 0 : downloadInfo.progress;
     }
 
-    private File getFile() {
-        return null == downloadInfo ? null : downloadInfo.file;
-    }
+    private CallbackMode progressCallbackMode = CallbackMode.ONLY_CHANGED;
+    private long lastProgress = -1;
 
     private void dividerProgress(final long progress) {
         post(new Runnable() {
             @Override
             public void run() {
+                if (CallbackMode.ONLY_CHANGED == progressCallbackMode && lastProgress == progress) {
+                    return;
+                }
+                lastProgress = progress;
                 if (progressCallback != null) {
                     progressCallback.call(progress, getContentLength());
                 }
@@ -128,11 +146,14 @@ public final class Downloader {
     }
 
     public Downloader cancel() {
+        reset();
+        return this;
+    }
+
+    private void reset() {
         if (null != workers) {
-            if (!workers.isEmpty()) {
-                for (Worker worker : workers) {
-                    worker.self.cancel(true);// intercept all
-                }
+            for (Worker worker : workers) {
+                worker.cancel();// intercept all
             }
             workers.clear();
         }
@@ -140,11 +161,11 @@ public final class Downloader {
             downloadInfo.syncProp();
         }
         downloadInfo = null;
-        return this;
+        lastProgress = -1;
     }
 
     public void release() {
-        cancel();
+        reset();
         completeCallback = null;
         progressCallback = null;
         if (null != executor) {
@@ -153,15 +174,15 @@ public final class Downloader {
     }
 
     public Downloader open(final File file, final String url) {
-        cancel();// cancel first
+        reset();// cancel first
         if (null == url || "".equals(url) || null == file || file.isDirectory()) {
             dividerError("error, url or file is empty");
             return this;
         }
-        executor.execute(new Runnable() {
+        executor.submit(new Runnable() {
             @Override
             public void run() {
-                downloadInfo = findRecorder(file, url);
+                downloadInfo = findExistsInfo(file, url);
                 if (null == downloadInfo) {
                     final long contentLength = Common.getContentLength(url);
                     if (contentLength != -1) {
@@ -170,23 +191,22 @@ public final class Downloader {
                     }
                 }
                 if (null == downloadInfo) {
-                    dividerError("error, can't create downloadInfo");
+                    dividerError("error, can't create downloadInfo, maybe the url response content length is -1");
                     return;
                 }
-                allotWorker(downloadInfo.getSpaceBlocks());// allot worker
-                if (null != workers && workers.isEmpty()) {
-                    dividerError("error, can't allot worker to download");
-                    return;
-                }
+                // allot worker
+                allotWorker(downloadInfo.getSpaceBlocks());
                 // monitoring
-                long lastTime = 0;
-                long currentTime = 0;
                 while (true) {
-                    currentTime = System.currentTimeMillis();
-                    if (currentTime - lastTime > 999) {
-                        lastTime = currentTime;
-                        syncWorkerProgress();
-                        if (checkWorkerState()) break;
+                    if (mergeWorkerProgress() && checkWorkerState()) {
+                        try {
+                            Thread.sleep(monitorPeriod);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        reset();
+                        break;
                     }
                 }
             }
@@ -194,7 +214,7 @@ public final class Downloader {
         return this;
     }
 
-    private DownloadInfo findRecorder(File file, String url) {
+    private DownloadInfo findExistsInfo(File file, String url) {
         if (null == file || null == url || "".equals(url)) {
             return null;
         }
@@ -211,8 +231,8 @@ public final class Downloader {
         final int workerSize = Math.min(maxThreadSize, sizeOfBlock);
         for (int i = 0; i < workerSize; i++) {
             Block block = spaceBlocks.get(i);
-            Worker worker = new Worker(downloadInfo.url, downloadInfo.file, block.begin, block.end);
-            worker.self = executor.submit(worker);
+            Worker worker = new Worker(downloadInfo.url, downloadInfo.file, block);
+            worker.setFuture(executor.submit(worker));
             workers.add(worker);
         }
     }
@@ -251,29 +271,33 @@ public final class Downloader {
         return subBlocks;
     }
 
-    private void syncWorkerProgress() {
-        if (workers == null || workers.isEmpty()) {
-            return;
+    private boolean mergeWorkerProgress() {
+        if (null == downloadInfo || null == workers) {
+            return false;
         }
+        boolean mergeSuccess = true;
         for (Worker worker : workers) {
             Block block = worker.getNewProgress();
-            if (null != block && null != downloadInfo) {
+            if (null != block) {
                 if (downloadInfo.merge(block)) {
                     downloadInfo.progress += block.getLength();
                 } else {
-                    Common.logout("merge error. " + block.toString() + " -> " + downloadInfo.areaToString());
+                    Common.logout("merge error. " + block + " -> " + downloadInfo);
+                    mergeSuccess = false;
+                    break;
                 }
             }
         }
-        if (null != downloadInfo) {
+        if (mergeSuccess) {
             downloadInfo.syncProp();
         }
+        return mergeSuccess;
     }
 
     private boolean checkWorkerState() {
-        if (null == downloadInfo && null == workers || workers.isEmpty()) {
-            dividerError("unknown error, params is empty.");
-            return true;
+        if (null == downloadInfo || null == workers) {
+            dividerError("worker or params is null.");
+            return false;
         }
         final int sizOfWorkers = workers.size();
         boolean isError = false;
@@ -288,13 +312,11 @@ public final class Downloader {
         }
         if (isError) {
             dividerError("worker throw exception, download error.");
-            cancel();
         } else if (sumOfCompletedWorker == sizOfWorkers) {
             if (downloadInfo.isCompleted()) {
                 downloadInfo.clearProp();// clear prop
                 isSuccess = true;
                 dividerSuccess();
-                cancel();
             } else {
                 // allot again.
                 allotWorker(downloadInfo.getSpaceBlocks());
@@ -302,7 +324,7 @@ public final class Downloader {
         } else {
             dividerProgress(getProgress());
         }
-        return isError || isSuccess;
+        return !isError && !isSuccess;
     }
 
 }
@@ -318,46 +340,53 @@ class Worker implements Callable<Boolean> {
 
     private final static int TIME_OUT = 30 * 1000;
 
-    Future self;
+    private boolean isRunning = false;
+    private Future self;
     State state = State.NONE;
     private String url;
     private File file;
-    private long begin, end;
-    long progress;
+    private Block block;
+    long downloadedLength;
 
-    Worker(String url, File file, long begin, long end) {
+    Worker(String url, File file, Block block) {
         this.url = url;
         this.file = file;
-        this.begin = begin;
-        this.end = end;
+        this.block = block;
     }
 
     @Override
     public Boolean call() {
+        isRunning = true;
+        state = State.START;
         RandomAccessFile accessFile = null;
         HttpURLConnection conn = null;
         InputStream inStream = null;
         try {
-            state = State.START;
             accessFile = new RandomAccessFile(file, "rwd");
-            accessFile.seek(begin);
+            accessFile.seek(block.begin);
             conn = (HttpURLConnection) new URL(url).openConnection();
             conn.setConnectTimeout(TIME_OUT);
             conn.setReadTimeout(TIME_OUT);
             conn.setRequestProperty("Accept-Encoding", "identity");
-            conn.setRequestProperty("Range", "bytes=" + begin + "-" + end);
+            conn.setRequestProperty("Range", "bytes=" + block.begin + "-" + block.end);
             conn.connect();
             inStream = conn.getInputStream();
             byte[] buf = new byte[1024];
             int len;
             while ((len = inStream.read(buf)) != -1) {
+                if (!isRunning) {
+                    break;
+                }
                 accessFile.write(buf, 0, len);
-                progress += len;
+                downloadedLength += len;
             }
-            state = State.COMPLETE;
+            if (isRunning) {
+                state = State.COMPLETE;
+            }
         } catch (Exception e) {
             state = State.ERROR;
         } finally {
+            isRunning = false;
             Common.close(inStream);
             Common.close(accessFile);
             Common.close(conn);
@@ -368,13 +397,24 @@ class Worker implements Callable<Boolean> {
     private long lastOffset = 0;
 
     Block getNewProgress() {
-        long newBegin = begin + lastOffset;
-        long newEnd = Math.min(begin + progress, end);
+        long newBegin = block.begin + lastOffset;
+        long newEnd = Math.min(block.begin + downloadedLength, block.end);
         if (newBegin < newEnd) {
-            lastOffset = progress + 1;
+            lastOffset = downloadedLength + 1;
             return new Block(newBegin, newEnd);
         } else {
             return null;
+        }
+    }
+
+    void setFuture(Future future) {
+        self = future;
+    }
+
+    void cancel() {
+        isRunning = false;
+        if (null != self) {
+            self.cancel(true);
         }
     }
 
@@ -593,7 +633,8 @@ class DownloadInfo implements Serializable {
         return downloadedBlocks.get(index);
     }
 
-    String areaToString() {
+    @Override
+    public String toString() {
         String s = "";
         for (Block block : downloadedBlocks) {
             s += block.toString();
