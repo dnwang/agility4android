@@ -3,8 +3,6 @@ package org.pinwheel.demo4agility.activity;
 import android.Manifest;
 import android.graphics.Bitmap;
 import android.os.Environment;
-import android.view.View;
-import android.widget.AdapterView;
 
 import org.pinwheel.agility.net.HttpClientAgent;
 import org.pinwheel.agility.net.OkHttpAgent;
@@ -30,11 +28,6 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
         httpClientAgent = new OkHttpAgent(6);
 //        httpClientAgent = new HttpConnectionAgent(6);
 //        httpClientAgent = new VolleyAgent(getApplicationContext());
-    }
-
-    @Override
-    protected void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        showLogger(!isLoggerShown());
     }
 
     @Override
@@ -75,6 +68,7 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
             }
         });
         httpClientAgent.enqueue(request);
+        showLogger(!isLoggerShown());
     }
 
     @TestMethod(title = "图片下载")
@@ -101,6 +95,7 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
                     }
                 });
         httpClientAgent.enqueue(request);
+        showLogger(!isLoggerShown());
     }
 
     @TestMethod(title = "字符串文件")
@@ -127,6 +122,7 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
                     }
                 });
         httpClientAgent.enqueue(request);
+        showLogger(!isLoggerShown());
     }
 
     @TestMethod(title = "大文件下载")
@@ -166,6 +162,7 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
             }
         });
         httpClientAgent.enqueue(request);
+        showLogger(!isLoggerShown());
     }
 
     long total = 0;
@@ -180,6 +177,7 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
                 .addCompleteCallback(success -> logout((success ? "success" : "error")))
                 .addProgressCallback(progress -> logout("progress:" + BaseUtils.longSizeToStr(progress) + ", total:" + BaseUtils.longSizeToStr(total)))
                 .open(url);
+        showLogger(!isLoggerShown());
     }
 
     @TestMethod(title = "多线程断点下载")

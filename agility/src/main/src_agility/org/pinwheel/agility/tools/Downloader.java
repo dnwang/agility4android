@@ -18,7 +18,6 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
@@ -34,22 +33,40 @@ import java.util.concurrent.Future;
  */
 public final class Downloader {
 
+    /**
+     * Function callback
+     *
+     * @param <V>
+     */
     public interface Callback<V> {
         void call(V arg0);
     }
 
+    /**
+     * Function callback
+     *
+     * @param <V>
+     * @param <K>
+     */
     public interface Callback2<V, K> {
         void call(V arg0, K arg1);
     }
 
-    enum CallbackMode {
-        ONLY_CHANGED,// 相同的进度不重复回调
-        EVERY_MONITOR// 无视重复进度，取决于检测周期
+    public enum CallbackMode {
+        /**
+         * callback just when value changed.
+         */
+        ONLY_CHANGED,
+        /**
+         * callback at every monitor check.
+         */
+        EVERY_MONITOR
     }
 
     private Handler mainHandler;
     private ExecutorService executor;
-    private CopyOnWriteArraySet<Worker> workers;
+    private CopyOnWriteArraySet<DownloadWorker> workers;
+    private CancelableRunner monitor;
     private int maxThreadSize = 2;// default thread size
     private int monitorPeriod = 999;// default value
 
@@ -151,15 +168,22 @@ public final class Downloader {
     }
 
     private void reset() {
+        // intercept monitor
+        if (null != monitor) {
+            monitor.cancel();
+        }
+        // intercept all download worker
         if (null != workers) {
-            for (Worker worker : workers) {
-                worker.cancel();// intercept all
+            for (DownloadWorker worker : workers) {
+                worker.cancel();
             }
             workers.clear();
         }
+        // sync download info to native
         if (null != downloadInfo && !downloadInfo.isCompleted()) {
             downloadInfo.syncProp();
         }
+        // clear params
         downloadInfo = null;
         lastProgress = -1;
     }
@@ -174,22 +198,17 @@ public final class Downloader {
     }
 
     public Downloader open(final File file, final String url) {
-        reset();// cancel first
+        // cancel first
+        reset();
         if (null == url || "".equals(url) || null == file || file.isDirectory()) {
             dividerError("error, url or file is empty");
             return this;
         }
-        executor.submit(new Runnable() {
+        monitor = new CancelableRunner() {
             @Override
             public void run() {
-                downloadInfo = findExistsInfo(file, url);
-                if (null == downloadInfo) {
-                    final long contentLength = Common.getContentLength(url);
-                    if (contentLength != -1) {
-                        downloadInfo = new DownloadInfo(file, url);
-                        downloadInfo.contentLength = contentLength;
-                    }
-                }
+                // get download info first
+                downloadInfo = getDownloadInfo(file, url);
                 if (null == downloadInfo) {
                     dividerError("error, can't create downloadInfo, maybe the url response content length is -1");
                     return;
@@ -198,11 +217,13 @@ public final class Downloader {
                 allotWorker(downloadInfo.getSpaceBlocks());
                 // monitoring
                 while (true) {
+                    if (isCancelled()) {
+                        break;
+                    }
                     if (mergeWorkerProgress() && checkWorkerState()) {
                         try {
                             Thread.sleep(monitorPeriod);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
                         }
                     } else {
                         reset();
@@ -210,16 +231,8 @@ public final class Downloader {
                     }
                 }
             }
-        });
+        }.submitIn(executor);
         return this;
-    }
-
-    private DownloadInfo findExistsInfo(File file, String url) {
-        if (null == file || null == url || "".equals(url)) {
-            return null;
-        }
-        DownloadInfo tmp = DownloadInfo.load(file);
-        return (tmp != null && url.equals(tmp.url)) ? tmp : null;
     }
 
     private void allotWorker(List<Block> spaceBlocks) {
@@ -231,8 +244,8 @@ public final class Downloader {
         final int workerSize = Math.min(maxThreadSize, sizeOfBlock);
         for (int i = 0; i < workerSize; i++) {
             Block block = spaceBlocks.get(i);
-            Worker worker = new Worker(downloadInfo.url, downloadInfo.file, block);
-            worker.setFuture(executor.submit(worker));
+            DownloadWorker worker = new DownloadWorker(downloadInfo.url, downloadInfo.file, block);
+            worker.submitIn(executor);
             workers.add(worker);
         }
     }
@@ -254,30 +267,13 @@ public final class Downloader {
         return tmp;
     }
 
-    private List<Block> splitBlock(Block rawBlock, long subBlockMaxLength) {
-        if (null == rawBlock || rawBlock.getLength() <= subBlockMaxLength) {
-            return null;
-        }
-        int size = 2;
-        long length;
-        while ((length = rawBlock.getLength() / size) > subBlockMaxLength) {
-            size++;
-        }
-        List<Block> subBlocks = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            long begin = rawBlock.begin + i * length;
-            subBlocks.add(new Block((i == 0 ? begin : begin + 1), Math.min(begin + length, rawBlock.end)));
-        }
-        return subBlocks;
-    }
-
     private boolean mergeWorkerProgress() {
         if (null == downloadInfo || null == workers) {
             return false;
         }
         boolean mergeSuccess = true;
-        for (Worker worker : workers) {
-            Block block = worker.getNewProgress();
+        for (DownloadWorker worker : workers) {
+            Block block = worker.getNewDownloaded();
             if (null != block) {
                 if (downloadInfo.merge(block)) {
                     downloadInfo.progress += block.getLength();
@@ -303,10 +299,10 @@ public final class Downloader {
         boolean isError = false;
         boolean isSuccess = false;
         int sumOfCompletedWorker = 0;
-        for (Worker worker : workers) {
-            if (Worker.State.ERROR == worker.state) {
+        for (DownloadWorker worker : workers) {
+            if (DownloadWorker.State.ERROR == worker.state) {
                 isError = true;
-            } else if (Worker.State.COMPLETE == worker.state) {
+            } else if (DownloadWorker.State.COMPLETE == worker.state) {
                 sumOfCompletedWorker++;
             }
         }
@@ -327,37 +323,95 @@ public final class Downloader {
         return !isError && !isSuccess;
     }
 
+    private static DownloadInfo getDownloadInfo(File file, String url) {
+        if (null == file || null == url || "".equals(url)) {
+            return null;
+        }
+        DownloadInfo info = DownloadInfo.load(file);
+        info = (info != null && url.equals(info.url)) ? info : null;
+        if (null == info) {
+            final long contentLength = Common.getContentLength(url);
+            if (contentLength != -1) {
+                info = new DownloadInfo(file, url);
+                info.contentLength = contentLength;
+            }
+        }
+        return info;
+    }
+
+    private static List<Block> splitBlock(Block rawBlock, long subBlockMaxLength) {
+        if (null == rawBlock || rawBlock.getLength() <= subBlockMaxLength) {
+            return null;
+        }
+        int size = 2;
+        long length;
+        while ((length = rawBlock.getLength() / size) > subBlockMaxLength) {
+            size++;
+        }
+        List<Block> subBlocks = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            long begin = rawBlock.begin + i * length;
+            subBlocks.add(new Block((i == 0 ? begin : begin + 1), Math.min(begin + length, rawBlock.end)));
+        }
+        return subBlocks;
+    }
+
+}
+
+abstract class CancelableRunner implements Runnable {
+
+    private Future self;
+    private boolean isCancelled = false;
+
+    boolean isCancelled() {
+        return isCancelled;
+    }
+
+    void cancel() {
+        isCancelled = true;
+        if (null != self) {
+            self.cancel(true);
+        }
+    }
+
+    CancelableRunner submitIn(ExecutorService executor) {
+        if (null != executor) {
+            self = executor.submit(this);
+        }
+        return this;
+    }
 }
 
 /**
  * block download thread
  */
-class Worker implements Callable<Boolean> {
+final class DownloadWorker extends CancelableRunner {
 
+    /**
+     * worker state
+     */
     enum State {
-        NONE, START, COMPLETE, ERROR
+        NONE, DOWNLOADING, COMPLETE, UN_COMPLETE, ERROR
     }
 
     private final static int TIME_OUT = 30 * 1000;
 
-    private boolean isRunning = false;
-    private Future self;
     State state = State.NONE;
+
+    private long downloadedLength = 0;
     private String url;
     private File file;
     private Block block;
-    long downloadedLength;
 
-    Worker(String url, File file, Block block) {
+    DownloadWorker(String url, File file, Block block) {
         this.url = url;
         this.file = file;
         this.block = block;
     }
 
     @Override
-    public Boolean call() {
-        isRunning = true;
-        state = State.START;
+    public void run() {
+        state = State.DOWNLOADING;
         RandomAccessFile accessFile = null;
         HttpURLConnection conn = null;
         InputStream inStream = null;
@@ -374,29 +428,29 @@ class Worker implements Callable<Boolean> {
             byte[] buf = new byte[1024];
             int len;
             while ((len = inStream.read(buf)) != -1) {
-                if (!isRunning) {
+                if (isCancelled()) {
                     break;
                 }
                 accessFile.write(buf, 0, len);
                 downloadedLength += len;
             }
-            if (isRunning) {
+            if (downloadedLength >= block.getLength() - 1) {
                 state = State.COMPLETE;
+            } else {
+                state = State.UN_COMPLETE;
             }
         } catch (Exception e) {
             state = State.ERROR;
         } finally {
-            isRunning = false;
             Common.close(inStream);
             Common.close(accessFile);
             Common.close(conn);
         }
-        return State.COMPLETE == state;
     }
 
     private long lastOffset = 0;
 
-    Block getNewProgress() {
+    Block getNewDownloaded() {
         long newBegin = block.begin + lastOffset;
         long newEnd = Math.min(block.begin + downloadedLength, block.end);
         if (newBegin < newEnd) {
@@ -406,21 +460,9 @@ class Worker implements Callable<Boolean> {
             return null;
         }
     }
-
-    void setFuture(Future future) {
-        self = future;
-    }
-
-    void cancel() {
-        isRunning = false;
-        if (null != self) {
-            self.cancel(true);
-        }
-    }
-
 }
 
-class DownloadInfo implements Serializable {
+final class DownloadInfo implements Serializable {
 
     private static final String SUFFIX_PROP = ".prop";
 
@@ -593,6 +635,7 @@ class DownloadInfo implements Serializable {
         return spaceBlocks;
     }
 
+    @Deprecated
     Block findSpaceBlockAfterPosition(long pos) {
         pos = Math.max(0, pos);
         Block lastBlock = null;
@@ -646,7 +689,7 @@ class DownloadInfo implements Serializable {
 /**
  * block downloadInfo. [begin, end]
  */
-class Block implements Serializable {
+final class Block implements Serializable {
     long begin, end;
 
     Block(long begin, long end) {
@@ -668,7 +711,7 @@ class Block implements Serializable {
     }
 }
 
-class Common {
+final class Common {
 
     static void close(Closeable closeable) {
         if (null != closeable) {
@@ -752,7 +795,7 @@ class Common {
     }
 
     /**
-     * cover
+     * create new file, it will be deleted file when file exists.
      */
     static boolean newFile(File file) {
         if (null == file) {
