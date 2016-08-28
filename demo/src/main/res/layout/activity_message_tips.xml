@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:id="@+id/home_aa"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_below="@+id/home"
+        android:layout_toLeftOf="@+id/home"
+        android:layout_toStartOf="@+id/home">
+
+        <org.pinwheel.agility.view.MessageTipView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:tag="home.aa" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/cc_dd"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_below="@+id/bb_cc"
+        android:layout_toLeftOf="@+id/bb_cc"
+        android:layout_toStartOf="@+id/bb_cc">
+
+        <org.pinwheel.agility.view.MessageTipView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:tag="cc.dd" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/bb_cc"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_below="@+id/category_bb"
+        android:layout_toLeftOf="@+id/category_bb"
+        android:layout_toStartOf="@+id/category_bb">
+
+        <org.pinwheel.agility.view.MessageTipView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:tag="bb.cc" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/ee_ff"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_below="@+id/home_ee"
+        android:layout_toRightOf="@+id/home_ee">
+
+        <org.pinwheel.agility.view.MessageTipView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:tag="ee.ff" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/home_ee"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_below="@+id/home"
+        android:layout_toEndOf="@+id/home"
+        android:layout_toRightOf="@+id/home">
+
+        <org.pinwheel.agility.view.MessageTipView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:tag="home.ee" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/category"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="160dp">
+
+        <org.pinwheel.agility.view.MessageTipView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:tag="category" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/category_bb"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_below="@+id/category"
+        android:layout_centerHorizontal="true"
+        android:layout_toLeftOf="@+id/category"
+        android:layout_toStartOf="@+id/category">
+
+        <org.pinwheel.agility.view.MessageTipView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:tag="category.bb" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/home"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp">
+
+        <org.pinwheel.agility.view.MessageTipView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:tag="home" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/cc_hh"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_below="@+id/bb_cc"
+        android:layout_centerHorizontal="true"
+        android:layout_toRightOf="@+id/bb_cc">
+
+        <org.pinwheel.agility.view.MessageTipView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:tag="cc.hh" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/hh_gg"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_below="@+id/cc_hh"
+        android:layout_centerHorizontal="true"
+        android:layout_toRightOf="@+id/cc_hh">
+
+        <org.pinwheel.agility.view.MessageTipView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:tag="hh.gg" />
+
+    </FrameLayout>
+
+</RelativeLayout>

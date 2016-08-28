@@ -1,4 +1,4 @@
-package org.pinwheel.demo4agility.test;
+package org.pinwheel.agility.view;
 
 import android.animation.Animator;
 import android.animation.PropertyValuesHolder;
@@ -11,14 +11,14 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.OvershootInterpolator;
-
-import org.pinwheel.agility.util.UIUtils;
 
 /**
  * Copyright (C), 2016 <br>
@@ -30,7 +30,7 @@ import org.pinwheel.agility.util.UIUtils;
  * @version 2016/6/22,9:59
  * @see
  */
-public class DragPop extends View {
+public class DraggableBubbleView extends View {
 
     public static float degrees(PointF center, PointF p) {
         float dy = p.y - center.y;
@@ -57,49 +57,66 @@ public class DragPop extends View {
         none, dragging, split
     }
 
-    public DragPop(Context context) {
+    public DraggableBubbleView(Context context) {
         super(context);
-        this.init();
+        this.init(null);
     }
 
-    public DragPop(Context context, AttributeSet attrs) {
+    public DraggableBubbleView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        this.init();
+        this.init(attrs);
     }
 
-    public DragPop(Context context, AttributeSet attrs, int defStyleAttr) {
+    public DraggableBubbleView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        this.init();
+        this.init(attrs);
     }
 
     private Paint bgPaint;
     private Paint txtPaint;
     private Paint.FontMetricsInt fontMetrics;
 
-    private int originalCenterRadius = 15;
-    private int originalPointRadius = 20;
-    private int originalTextSize = 12;
+    private int originalCenterRadius = 6;// dp
+    private int originalPointRadius = 11;// dp
+    private int originalTextSize = 12;// dp
 
     private OnSplitListener listener;
 
-    private void init() {
+    private void init(AttributeSet attrs) {
         bgPaint = new Paint();
-        bgPaint.setColor(Color.RED);
         bgPaint.setAntiAlias(true);
         txtPaint = new Paint();
+        txtPaint.setFakeBoldText(true);
         txtPaint.setColor(Color.WHITE);
         txtPaint.setAntiAlias(true);
         txtPaint.setTextAlign(Paint.Align.CENTER);
-        setTextSize(UIUtils.dip2px(getContext(), originalTextSize));
+        originalCenterRadius = dip2px(originalCenterRadius);
+        originalPointRadius = dip2px(originalPointRadius);
+        originalTextSize = dip2px(originalTextSize);
+        maxDistance = dip2px(maxDistance);
+        setTextSize(originalTextSize);
+
+        int defaultColor = Color.RED;
+        if (null != attrs) {
+            Drawable drawable = getBackground();
+            if (drawable instanceof ColorDrawable) {
+                defaultColor = ((ColorDrawable) drawable).getColor();
+            }
+        }
+        bgPaint.setColor(defaultColor);
     }
 
     private int count = 0;
     private int maxCount = 99;
-    private boolean isSuffix = false;
+    private boolean isShowEllipsis = true;
 
     public void setMaxCount(int maxCount) {
+        maxCount = Math.max(0, maxCount);
+        boolean isSame = this.maxCount == maxCount;
         this.maxCount = maxCount;
-        invalidate();
+        if (!isSame) {
+            invalidate();
+        }
     }
 
     public int getMaxCount() {
@@ -107,8 +124,12 @@ public class DragPop extends View {
     }
 
     public void setCount(int count) {
+        count = Math.max(0, count);
+        boolean isSame = this.count == count;
         this.count = count;
-        invalidate();
+        if (!isSame) {
+            invalidate();
+        }
     }
 
     public int getCount() {
@@ -147,8 +168,13 @@ public class DragPop extends View {
         invalidate();
     }
 
-    public void setSuffix(boolean is) {
-        this.isSuffix = is;
+    private static final String ELLIPSIS = "~~";
+
+    /**
+     * 超过最大数值显示"~~"
+     */
+    public void showEllipsis(boolean is) {
+        this.isShowEllipsis = is;
     }
 
     private void setCenter(float x, float y) {
@@ -207,7 +233,7 @@ public class DragPop extends View {
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                if (alreadySplit && currentDistance > MAX_DISTANCE / 2) {
+                if (alreadySplit && currentDistance > maxDistance / 2) {
                     getParent().requestDisallowInterceptTouchEvent(false);
                     restore2Layout();
                     resetParams();
@@ -226,7 +252,6 @@ public class DragPop extends View {
                 }
                 break;
         }
-        invalidate();
         return true;
     }
 
@@ -308,15 +333,12 @@ public class DragPop extends View {
         }
     }
 
-    final static int MAX_DISTANCE = 250;
-    final static float STRENGTH = 0.04f;
-
     private void moveTo(float x, float y) {
         finger.set(x, y);
         currentDistance = distance(center, finger);
         cR = originalCenterRadius - currentDistance * STRENGTH;
 
-        if (currentDistance > MAX_DISTANCE) {
+        if (currentDistance > maxDistance) {
             state = State.split;
             alreadySplit = true;
         } else {
@@ -335,6 +357,9 @@ public class DragPop extends View {
         currentDistance = 0f;
         alreadySplit = false;
     }
+
+    private final static float STRENGTH = 0.04f;// 中心点半径衰减系数
+    private int maxDistance = 96;// dp
 
     private float cR, fR;
     private float currentDistance;
@@ -377,11 +402,16 @@ public class DragPop extends View {
     }
 
     private String getText() {
-        if (count > maxCount) {
-            return maxCount + (isSuffix ? "+" : "");
+        if (isShowEllipsis && count > maxCount) {
+            return ELLIPSIS;
         } else {
-            return String.valueOf(count);
+            return String.valueOf(Math.min(count, maxCount));
         }
+    }
+
+    private int dip2px(float dpValue) {
+        float scale = getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5F);
     }
 
     public interface OnSplitListener {

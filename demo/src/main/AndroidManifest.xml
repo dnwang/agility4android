@@ -51,8 +51,8 @@
             android:name="org.pinwheel.demo4agility.activity.Json2ClassActivity"
             android:label="Json反射生成Class" />
         <activity
-            android:name="org.pinwheel.demo4agility.activity.DragPopActivity"
-            android:label="仿QQ气泡拖动消失" />
+            android:name="org.pinwheel.demo4agility.activity.MessageTipsActivity"
+            android:label="拖动消失树形消息气泡" />
         <activity
             android:name="org.pinwheel.demo4agility.activity.TestActivity"
             android:label="Test" />
