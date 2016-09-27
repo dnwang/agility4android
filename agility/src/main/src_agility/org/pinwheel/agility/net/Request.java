@@ -3,6 +3,7 @@ package org.pinwheel.agility.net;
 import android.text.TextUtils;
 
 import org.pinwheel.agility.net.parser.IDataParser;
+import org.pinwheel.agility.util.callback.Action3;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,8 +27,8 @@ public class Request {
     private int numOfRetries, timeOut;
     private boolean isKeepSingle;
     private Object tag;
-    private IDataParser responseParser;
-    private HttpClientAgent.OnRequestAdapter requestListener;
+    private IDataParser dataParser;
+    private HttpClientAgent.RequestAdapter requestAdapter;
 
     private Request(Builder builder) {
         baseUrl = builder.url;
@@ -97,25 +98,36 @@ public class Request {
         return tag;
     }
 
-    public IDataParser getResponseParser() {
-        return responseParser;
+    public IDataParser getDataParser() {
+        return dataParser;
     }
 
-    public HttpClientAgent.OnRequestAdapter getRequestListener() {
-        return requestListener;
+    public HttpClientAgent.RequestAdapter getRequestAdapter() {
+        return requestAdapter;
     }
 
-    public void setOnRequestListener(HttpClientAgent.OnRequestAdapter listener) {
-        this.requestListener = listener;
+    public Request setRequestAdapter(HttpClientAgent.RequestAdapter adapter) {
+        this.requestAdapter = adapter;
+        return this;
     }
 
-    public void setResponseParser(IDataParser parser) {
-        this.responseParser = parser;
+    public Request setRequestAction(Action3<Boolean, ?, Exception> action) {
+        return setRequestAdapter(new HttpClientAgent.ActionWrapperRequestAdapter(action));
     }
 
-    public <T> void setResponseParser(IDataParser<T> parser, HttpClientAgent.OnRequestAdapter<T> listener) {
-        setResponseParser(parser);
-        setOnRequestListener(listener);
+    public Request setDataParser(IDataParser parser) {
+        this.dataParser = parser;
+        return this;
+    }
+
+    public <T> Request setParserAndAdapter(IDataParser<T> parser, HttpClientAgent.RequestAdapter<T> adapter) {
+        setDataParser(parser);
+        setRequestAdapter(adapter);
+        return this;
+    }
+
+    public <T> Request setParserAndAdapter(IDataParser<T> parser, Action3<Boolean, T, Exception> action) {
+        return setParserAndAdapter(parser, new HttpClientAgent.ActionWrapperRequestAdapter<>(action));
     }
 
     @Override

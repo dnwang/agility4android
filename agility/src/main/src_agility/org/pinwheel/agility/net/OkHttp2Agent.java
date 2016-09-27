@@ -92,7 +92,7 @@ public class OkHttp2Agent extends HttpClientAgent {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                OnRequestAdapter callback = request.getRequestListener();
+                RequestAdapter callback = request.getRequestAdapter();
 
                 if (callback != null && callback.onRequestPrepare(request)) {
                     // no need handle continue
@@ -115,7 +115,7 @@ public class OkHttp2Agent extends HttpClientAgent {
                     return;
                 }
                 // parse
-                IDataParser parser = request.getResponseParser();
+                IDataParser parser = request.getDataParser();
                 if (parser == null) {
                     dispatchSuccess(callback, null);
                 } else {

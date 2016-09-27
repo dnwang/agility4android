@@ -17,6 +17,7 @@ import org.pinwheel.agility.net.OkHttp2Agent;
 import org.pinwheel.agility.net.Request;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.util.IOUtils;
+import org.pinwheel.agility.util.callback.Action1;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -210,6 +211,18 @@ public class ImageLoader {
         }
     }
 
+    public void getBitmap(Action1<Bitmap> action1, String uri) {
+        getBitmap(new BitmapReceiver(action1) {
+            // do nothing
+        }, uri);
+    }
+
+    public void getBitmap(Action1<Bitmap> action1, String uri, BitmapReceiver.Options options) {
+        getBitmap(new BitmapReceiver(action1) {
+            // do nothing
+        }, uri, options);
+    }
+
     public final DiskCache getDiskCache() {
         return this.diskCache;
     }
@@ -393,7 +406,7 @@ public class ImageLoader {
          */
         private void getBitmapFromNetwork() {
             Request request = new Request.Builder().url(uri).timeOut(loaderOptions.getNetworkTimeOut(), 0).create();
-            request.setResponseParser(new DataParserAdapter() {
+            request.setParserAndAdapter(new DataParserAdapter() {
                 @Override
                 public void parse(InputStream inStream) throws Exception {
                     byte[] bytes = IOUtils.stream2Bytes(inStream);
@@ -411,7 +424,7 @@ public class ImageLoader {
                         removeTask(diskKey);
                     }
                 }
-            }, new HttpClientAgent.OnRequestAdapter() {
+            }, new HttpClientAgent.RequestAdapter() {
                 @Override
                 public void onDeliverSuccess(Object obj) {
                     // nothing to do; already notify in parse() method;

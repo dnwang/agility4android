@@ -3,6 +3,8 @@ package org.pinwheel.agility.net;
 import android.os.Handler;
 import android.os.Looper;
 
+import org.pinwheel.agility.util.callback.Action3;
+
 /**
  * Copyright (C), 2015 <br>
  * <br>
@@ -39,14 +41,16 @@ public abstract class HttpClientAgent {
 
     public abstract void release();
 
-    protected final void dispatchError(final OnRequestAdapter adapter, final Exception e) {
+    private Handler uiHandler = new Handler(Looper.getMainLooper());
+
+    protected final void dispatchError(final RequestAdapter adapter, final Exception e) {
         if (adapter == null) {
             return;
         }
         if (Looper.myLooper() == Looper.getMainLooper()) {
             adapter.onDeliverError(e);
         } else {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
+            uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     adapter.onDeliverError(e);
@@ -55,14 +59,14 @@ public abstract class HttpClientAgent {
         }
     }
 
-    protected final void dispatchSuccess(final OnRequestAdapter adapter, final Object result) {
+    protected final void dispatchSuccess(final RequestAdapter adapter, final Object result) {
         if (adapter == null) {
             return;
         }
         if (Looper.myLooper() == Looper.getMainLooper()) {
             adapter.onDeliverSuccess(result);
         } else {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
+            uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     adapter.onDeliverSuccess(result);
@@ -76,7 +80,7 @@ public abstract class HttpClientAgent {
      *
      * @param <T>
      */
-    public static abstract class OnRequestAdapter<T> {
+    public static abstract class RequestAdapter<T> {
 
         public boolean onRequestPrepare(Request request) {
             return false;
@@ -97,11 +101,11 @@ public abstract class HttpClientAgent {
      *
      * @param <T>
      */
-    public static abstract class OnRequestHandleTagAdapter<T> extends OnRequestAdapter<T> {
+    public static abstract class HandleTagRequestAdapter<T> extends RequestAdapter<T> {
 
         private Object tag;
 
-        public OnRequestHandleTagAdapter(Object tag) {
+        public HandleTagRequestAdapter(Object tag) {
             this.tag = tag;
         }
 
@@ -109,6 +113,29 @@ public abstract class HttpClientAgent {
             return tag;
         }
 
+    }
+
+    static final class ActionWrapperRequestAdapter<T> extends RequestAdapter<T> {
+
+        private Action3<Boolean, T, Exception> action;
+
+        ActionWrapperRequestAdapter(Action3<Boolean, T, Exception> action) {
+            this.action = action;
+        }
+
+        @Override
+        public void onDeliverSuccess(T obj) {
+            if (null != action) {
+                action.call(true, obj, null);
+            }
+        }
+
+        @Override
+        public void onDeliverError(Exception e) {
+            if (null != action) {
+                action.call(false, null, e);
+            }
+        }
     }
 
 }

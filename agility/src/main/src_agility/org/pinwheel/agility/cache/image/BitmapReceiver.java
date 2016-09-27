@@ -2,6 +2,8 @@ package org.pinwheel.agility.cache.image;
 
 import android.graphics.Bitmap;
 
+import org.pinwheel.agility.util.callback.Action1;
+
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -16,11 +18,16 @@ import java.util.UUID;
 public abstract class BitmapReceiver {
 
     private String tag;
-
     private Options options = null;
+    private Action1<Bitmap> action = null;
 
     public BitmapReceiver() {
         this.tag = UUID.randomUUID().toString().replace("-", "");
+    }
+
+    BitmapReceiver(Action1<Bitmap> action) {
+        this();
+        this.action = action;
     }
 
     final Options getOptions() {
@@ -48,7 +55,11 @@ public abstract class BitmapReceiver {
         return tag != null ? tag.hashCode() : 0;
     }
 
-    public abstract void dispatch(Bitmap bitmap);
+    public void dispatch(Bitmap bitmap){
+       if (null != action){
+           action.call(bitmap);
+       }
+    }
 
     /**
      * Copyright (C), 2015 <br>

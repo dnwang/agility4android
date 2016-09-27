@@ -58,7 +58,7 @@ public class VolleyAgent extends HttpClientAgent {
             return;
         }
 
-        OnRequestAdapter listener = request.getRequestListener();
+        RequestAdapter listener = request.getRequestAdapter();
         if (listener != null && listener.onRequestPrepare(request)) {
             // no need handle continue
             return;
@@ -128,13 +128,13 @@ public class VolleyAgent extends HttpClientAgent {
 
         @Override
         protected Response<T> parseNetworkResponse(NetworkResponse response) {
-            OnRequestAdapter adapter = request.getRequestListener();
+            RequestAdapter adapter = request.getRequestAdapter();
             if (adapter != null && adapter.onRequestResponse(response)) {
                 // no need handle continue
                 return Response.success(null, HttpHeaderParser.parseCacheHeaders(response));
             }
             try {
-                IDataParser<T> parser = request.getResponseParser();
+                IDataParser<T> parser = request.getDataParser();
                 if (parser == null) {
                     return Response.success(null, HttpHeaderParser.parseCacheHeaders(response));
                 } else {
@@ -151,14 +151,14 @@ public class VolleyAgent extends HttpClientAgent {
 
         @Override
         protected void deliverResponse(T response) {
-            OnRequestAdapter adapter = request.getRequestListener();
+            RequestAdapter adapter = request.getRequestAdapter();
             dispatchSuccess(adapter, response);
         }
 
         @Override
         public void deliverError(VolleyError error) {
             super.deliverError(error);
-            OnRequestAdapter adapter = request.getRequestListener();
+            RequestAdapter adapter = request.getRequestAdapter();
             dispatchError(adapter, error);
         }
 

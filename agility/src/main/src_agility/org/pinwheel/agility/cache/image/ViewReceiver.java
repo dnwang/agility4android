@@ -59,6 +59,7 @@ public class ViewReceiver extends BitmapReceiver {
 
     @Override
     public void dispatch(Bitmap bitmap) {
+        super.dispatch(bitmap);
         View v = reference.get();
         if (v != null) {
             Object options = getOptions();

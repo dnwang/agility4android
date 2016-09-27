@@ -11,8 +11,8 @@ import org.pinwheel.agility.net.parser.BitmapParser;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.net.parser.FileParser;
 import org.pinwheel.agility.net.parser.GsonParser;
-import org.pinwheel.agility.util.Downloader;
 import org.pinwheel.agility.util.BaseUtils;
+import org.pinwheel.agility.util.Downloader;
 import org.pinwheel.demo4agility.entity.WeatherEntity;
 import org.pinwheel.demo4agility.multithread.MultiThreadDownloader;
 
@@ -52,7 +52,7 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
         String url = "http://wthrcdn.etouch.cn/weather_mini";
         final String tag = "gsonRequest";
         Request request = new Request.Builder().url(url).tag(tag).keepSingle(true).addParam("citykey", "101010100").create();
-        request.setResponseParser(new GsonParser<>(WeatherEntity.class), new HttpClientAgent.OnRequestAdapter<WeatherEntity>() {
+        request.setParserAndAdapter(new GsonParser<>(WeatherEntity.class), new HttpClientAgent.RequestAdapter<WeatherEntity>() {
             @Override
             public void onDeliverSuccess(WeatherEntity obj) {
                 String log = "<" + tag.toString() + "> --> " + "OK; " + (System.currentTimeMillis() - startTime) + "s\n";
@@ -69,6 +69,19 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
         });
         httpClientAgent.enqueue(request);
         showLogger(!isLoggerShown());
+        //
+        newCallStyle(url, tag);
+    }
+
+    private void newCallStyle(String url, String tag) {
+        httpClientAgent.enqueue(new Request.Builder()
+                .url(url)
+                .tag(tag)
+                .keepSingle(true)
+                .addParam("citykey", "101010100")
+                .create()
+                .setDataParser(new GsonParser<>(WeatherEntity.class))
+                .setRequestAction((is, obj, e) -> logout(obj, "new style callback --> ")));
     }
 
     @TestMethod(title = "图片下载")
@@ -78,8 +91,8 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
         String url = "http://f.hiphotos.baidu.com/image/pic/item/b21c8701a18b87d662ab501d050828381e30fdc3.jpg";
         final String tag = "bitmapRequest";
         Request request = new Request.Builder().url(url).tag(tag).keepSingle(true).create();
-        request.setResponseParser(new BitmapParser(new File(Environment.getExternalStorageDirectory(), "bitmap.png"), Bitmap.CompressFormat.PNG),
-                new HttpClientAgent.OnRequestAdapter<Bitmap>() {
+        request.setParserAndAdapter(new BitmapParser(new File(Environment.getExternalStorageDirectory(), "bitmap.png"), Bitmap.CompressFormat.PNG),
+                new HttpClientAgent.RequestAdapter<Bitmap>() {
                     @Override
                     public void onDeliverError(Exception e) {
                         String log = "<" + tag.toString() + "> --> " + "Error; " + (System.currentTimeMillis() - startTime) + "s\n";
@@ -105,8 +118,8 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
         String url = "http://www.baidu.com";
         final String tag = "stringFileRequest";
         Request request = new Request.Builder().url(url).tag(tag).keepSingle(true).create();
-        request.setResponseParser(new FileParser(new File(Environment.getExternalStorageDirectory(), "web.html")),
-                new HttpClientAgent.OnRequestAdapter<File>() {
+        request.setParserAndAdapter(new FileParser(new File(Environment.getExternalStorageDirectory(), "web.html")),
+                new HttpClientAgent.RequestAdapter<File>() {
                     @Override
                     public void onDeliverError(Exception e) {
                         String log = "<" + tag + "> --> " + "Error; " + (System.currentTimeMillis() - startTime) + "s\n";
@@ -145,8 +158,8 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
         });
 
         Request request = new Request.Builder().url(url).tag(tag).keepSingle(true).create();
-        request.setResponseParser(parser);
-        request.setOnRequestListener(new HttpClientAgent.OnRequestAdapter<File>() {
+        request.setDataParser(parser);
+        request.setRequestAdapter(new HttpClientAgent.RequestAdapter<File>() {
             @Override
             public void onDeliverError(Exception e) {
                 String log = "<" + tag + "> --> " + "Error; " + (System.currentTimeMillis() - startTime) + "s\n";
