@@ -21,7 +21,14 @@ import android.database.DataSetObserver;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.AdapterView;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.FrameLayout;
+import android.widget.GridView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.WrapperListAdapter;
 
 import java.util.ArrayList;
 
@@ -92,7 +99,7 @@ public class HeaderGridView extends GridView {
      * Add a fixed view to appear at the top of the grid. If addHeaderView is
      * called more than once, the views will appear in the order they were
      * added. Views added using this call can take focus if they want.
-     *
+     * <p>
      * NOTE: Call this before calling setAdapter. This is so HeaderGridView can wrap
      * the supplied cursor with one that will also account for header views.
      *
@@ -125,7 +132,7 @@ public class HeaderGridView extends GridView {
      * Add a fixed view to appear at the top of the grid. If addHeaderView is
      * called more than once, the views will appear in the order they were
      * added. Views added using this call can take focus if they want.
-     *
+     * <p>
      * NOTE: Call this before calling setAdapter. This is so HeaderGridView can wrap
      * the supplied cursor with one that will also account for header views.
      *

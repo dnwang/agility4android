@@ -11,6 +11,7 @@ import android.view.ViewTreeObserver;
 import android.widget.Checkable;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 
 import java.util.ArrayList;

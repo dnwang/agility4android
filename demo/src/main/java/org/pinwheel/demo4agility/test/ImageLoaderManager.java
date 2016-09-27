@@ -11,8 +11,8 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
 
-import org.pinwheel.agility.cache.ImageLoader;
-import org.pinwheel.agility.cache.ViewReceiver;
+import org.pinwheel.agility.cache.image.ImageLoader;
+import org.pinwheel.agility.cache.image.ViewReceiver;
 import org.pinwheel.agility.net.VolleyImageLoader;
 import org.pinwheel.demo4agility.R;
 

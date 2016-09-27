@@ -10,7 +10,7 @@ package org.pinwheel.agility.util;
  */
 public final class SearchUtils {
 
-    private SearchUtils(){
+    private SearchUtils() {
 
     }
 

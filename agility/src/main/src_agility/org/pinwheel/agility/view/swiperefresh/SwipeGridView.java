@@ -43,7 +43,7 @@ public class SwipeGridView extends AbsSwipeAbsListView {
         mGridView.setNumColumns(numColumns);
     }
 
-    public int getNumColumns(){
+    public int getNumColumns() {
         return mGridView.getNumColumns();
     }
 

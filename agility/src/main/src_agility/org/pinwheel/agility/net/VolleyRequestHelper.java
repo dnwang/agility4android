@@ -24,7 +24,7 @@ import java.util.Map;
  * <br>
  *
  * @author dnwang
- * {@link HttpClientAgent}
+ *         {@link HttpClientAgent}
  */
 @Deprecated
 public final class VolleyRequestHelper {
@@ -136,7 +136,7 @@ public final class VolleyRequestHelper {
         if (tag != null) {
             try {
                 request.setTag(tag);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

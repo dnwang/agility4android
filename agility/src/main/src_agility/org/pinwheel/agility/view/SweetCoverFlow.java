@@ -374,7 +374,7 @@ public class SweetCoverFlow extends Gallery {
             final boolean isReflectionEnabled = coverFlow.isReflectionEnabled();
             coverFlowItem.setReflectionEnabled(isReflectionEnabled);
 
-            if(isReflectionEnabled) {
+            if (isReflectionEnabled) {
                 coverFlowItem.setReflectionGap(coverFlow.getReflectionGap());
                 coverFlowItem.setReflectionRatio(coverFlow.getReflectionRatio());
             }
@@ -382,7 +382,7 @@ public class SweetCoverFlow extends Gallery {
 
             coverFlowItem.addView(wrappedView);
             // dnwang;
-    //        coverFlowItem.setLayoutParams(wrappedView.getLayoutParams());
+            //        coverFlowItem.setLayoutParams(wrappedView.getLayoutParams());
             coverFlowItem.setTag(wrappedView.getTag());
 
             return coverFlowItem;

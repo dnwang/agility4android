@@ -5,13 +5,13 @@ import android.graphics.Bitmap;
 import android.os.Environment;
 
 import org.pinwheel.agility.net.HttpClientAgent;
-import org.pinwheel.agility.net.OkHttpAgent;
+import org.pinwheel.agility.net.OkHttp2Agent;
 import org.pinwheel.agility.net.Request;
 import org.pinwheel.agility.net.parser.BitmapParser;
 import org.pinwheel.agility.net.parser.DataParserAdapter;
 import org.pinwheel.agility.net.parser.FileParser;
 import org.pinwheel.agility.net.parser.GsonParser;
-import org.pinwheel.agility.tools.Downloader;
+import org.pinwheel.agility.util.Downloader;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.demo4agility.entity.WeatherEntity;
 import org.pinwheel.demo4agility.multithread.MultiThreadDownloader;
@@ -25,7 +25,7 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
 
     @Override
     protected void beforeInitView() {
-        httpClientAgent = new OkHttpAgent(6);
+        httpClientAgent = new OkHttp2Agent(6);
 //        httpClientAgent = new HttpConnectionAgent(6);
 //        httpClientAgent = new VolleyAgent(getApplicationContext());
     }

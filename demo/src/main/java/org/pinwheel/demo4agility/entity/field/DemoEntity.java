@@ -1,6 +1,6 @@
 package org.pinwheel.demo4agility.entity.field;
 
-import org.pinwheel.agility.field.Ignore;
+import org.pinwheel.agility.util.FieldUtils;
 
 /**
  * Copyright (C), 2015 <br>
@@ -26,7 +26,7 @@ public class DemoEntity {
     private Boolean b_dd = new Boolean(true);
 
     private double d_aa = 1.11;
-    @Ignore
+    @FieldUtils.Ignore
     private double d_bb = 2.22;
 
     private TestStruct struct = new TestStruct();

@@ -7,9 +7,9 @@ package org.pinwheel.agility.util;
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,15 +31,14 @@ import java.nio.channels.FileChannel;
  * <code>RandomAccessFile</code>, but it uses a private buffer so that most
  * operations do not require a disk access.
  * <P>
- * 
+ *
  * Note: The operations on this class are unmonitored. Also, the correct
  * functioning of the <code>RandomAccessFile</code> methods that are not
  * overridden here relies on the implementation of those methods in the
  * superclass.
  */
-public class BufferedRandomAccessFile extends RandomAccessFile
-{
-    
+public class BufferedRandomAccessFile extends RandomAccessFile {
+
     // absolute filesystem path to the file
     private final String filePath;
 
@@ -75,13 +74,11 @@ public class BufferedRandomAccessFile extends RandomAccessFile
      * <code>name</code> in mode <code>mode</code>, which should be "r" for
      * reading only, or "rw" for reading and writing.
      */
-    public BufferedRandomAccessFile(String name, String mode) throws IOException
-    {
+    public BufferedRandomAccessFile(String name, String mode) throws IOException {
         this(new File(name), mode, DEFAULT_BUFFER_SIZE);
     }
 
-    public BufferedRandomAccessFile(String name, String mode, int bufferSize) throws IOException
-    {
+    public BufferedRandomAccessFile(String name, String mode, int bufferSize) throws IOException {
         this(new File(name), mode, bufferSize);
     }
 
@@ -90,14 +87,12 @@ public class BufferedRandomAccessFile extends RandomAccessFile
      * mode <code>mode</code>, which should be "r" for reading only, or "rw" for
      * reading and writing.
      */
-    public BufferedRandomAccessFile(File file, String mode) throws IOException
-    {
+    public BufferedRandomAccessFile(File file, String mode) throws IOException {
         this(file, mode, DEFAULT_BUFFER_SIZE);
     }
 
 
-    public BufferedRandomAccessFile(File file, String mode, int bufferSize) throws IOException
-    {
+    public BufferedRandomAccessFile(File file, String mode, int bufferSize) throws IOException {
         super(file, mode);
 
 
@@ -114,14 +109,12 @@ public class BufferedRandomAccessFile extends RandomAccessFile
         fileLength = (mode.equals("r")) ? this.channel.size() : -1;
     }
 
-    
+
     /**
      * Flush (flush()) whatever writes are pending, and block until the data has been persistently committed (fsync()).
      */
-    public void sync() throws IOException
-    {
-        if (syncNeeded)
-        {
+    public void sync() throws IOException {
+        if (syncNeeded) {
             flush();
 
             channel.force(true); // true, because file length counts as
@@ -134,10 +127,8 @@ public class BufferedRandomAccessFile extends RandomAccessFile
      *
      * Currently, for implementation reasons, this also invalidates the buffer.
      */
-    public void flush() throws IOException
-    {
-        if (isDirty)
-        {
+    public void flush() throws IOException {
+        if (isDirty) {
             if (channel.position() != bufferOffset)
                 channel.position(bufferOffset);
 
@@ -150,14 +141,12 @@ public class BufferedRandomAccessFile extends RandomAccessFile
         }
     }
 
-    private void resetBuffer()
-    {
+    private void resetBuffer() {
         bufferOffset = current;
         validBufferBytes = 0;
     }
 
-    private void reBuffer() throws IOException
-    {
+    private void reBuffer() throws IOException {
         flush(); // synchronizing buffer and file on disk
         resetBuffer();
         if (bufferOffset >= channel.size())
@@ -168,8 +157,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
 
         channel.position(bufferOffset); // setting channel position
         int read = 0;
-        while (read < buffer.length)
-        {
+        while (read < buffer.length) {
             int n = super.read(buffer, read, buffer.length - read);
             if (n < 0)
                 break;
@@ -182,8 +170,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
     @Override
     // -1 will be returned if there is nothing to read; higher-level methods like readInt
     // or readFully (from RandomAccessFile) will throw EOFException but this should not
-    public int read() throws IOException
-    {
+    public int read() throws IOException {
         if (isEOF())
             return -1; // required by RandomAccessFile
 
@@ -193,16 +180,14 @@ public class BufferedRandomAccessFile extends RandomAccessFile
     }
 
     @Override
-    public int read(byte[] buffer) throws IOException
-    {
+    public int read(byte[] buffer) throws IOException {
         return read(buffer, 0, buffer.length);
     }
 
     @Override
     // -1 will be returned if there is nothing to read; higher-level methods like readInt
     // or readFully (from RandomAccessFile) will throw EOFException but this should not
-    public int read(byte[] buff, int offset, int length) throws IOException
-    {
+    public int read(byte[] buff, int offset, int length) throws IOException {
         if (length == 0)
             return 0;
 
@@ -219,8 +204,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
         return toCopy;
     }
 
-    public ByteBuffer readBytes(int length) throws IOException
-    {
+    public ByteBuffer readBytes(int length) throws IOException {
 
         byte[] buff = new byte[length];
         readFully(buff); // reading data buffer
@@ -229,38 +213,33 @@ public class BufferedRandomAccessFile extends RandomAccessFile
     }
 
     @Override
-    public void write(int val) throws IOException
-    {
+    public void write(int val) throws IOException {
         int positionWithinBuffer = (int) (current - bufferOffset);
-        if (positionWithinBuffer>=buffer.length)
-        {
+        if (positionWithinBuffer >= buffer.length) {
             reBuffer();
             positionWithinBuffer = (int) (current - bufferOffset);
         }
-        buffer[positionWithinBuffer++]=(byte) val;
-        current ++;
+        buffer[positionWithinBuffer++] = (byte) val;
+        current++;
         validBufferBytes = Math.max(validBufferBytes, positionWithinBuffer);
         isDirty = true;
         syncNeeded = true;
     }
 
     @Override
-    public void write(byte[] b) throws IOException
-    {
+    public void write(byte[] b) throws IOException {
         write(b, 0, b.length);
     }
 
     @Override
-    public void write(byte[] buff, int offset, int length) throws IOException
-    {
+    public void write(byte[] buff, int offset, int length) throws IOException {
         if (buffer == null)
             throw new ClosedChannelException();
 
         if (isReadOnly())
             throw new IOException("Unable to write: file is in the read-only mode.");
 
-        while (length > 0)
-        {
+        while (length > 0) {
             int n = writeAtMost(buff, offset, length);
             offset += n;
             length -= n;
@@ -269,8 +248,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
         }
     }
 
-    private boolean isReadOnly()
-    {
+    private boolean isReadOnly() {
         return fileLength != -1;
     }
 
@@ -279,8 +257,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
      * return the number of bytes written. caller is responsible for setting
      * isDirty.
      */
-    private int writeAtMost(byte[] buff, int offset, int length) throws IOException
-    {
+    private int writeAtMost(byte[] buff, int offset, int length) throws IOException {
         if (current >= bufferOffset + buffer.length)
             reBuffer();
 
@@ -294,14 +271,13 @@ public class BufferedRandomAccessFile extends RandomAccessFile
     }
 
     @Override
-    public void seek(long newPosition) throws IOException
-    {
+    public void seek(long newPosition) throws IOException {
         if (newPosition < 0)
             throw new IllegalArgumentException("new position should not be negative");
 
         if (isReadOnly() && newPosition > fileLength)
             throw new EOFException(String.format("unable to seek to position %d in %s (%d bytes) in read-only mode",
-                                                 newPosition, filePath, fileLength));
+                    newPosition, filePath, fileLength));
 
         current = newPosition;
 
@@ -310,10 +286,8 @@ public class BufferedRandomAccessFile extends RandomAccessFile
     }
 
     @Override
-    public int skipBytes(int count) throws IOException
-    {
-        if (count > 0)
-        {
+    public int skipBytes(int count) throws IOException {
+        if (count > 0) {
             long currentPos = getFilePointer(), eof = length();
             int newCount = (int) ((currentPos + count > eof) ? eof - currentPos : count);
 
@@ -324,71 +298,60 @@ public class BufferedRandomAccessFile extends RandomAccessFile
         return 0;
     }
 
-    public long length() throws IOException
-    {
+    public long length() throws IOException {
         return (fileLength == -1) ? Math.max(Math.max(current, channel.size()), bufferOffset + validBufferBytes) : fileLength;
     }
 
-    public long getAbsolutePosition()
-    {
+    public long getAbsolutePosition() {
         return getFilePointer();
     }
 
-    public long getFilePointer()
-    {
+    public long getFilePointer() {
         return current;
     }
 
-    public String getPath()
-    {
+    public String getPath() {
         return filePath;
     }
 
     /**
      * @return true if there is no more data to read
      */
-    public boolean isEOF() throws IOException
-    {
+    public boolean isEOF() throws IOException {
         return getFilePointer() == length();
     }
 
-    public long bytesRemaining() throws IOException
-    {
+    public long bytesRemaining() throws IOException {
         return length() - getFilePointer();
     }
 
     @Override
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         sync();
         buffer = null;
         super.close();
     }
 
-    public void reset() throws IOException
-    {
+    public void reset() throws IOException {
         seek(markedPointer);
     }
 
-    public int bytesPastMark()
-    {
+    public int bytesPastMark() {
         long bytes = getFilePointer() - markedPointer;
         if (bytes > Integer.MAX_VALUE)
             throw new UnsupportedOperationException("Overflow: " + bytes);
         return (int) bytes;
     }
 
-    public void mark()
-    {
+    public void mark() {
         markedPointer = getFilePointer();
     }
-
 
 
     @Override
     public String toString() {
         return getClass().getSimpleName() + "(" +
-               "filePath='" + filePath + "'" +
-               ", length=" + fileLength +")";
+                "filePath='" + filePath + "'" +
+                ", length=" + fileLength + ")";
     }
 }

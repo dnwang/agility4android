@@ -1,5 +1,9 @@
-package org.pinwheel.agility.field;
+package org.pinwheel.agility.util;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -14,6 +18,19 @@ import java.util.Map;
  * @author dnwang
  */
 public final class FieldUtils {
+
+    /**
+     * Copyright (C), 2015 <br>
+     * <br>
+     * All rights reserved <br>
+     * <br>
+     *
+     * @author dnwang
+     */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public static @interface Ignore {
+    }
 
     private FieldUtils() {
 

@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.cache.DataCacheManager;
-import org.pinwheel.agility.cache.ViewReceiver;
+import org.pinwheel.agility.cache.image.ViewReceiver;
 import org.pinwheel.agility.util.UIUtils;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
 

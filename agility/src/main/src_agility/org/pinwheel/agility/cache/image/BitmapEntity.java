@@ -1,9 +1,11 @@
-package org.pinwheel.agility.cache;
+package org.pinwheel.agility.cache.image;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
 import android.os.Build;
+
+import org.pinwheel.agility.cache.ObjectEntity;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -115,7 +117,7 @@ final class BitmapEntity extends ObjectEntity<Bitmap> {
         BitmapFactory.Options options = getOptions();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-        options.inSampleSize = CacheUtils.computeSampleSize(options, -1, maxWidth * maxHeight);
+        options.inSampleSize = computeSampleSize(options, -1, maxWidth * maxHeight);
         options.inJustDecodeBounds = false;
         setObj(BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options));
     }
@@ -132,6 +134,40 @@ final class BitmapEntity extends ObjectEntity<Bitmap> {
             return bitmap.getByteCount();
         } else {
             return bitmap.getRowBytes() * bitmap.getHeight();
+        }
+    }
+
+    private static int computeSampleSize(BitmapFactory.Options options, int minSideLength, int maxNumOfPixels) {
+        int initialSize = computeInitialSampleSize(options, minSideLength, maxNumOfPixels);
+        int roundedSize;
+        if (initialSize <= 8) {
+            roundedSize = 1;
+            while (roundedSize < initialSize) {
+                roundedSize <<= 1;
+            }
+        } else {
+            roundedSize = (initialSize + 7) / 8 * 8;
+        }
+        return roundedSize;
+    }
+
+    private static int computeInitialSampleSize(BitmapFactory.Options options, int minSideLength, int maxNumOfPixels) {
+        double w = options.outWidth;
+        double h = options.outHeight;
+        int lowerBound = (maxNumOfPixels == -1) ? 1 : (int) Math.ceil(Math.sqrt(w * h / maxNumOfPixels));
+        int upperBound = (minSideLength == -1) ? 128 : (int) Math.min(Math.floor(w / minSideLength), Math.floor(h / minSideLength));
+
+        if (upperBound < lowerBound) {
+            // return the larger one when there is no overlapping zone.
+            return lowerBound;
+        }
+
+        if ((maxNumOfPixels == -1) && (minSideLength == -1)) {
+            return 1;
+        } else if (minSideLength == -1) {
+            return lowerBound;
+        } else {
+            return upperBound;
         }
     }
 

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+
 import org.pinwheel.agility.util.UIUtils;
 
 /**
@@ -20,7 +21,7 @@ public class FlowLayout extends ViewGroup {
     int line_height = 0;
 
     @Deprecated
-    public FlowLayout(Context context){
+    public FlowLayout(Context context) {
         super(context);
         mHorizontalSpacing = 0;
         mVerticalSpacing = 0;

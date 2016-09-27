@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
  * @author dnwang
  */
 public class HttpConnectionAgent extends HttpClientAgent {
-    private static final String TAG = OkHttpAgent.class.getSimpleName();
+    private static final String TAG = OkHttp2Agent.class.getSimpleName();
 
     private ExecutorService executor;
 

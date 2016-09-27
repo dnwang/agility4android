@@ -8,8 +8,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.pinwheel.agility.adapter.SimpleRecycleAdapter;
-import org.pinwheel.agility.cache.ImageLoader;
-import org.pinwheel.agility.cache.ViewReceiver;
+import org.pinwheel.agility.cache.image.ImageLoader;
+import org.pinwheel.agility.cache.image.ViewReceiver;
 import org.pinwheel.demo4agility.R;
 
 /**

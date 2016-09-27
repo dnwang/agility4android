@@ -52,7 +52,7 @@ public class BouncyEditText extends EditText {
     private void init() {
         paint = new Paint();
 //        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
-            hintColor = getHintTextColors().getDefaultColor();
+        hintColor = getHintTextColors().getDefaultColor();
 //        }else{
 //            hintColor = android.R.color.h
 //        }

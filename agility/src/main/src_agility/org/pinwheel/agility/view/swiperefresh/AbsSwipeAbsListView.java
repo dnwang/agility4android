@@ -111,7 +111,7 @@ abstract class AbsSwipeAbsListView extends AbsSwipeView<AbsListView> {
         return true;
     }
 
-    public void setSwipeEventHelper(SwipeEventHelper eventHelper){
+    public void setSwipeEventHelper(SwipeEventHelper eventHelper) {
         setOnRefreshListener(eventHelper);
         setOnScrollListener(eventHelper);
     }

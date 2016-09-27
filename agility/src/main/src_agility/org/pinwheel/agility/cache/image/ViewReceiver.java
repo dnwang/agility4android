@@ -1,4 +1,4 @@
-package org.pinwheel.agility.cache;
+package org.pinwheel.agility.cache.image;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;

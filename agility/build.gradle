@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://github.com/dnwang/'
     gitUrl = 'https://github.com/dnwang/android_agility_framework.git'
 
-    libraryVersion = '4.1.4'
+    libraryVersion = '4.2.0'
 
     developerId = 'dnwang'
     developerName = 'Denan.Wang'
@@ -30,8 +30,8 @@ android {
 
     defaultConfig {
         minSdkVersion 15
-        versionCode 78
-        versionName '4.1.4'
+        versionCode 79
+        versionName '4.2.0'
     }
 
     buildTypes {
@@ -55,7 +55,7 @@ dependencies {
     compile 'com.android.support:support-v4:24.2.0'
     compile 'com.google.code.gson:gson:2.4'
     compile 'eu.the4thfloor.volley:com.android.volley:2015.05.28'
-    compile 'com.squareup.okhttp:okhttp:2.7.4'
+    compile 'com.squareup.okhttp:okhttp:2.7.5'
     compile 'com.android.support:recyclerview-v7:24.2.0'
 }
 

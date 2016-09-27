@@ -3,6 +3,7 @@ package org.pinwheel.agility.adapter;
 import android.widget.BaseAdapter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -51,7 +52,15 @@ public abstract class SimpleArrayAdapter<T> extends BaseAdapter {
 
     public SimpleArrayAdapter<T> addItem(T obj) {
         if (obj != null) {
-            this.data.add(obj);
+            if (obj instanceof Collection) {
+                if (obj instanceof List) {
+                    addAll((List<T>) obj);
+                } else {
+                    throw new ClassCastException("SimpleArrayAdapter addItem(T)");
+                }
+            } else {
+                this.data.add(obj);
+            }
         }
         return this;
     }
@@ -73,8 +82,12 @@ public abstract class SimpleArrayAdapter<T> extends BaseAdapter {
     public SimpleArrayAdapter<T> addAll(T... datas) {
         if (datas != null && datas.length > 0) {
             for (T t : datas) {
-                if (t instanceof List){
-                    addAll((List<T>)t);
+                if (t instanceof Collection) {
+                    if (t instanceof List) {
+                        addAll((List<T>) t);
+                    } else {
+                        throw new ClassCastException("SimpleArrayAdapter addAll(T...)");
+                    }
                 } else {
                     data.add(t);
                 }

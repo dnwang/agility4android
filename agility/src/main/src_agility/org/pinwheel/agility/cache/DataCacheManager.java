@@ -1,10 +1,14 @@
 package org.pinwheel.agility.cache;
 
 import android.content.Context;
+import android.os.Environment;
 import android.text.TextUtils;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Copyright (C), 2015 <br>
@@ -16,7 +20,8 @@ import java.io.Serializable;
  */
 public final class DataCacheManager {
 
-    private static final String PATH = "data";
+    private static final int DEFAULT_MAX_DISK_CACHE = 128 * 1024 * 1024;//128M
+    private static final int DEFAULT_MAX_MEMORY_CACHE = 8 * 1024 * 1024;//8M
 
     private static DataCacheManager instance = null;
 
@@ -35,8 +40,8 @@ public final class DataCacheManager {
     private DiskCache diskCache;
 
     private DataCacheManager(Context context) {
-        this.diskCache = new DiskCache(CacheUtils.getDiskCacheDir(context, PATH), 0, CacheUtils.DEFAULT_MAX_DISK_CACHE);
-        this.memoryCache = new MemoryCache(CacheUtils.DEFAULT_MAX_MEMORY_CACHE);
+        this.diskCache = new DiskCache(getDiskCacheDir(context), 0, DEFAULT_MAX_DISK_CACHE);
+        this.memoryCache = new MemoryCache(DEFAULT_MAX_MEMORY_CACHE);
     }
 
     public DiskCache getDiskCache() {
@@ -68,7 +73,7 @@ public final class DataCacheManager {
         if (memoryCache == null || diskCache == null) {
             return;
         }
-        key = CacheUtils.convertKey(key);
+        key = getDiskKey(key);
         ObjectEntity<Serializable> value = new ObjectEntity<>();
         value.decodeFrom(obj);
         memoryCache.setCache(key, value);
@@ -82,7 +87,7 @@ public final class DataCacheManager {
         if (memoryCache == null || diskCache == null) {
             return null;
         }
-        key = CacheUtils.convertKey(key);
+        key = getDiskKey(key);
         ObjectEntity cache = memoryCache.getCache(key);
         if (cache != null) {
             return cache.get();
@@ -117,6 +122,40 @@ public final class DataCacheManager {
         memoryCache.clear();
         diskCache.delete();
         System.gc();
+    }
+
+    private String getDiskKey(String url) {
+        return md5(url);
+    }
+
+    private static File getDiskCacheDir(Context context) {
+        final String fileName = "cache4data";
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) || !Environment.isExternalStorageRemovable()) {
+            return new File(context.getExternalCacheDir(), fileName);
+        } else {
+            return new File(context.getCacheDir(), fileName);
+        }
+    }
+
+    private static String md5(String data) {
+        String cacheKey;
+        try {
+            final MessageDigest mDigest = MessageDigest.getInstance("MD5");
+            mDigest.update(data.getBytes());
+            byte[] digest = mDigest.digest();
+            StringBuilder sb = new StringBuilder();
+            for (byte aDigest : digest) {
+                String hex = Integer.toHexString(0xFF & aDigest);
+                if (hex.length() == 1) {
+                    sb.append('0');
+                }
+                sb.append(hex);
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            cacheKey = String.valueOf(data.hashCode());
+        }
+        return cacheKey;
     }
 
 }

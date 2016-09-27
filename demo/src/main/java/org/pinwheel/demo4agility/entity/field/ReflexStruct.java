@@ -1,6 +1,6 @@
 package org.pinwheel.demo4agility.entity.field;
 
-import org.pinwheel.agility.field.Ignore;
+import org.pinwheel.agility.util.FieldUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +22,7 @@ public class ReflexStruct {
     private long arg4;
     private short arg5;
 
-    @Ignore
+    @FieldUtils.Ignore
     private double arg6;
 
     private FieldSession1 arg7;

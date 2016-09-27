@@ -4,6 +4,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import org.pinwheel.agility.util.Downloader;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +26,7 @@ import java.util.concurrent.Future;
  * All rights reserved
  *
  * @author dnwang
- * {@link org.pinwheel.agility.tools.Downloader}
+ * {@link Downloader}
  */
 public class MultiThreadDownloader {
 

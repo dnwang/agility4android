@@ -7,7 +7,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +49,7 @@ public final class GrantPermissionsHelper {
                 }
             }
             if (!needGrantList.isEmpty()) {
-                final int key = Arrays.hashCode(permissions);
+                final int key = getKey();
                 if (containsKey(key)) {
                     appendRunner(key, runnable);
                 } else {
@@ -70,7 +69,7 @@ public final class GrantPermissionsHelper {
     }
 
     /**
-     * Please call this method on {@link android.app.Activity.onRequestPermissionsResult}
+     * Please call this method on {@link android.app.Activity#onRequestPermissionsResult}
      */
     public void onRequestPermissionsResult(int key, String[] permissions, int[] grantResults) {
         if (null == permissions || null == grantResults || !containsKey(key)) {
@@ -115,6 +114,13 @@ public final class GrantPermissionsHelper {
     private void removeKey(int key) {
         permissionsMap.remove(key);
         runnerMap.remove(key);
+    }
+
+    private static short count;// activity request code max value is 2e16;
+
+    private static int getKey() {
+        count = (short) (count++ % Short.MAX_VALUE);
+        return count;
     }
 
 }

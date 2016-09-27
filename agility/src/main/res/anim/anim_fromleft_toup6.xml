@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <set xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shareInterpolator="false" >
+    android:shareInterpolator="false">
 
     <alpha
         android:duration="500"
@@ -29,8 +29,7 @@
         android:interpolator="@android:anim/accelerate_decelerate_interpolator"
         android:startOffset="250"
         android:toXDelta="50%p"
-        android:toYDelta="0" >
-    </translate>
+        android:toYDelta="0"></translate>
 
     <scale
         android:duration="250"
@@ -50,7 +49,6 @@
         android:fromYDelta="0"
         android:interpolator="@android:anim/accelerate_decelerate_interpolator"
         android:toXDelta="-50%p"
-        android:toYDelta="0" >
-    </translate>
+        android:toYDelta="0"></translate>
 
 </set>

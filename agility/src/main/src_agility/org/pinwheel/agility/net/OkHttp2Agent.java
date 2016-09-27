@@ -21,23 +21,24 @@ import java.util.concurrent.TimeUnit;
  * <br>
  * All rights reserved <br>
  * <br>
+ * not support okhttp3
  *
  * @author dnwang
  */
-public class OkHttpAgent extends HttpClientAgent {
-    private static final String TAG = OkHttpAgent.class.getSimpleName();
+public class OkHttp2Agent extends HttpClientAgent {
+    private static final String TAG = OkHttp2Agent.class.getSimpleName();
 
     private static final MediaType MEDIA_TYPE_MARKDOWN = MediaType.parse("text/x-markdown; charset=utf-8");
 
     private OkHttpClient client;
     private ExecutorService executor;
 
-    public OkHttpAgent() {
+    public OkHttp2Agent() {
         client = new OkHttpClient();
         executor = Executors.newCachedThreadPool();
     }
 
-    public OkHttpAgent(int parallelSize) {
+    public OkHttp2Agent(int parallelSize) {
         client = new OkHttpClient();
         if (parallelSize <= 0) {
             this.executor = Executors.newCachedThreadPool();

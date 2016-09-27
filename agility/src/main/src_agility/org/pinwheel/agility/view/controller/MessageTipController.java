@@ -21,6 +21,7 @@ import java.util.Set;
  * @version 8/24/16,23:02
  * @see
  */
+@Deprecated
 public final class MessageTipController {
 
     private static final class Node {

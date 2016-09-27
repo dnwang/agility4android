@@ -1,7 +1,8 @@
 package org.pinwheel.demo4agility.entity.field;
 
 import android.util.Log;
-import org.pinwheel.agility.field.Ignore;
+
+import org.pinwheel.agility.util.FieldUtils;
 
 /**
  * Copyright (C), 2015 <br>
@@ -21,7 +22,7 @@ public class InjectStruct {
     private short arg5;
     private char arg10;
 
-    @Ignore
+    @FieldUtils.Ignore
     private double arg6;
 
     private FieldSession1 arg7;

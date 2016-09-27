@@ -2,8 +2,7 @@ package org.pinwheel.demo4agility.activity;
 
 import android.view.View;
 
-import org.pinwheel.agility.field.FieldUtils;
-import org.pinwheel.agility.field.Ignore;
+import org.pinwheel.agility.util.FieldUtils;
 import org.pinwheel.agility.net.Request;
 import org.pinwheel.agility.net.VolleyRequestHelper;
 import org.pinwheel.demo4agility.entity.field.DemoEntity;
@@ -71,7 +70,7 @@ public class FieldActivity extends AbsTesterActivity {
             String annotations = "";
             boolean isIgnore = false;
             for (Annotation annotation : declareAnnotations) {
-                if (annotation instanceof Ignore) {
+                if (annotation instanceof FieldUtils.Ignore) {
                     isIgnore = true;
                 }
                 annotations += annotation.annotationType().getSimpleName() + "; ";

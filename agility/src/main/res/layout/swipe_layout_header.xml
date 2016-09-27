@@ -1,47 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="fill_parent"
-                android:layout_height="60dp">
+    android:layout_width="fill_parent"
+    android:layout_height="60dp">
 
     <TextView
-            android:id="@+id/swipe_txt_header_hint"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center|left"
-            android:minWidth="50dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
-            android:layout_centerInParent="true"
-            android:text="hint"
-            android:textSize="14sp"
-            android:textColor="#999999"/>
+        android:id="@+id/swipe_txt_header_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center|left"
+        android:minWidth="50dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
+        android:layout_centerInParent="true"
+        android:text="hint"
+        android:textSize="14sp"
+        android:textColor="#999999" />
 
     <ImageView
-            android:id="@+id/swipe_img_header_arrow"
-            android:layout_width="wrap_content"
-            android:layout_height="24dp"
-            android:src="@drawable/swipe_ic_arrow_down"
-            android:layout_centerInParent="true"
-            android:layout_alignRight="@+id/swipe_progress_header_progressbar"/>
+        android:id="@+id/swipe_img_header_arrow"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:src="@drawable/swipe_ic_arrow_down"
+        android:layout_centerInParent="true"
+        android:layout_alignRight="@+id/swipe_progress_header_progressbar" />
 
     <ProgressBar
-            android:id="@+id/swipe_progress_header_progressbar"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            android:indeterminateDrawable="@anim/swipe_anim_progressbar"
-            android:visibility="invisible"
-            android:layout_centerInParent="true"
-            android:layout_toLeftOf="@+id/swipe_txt_header_hint"/>
+        android:id="@+id/swipe_progress_header_progressbar"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:indeterminateDrawable="@anim/swipe_anim_progressbar"
+        android:visibility="invisible"
+        android:layout_centerInParent="true"
+        android:layout_toLeftOf="@+id/swipe_txt_header_hint" />
 
     <TextView
-            android:id="@+id/swipe_txt_header_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:gravity="bottom|left"
-            android:text="--/--"
-            android:textSize="12sp"
-            android:textColor="#999999"
-            android:layout_toRightOf="@+id/swipe_txt_header_hint"/>
+        android:id="@+id/swipe_txt_header_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="bottom|left"
+        android:text="--/--"
+        android:textSize="12sp"
+        android:textColor="#999999"
+        android:layout_toRightOf="@+id/swipe_txt_header_hint" />
 
 </RelativeLayout>

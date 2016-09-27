@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.TextView;
+
 import org.pinwheel.agility.animation.TouchAnimator;
 
 /**

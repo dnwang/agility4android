@@ -51,7 +51,7 @@ public final class IOUtils {
         try {
             int length;
             byte[] buff = new byte[1024];
-            while ((length = bufferedInputStream.read(buff)) != -1) {
+            while ((length = bufferedInputStream.read(buff)) > 0) {
                 byteArrayOutputStream.write(buff, 0, length);
             }
             data = byteArrayOutputStream.toByteArray();
@@ -118,7 +118,7 @@ public final class IOUtils {
         try {
             int length;
             byte[] buff = new byte[1024];
-            while ((length = bufferedInputStream.read(buff)) != -1) {
+            while ((length = bufferedInputStream.read(buff)) > 0) {
                 size += length;
                 bufferedOutputStream.write(buff, 0, length);
             }

@@ -1,13 +1,12 @@
 .gradle/
 .idea/
+projectFilesBackup/
 build/
 gradle/
-*.iml
 gradlew
 gradlew.bat
 local.properties
-agility/build/
-agility/agility.iml
-demo/build/
-demo/demo.iml
+*.keyStore
+*/build/
+*.iml
 agility/.svn/

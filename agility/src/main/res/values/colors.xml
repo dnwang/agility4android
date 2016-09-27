@@ -7,7 +7,7 @@
     <color name="translucent_light">#33000000</color>
 
     <color name="holo_black_light">#66000000</color>
-	<color name="holo_white_dark">#f0f0f0</color>
+    <color name="holo_white_dark">#f0f0f0</color>
 
     <color name="holo_gray_light">#E0E0E0</color>
     <color name="holo_gray_dark">#C3C3C3</color>

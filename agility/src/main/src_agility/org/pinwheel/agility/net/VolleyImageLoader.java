@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 import android.widget.ImageView;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
