@@ -116,7 +116,7 @@ public class ImageLoader {
         this.memoryCache = new MemoryCache(options.getMemoryCacheSize());
 
         // init network engine, auto select
-        if (HttpClientAgent.isImportOkHttp()) {
+        if (HttpClientAgent.isImportOkHttp2()) {
             this.httpEngine = new OkHttp2Agent(options.getParallelSize());
         } else {
             this.httpEngine = new HttpConnectionAgent(options.getParallelSize());

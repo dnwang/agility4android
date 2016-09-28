@@ -3,6 +3,8 @@ package org.pinwheel.agility.net.parser;
 import android.os.Handler;
 import android.os.Looper;
 
+import org.pinwheel.agility.util.callback.Action2;
+
 import java.io.InputStream;
 
 /**
@@ -40,6 +42,12 @@ public abstract class DataParserAdapter<T> implements IDataParser<T> {
         this.listener = listener;
     }
 
+    public void setOnParseListener(Action2<Long, Long> action) {
+        setOnParseListener(new ActionWrapperParseListener(action));
+    }
+
+    private Handler uiHandler = new Handler(Looper.getMainLooper());
+
     protected final void dispatchProgress(final long progress, final long total) {
         if (listener == null) {
             return;
@@ -47,7 +55,7 @@ public abstract class DataParserAdapter<T> implements IDataParser<T> {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             listener.onProgress(progress, total);
         } else {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
+            uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     listener.onProgress(progress, total);
@@ -63,7 +71,7 @@ public abstract class DataParserAdapter<T> implements IDataParser<T> {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             listener.onComplete();
         } else {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
+            uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     listener.onComplete();
@@ -81,6 +89,27 @@ public abstract class DataParserAdapter<T> implements IDataParser<T> {
 
         void onComplete();
 
+    }
+
+    class ActionWrapperParseListener implements OnParseListener {
+
+        private Action2<Long, Long> action;
+
+        ActionWrapperParseListener(Action2<Long, Long> action) {
+            this.action = action;
+        }
+
+        @Override
+        public void onProgress(long progress, long total) {
+            if (null != action) {
+                action.call(progress, total);
+            }
+        }
+
+        @Override
+        public void onComplete() {
+
+        }
     }
 
 }

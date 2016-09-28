@@ -15,7 +15,7 @@ import org.pinwheel.agility.util.callback.Action3;
  */
 public abstract class HttpClientAgent {
 
-    public static boolean isImportOkHttp() {
+    public static boolean isImportOkHttp2() {
         try {
             Class.forName("com.squareup.okhttp.OkHttpClient");
             return true;
