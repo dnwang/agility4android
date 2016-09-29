@@ -103,7 +103,7 @@ public abstract class HttpClientAgent {
      */
     public static abstract class HandleTagRequestAdapter<T> extends RequestAdapter<T> {
 
-        private Object tag;
+        protected Object tag;
 
         public HandleTagRequestAdapter(Object tag) {
             this.tag = tag;
@@ -117,9 +117,9 @@ public abstract class HttpClientAgent {
 
     public static class ActionWrapperRequestAdapter<T> extends RequestAdapter<T> {
 
-        private Action3<Boolean, T, Exception> action;
+        protected Action3<Boolean, T, Exception> action;
 
-        ActionWrapperRequestAdapter(Action3<Boolean, T, Exception> action) {
+        public ActionWrapperRequestAdapter(Action3<Boolean, T, Exception> action) {
             this.action = action;
         }
 
