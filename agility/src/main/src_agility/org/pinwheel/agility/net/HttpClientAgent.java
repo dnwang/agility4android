@@ -115,7 +115,7 @@ public abstract class HttpClientAgent {
 
     }
 
-    static final class ActionWrapperRequestAdapter<T> extends RequestAdapter<T> {
+    public static class ActionWrapperRequestAdapter<T> extends RequestAdapter<T> {
 
         private Action3<Boolean, T, Exception> action;
 

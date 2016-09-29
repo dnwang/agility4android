@@ -91,7 +91,7 @@ public abstract class DataParserAdapter<T> implements IDataParser<T> {
 
     }
 
-    class ActionWrapperParseListener implements OnParseListener {
+    public static class ActionWrapperParseListener implements OnParseListener {
 
         private Action2<Long, Long> action;
 
