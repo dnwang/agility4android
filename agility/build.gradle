@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://github.com/dnwang/'
     gitUrl = 'https://github.com/dnwang/android_agility_framework.git'
 
-    libraryVersion = '4.2.0'
+    libraryVersion = '4.2.1'
 
     developerId = 'dnwang'
     developerName = 'Denan.Wang'
@@ -26,12 +26,12 @@ ext {
 
 android {
     compileSdkVersion 24
-    buildToolsVersion '24.0.2'
+    buildToolsVersion '24.0.3'
 
     defaultConfig {
         minSdkVersion 15
-        versionCode 79
-        versionName '4.2.0'
+        versionCode 80
+        versionName '4.2.1'
     }
 
     buildTypes {
@@ -52,11 +52,11 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:24.2.0'
+    compile 'com.android.support:support-v4:24.2.1'
     compile 'com.google.code.gson:gson:2.4'
     compile 'eu.the4thfloor.volley:com.android.volley:2015.05.28'
     compile 'com.squareup.okhttp:okhttp:2.7.5'
-    compile 'com.android.support:recyclerview-v7:24.2.0'
+    compile 'com.android.support:recyclerview-v7:24.2.1'
 }
 
 //apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
