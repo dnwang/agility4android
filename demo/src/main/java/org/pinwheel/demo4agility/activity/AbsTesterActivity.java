@@ -25,6 +25,7 @@ import com.google.gson.Gson;
 
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.compat.GrantPermissionsHelper;
+import org.pinwheel.agility.util.callback.Action1;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -112,8 +113,8 @@ abstract class AbsTesterActivity extends Activity {
         return View.inflate(this, layout, null);
     }
 
-    protected final void requestPermissions(Runnable runner, String... permissions) {
-        grantPermissionsHelper.requestPermissions(this, runner, permissions);
+    protected final void requestPermissions(Action1<Boolean> callback, String... permissions) {
+        grantPermissionsHelper.requestPermissions(this, callback, permissions);
     }
 
     protected final void postDelayed(Runnable runnable, long delay) {

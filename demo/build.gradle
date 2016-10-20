@@ -6,15 +6,15 @@ def currentTime() {
 }
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '24.0.3'
+    compileSdkVersion 25
+    buildToolsVersion '25'
 
     defaultConfig {
         applicationId "org.pinwheel.demo4agility"
         minSdkVersion 15
-        targetSdkVersion 24
-        versionCode 80
-        versionName "4.2.1"
+        targetSdkVersion 25
+        versionCode 81
+        versionName "4.2.2"
     }
 
     lintOptions {
@@ -39,7 +39,7 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':agility')
     compile 'com.google.guava:guava:18.0'
-    compile 'com.android.support:percent:24.2.1'
+    compile 'com.android.support:percent:25.0.0'
     compile 'com.squareup.retrofit2:retrofit:2.1.0'
     compile 'io.reactivex:rxandroid:1.2.1'
     compile 'com.facebook.fresco:fresco:0.11.0'

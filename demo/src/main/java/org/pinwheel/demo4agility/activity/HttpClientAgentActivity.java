@@ -204,7 +204,7 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
         final String url = "https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_android.apk";
         final File file = new File(Environment.getExternalStorageDirectory(), "QQMobile.apk");
         // request running permissions in android M
-        requestPermissions(() -> {
+        requestPermissions((isSuccess) -> {
             downloader.open(file, url);
         }, Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
