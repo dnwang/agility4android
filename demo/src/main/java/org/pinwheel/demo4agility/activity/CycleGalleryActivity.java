@@ -103,6 +103,7 @@ public class CycleGalleryActivity extends AbsTesterActivity {
         gallery = new SweetCircularView(this);
         gallery.setAdapter(adapter);
         gallery.addOnItemSwitchListener(new SimpleCircularAnimator());
+        gallery.setClick2Selected(true);
         gallery.setMinimumHeight(600);
         gallery.setOrientation(LinearLayout.HORIZONTAL);
 //        gallery.setOrientation(LinearLayout.VERTICAL);
@@ -207,8 +208,14 @@ public class CycleGalleryActivity extends AbsTesterActivity {
                     (int) (gallery.getRightIndent() * 1.2),
                     (int) (gallery.getBottomIndent() * 1.2));
         });
-        leftBtn.setOnClickListener(v -> gallery.movePrevious());
-        rightBtn.setOnClickListener(v -> gallery.moveNext());
+        leftBtn.setOnClickListener(v -> {
+            gallery.movePrevious();
+//            gallery.moveItems(-3);
+        });
+        rightBtn.setOnClickListener(v -> {
+            gallery.moveNext();
+//            gallery.moveItems(3);
+        });
 
         // create pager warapper
         final ViewPager viewPager = new ViewPager(this);
