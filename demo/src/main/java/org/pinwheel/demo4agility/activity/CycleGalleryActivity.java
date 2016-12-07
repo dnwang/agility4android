@@ -19,6 +19,7 @@ import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.animation.SimpleCircularAnimator;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.view.SweetCircularView;
+import org.pinwheel.agility.view.SweetCircularView2;
 import org.pinwheel.agility.view.SweetIndicatorView;
 import org.pinwheel.agility.view.SweetProgress;
 import org.pinwheel.agility.view.drag.DragListView;
@@ -73,7 +74,7 @@ public class CycleGalleryActivity extends AbsTesterActivity {
             "http://pics.sc.chinaz.com/Files/pic/icons128/5966/w3.png"
     };
 
-    private SweetCircularView gallery;
+    private SweetCircularView2 gallery;
 
     private SimpleArrayAdapter adapter = new SimpleArrayAdapter<Integer>() {
         @Override
@@ -100,16 +101,16 @@ public class CycleGalleryActivity extends AbsTesterActivity {
     protected View getContentView() {
         final FrameLayout container = new FrameLayout(this);
 
-        gallery = new SweetCircularView(this);
+        gallery = new SweetCircularView2(this);
         gallery.setAdapter(adapter);
-        gallery.addOnItemSwitchListener(new SimpleCircularAnimator());
+//        gallery.addOnItemSwitchListener(new SimpleCircularAnimator());
         gallery.setClick2Selected(true);
         gallery.setMinimumHeight(600);
         gallery.setOrientation(LinearLayout.HORIZONTAL);
 //        gallery.setOrientation(LinearLayout.VERTICAL);
         gallery.setIndent(200, 40, 200, 40);
         gallery.setSensibility(0.2f);
-        gallery.setAutoCycle(true, true);
+//        gallery.setAutoCycle(true, true);
         // test nested
         LinearLayout.LayoutParams gParams = new LinearLayout.LayoutParams(-1, -1);
         gParams.setMargins(0, 60, 0, 0);
@@ -201,12 +202,12 @@ public class CycleGalleryActivity extends AbsTesterActivity {
             gallery.setRecycleItemSize(size + 2);
         });
         func5.setOnClickListener(v -> {
-            gallery.setSpaceBetweenItems(40);
-            gallery.setIndent(
-                    (int) (gallery.getLeftIndent() * 1.2),
-                    (int) (gallery.getTopIndent() * 1.2),
-                    (int) (gallery.getRightIndent() * 1.2),
-                    (int) (gallery.getBottomIndent() * 1.2));
+//            gallery.setSpaceBetweenItems(40);
+//            gallery.setIndent(
+//                    (int) (gallery.getLeftIndent() * 1.2),
+//                    (int) (gallery.getTopIndent() * 1.2),
+//                    (int) (gallery.getRightIndent() * 1.2),
+//                    (int) (gallery.getBottomIndent() * 1.2));
         });
         leftBtn.setOnClickListener(v -> {
             gallery.movePrevious();
@@ -226,18 +227,18 @@ public class CycleGalleryActivity extends AbsTesterActivity {
         simpleTestBtn.setText("Just test for pager");
         pagerAdapter.add(simpleTestBtn).add(container).notifyDataSetChanged();
 
-        gallery.addOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
-            @Override
-            public void onItemSelected(SweetCircularView v, int dataIndex) {
-                logout("Listener: onItemSelected(" + dataIndex + ")");
-                indicatorView.setCurrentIndex(dataIndex);
-            }
-
-            @Override
-            public void onItemScrolled(SweetCircularView v, int dataIndex, float offset) {
-                logout("Listener: onItemScrolled(" + dataIndex + ", " + offset + ")");
-            }
-        });
+//        gallery.addOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
+//            @Override
+//            public void onItemSelected(SweetCircularView v, int dataIndex) {
+//                logout("Listener: onItemSelected(" + dataIndex + ")");
+//                indicatorView.setCurrentIndex(dataIndex);
+//            }
+//
+//            @Override
+//            public void onItemScrolled(SweetCircularView v, int dataIndex, float offset) {
+//                logout("Listener: onItemScrolled(" + dataIndex + ", " + offset + ")");
+//            }
+//        });
 
         return viewPager;
     }
