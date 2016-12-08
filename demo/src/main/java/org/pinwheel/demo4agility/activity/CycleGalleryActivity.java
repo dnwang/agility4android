@@ -16,9 +16,7 @@ import android.widget.Toast;
 
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
-import org.pinwheel.agility.animation.SimpleCircularAnimator;
 import org.pinwheel.agility.util.BaseUtils;
-import org.pinwheel.agility.view.SweetCircularView;
 import org.pinwheel.agility.view.SweetCircularView2;
 import org.pinwheel.agility.view.SweetIndicatorView;
 import org.pinwheel.agility.view.SweetProgress;
@@ -210,11 +208,11 @@ public class CycleGalleryActivity extends AbsTesterActivity {
 //                    (int) (gallery.getBottomIndent() * 1.2));
         });
         leftBtn.setOnClickListener(v -> {
-            gallery.movePrevious();
+            gallery.moveItems(-1);
 //            gallery.moveItems(-3);
         });
         rightBtn.setOnClickListener(v -> {
-            gallery.moveNext();
+            gallery.moveItems(1);
 //            gallery.moveItems(3);
         });
 
