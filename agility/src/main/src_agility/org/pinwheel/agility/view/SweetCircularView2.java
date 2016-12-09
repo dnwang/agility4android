@@ -31,21 +31,46 @@ public class SweetCircularView2 extends ViewGroup {
 
     private static final int MOVE_SLOP = 10;
 
-    private static final int DEFAULT_ITEM_SIZE = 5;
+    private static final int DEFAULT_ITEM_SIZE = 7;
 
-    private boolean isClick2Selected = false;
-    private boolean isRecyclable = true;
+    /**
+     * 是否自动循环
+     */
     private boolean isAutoCycle = false;
+    /**
+     * 自动循环方向；true向后/false向前
+     */
     private boolean isAutoCycleToNext = true;
+    /**
+     * 自动循环时间间隔
+     */
     private long intervalOnAutoCycle = 4000;
+    /**
+     * 自动循环滑动耗时
+     */
     private long durationOnAutoScroll = 300;
+    /**
+     * 手动滑动释放之后自动归位耗时
+     */
     private long durationOnTouchRelease = 200;
+    /**
+     * 判断滑过一个视图的敏感度；默认0.5f滑动超过视图一半释放即自动滑过
+     */
     private float sensibility = 0.5f;
+    /**
+     * 布局方向
+     */
     private int orientation = LinearLayout.HORIZONTAL;
+    /**
+     * 视图之间的间隔
+     */
+    private int spaceBetweenItems = 0;
+    /**
+     * 中心视图 相对与父控件的间隔；默认0铺满整个父控件
+     */
+    private int leftIndent, topIndent, rightIndent, bottomIndent;
+
     private ArrayList<OnItemSwitchListener> listeners = new ArrayList<>(2);
-
-    private int spaceBetweenItems;
-
     private AdapterDataSetObserver dataSetObserver;
     private BaseAdapter adapter;
     private ArrayList<ItemWrapper> items = null;
@@ -125,13 +150,13 @@ public class SweetCircularView2 extends ViewGroup {
         // left/top
         for (int i = 1; i <= centerIndex; i++) {
             item = findItem(centerIndex - i);
-            item.setDataIndex(dataIndex - i);
+            item.setDataIndex(cycleDataIndex(dataIndex - i));
             item.refreshView();
         }
         // right/bottom
         for (int i = 1; i <= centerIndex; i++) {
             item = findItem(centerIndex + i);
-            item.setDataIndex(dataIndex + i);
+            item.setDataIndex(cycleDataIndex(dataIndex + i));
             item.refreshView();
         }
     }
@@ -209,25 +234,6 @@ public class SweetCircularView2 extends ViewGroup {
         }
     }
 
-    /**
-     * @param is is recyclable
-     */
-    public void setRecyclable(boolean is) {
-        isRecyclable = is;
-    }
-
-    public boolean isRecyclable() {
-        return isRecyclable;
-    }
-
-    private int leftIndent, topIndent, rightIndent, bottomIndent;
-
-    /**
-     * @param left   the left padding in pixels
-     * @param top    the top padding in pixels
-     * @param right  the right padding in pixels
-     * @param bottom the bottom padding in pixels
-     */
     public void setIndent(int left, int top, int right, int bottom) {
         leftIndent = left;
         topIndent = top;
@@ -244,10 +250,6 @@ public class SweetCircularView2 extends ViewGroup {
         return spaceBetweenItems;
     }
 
-    public void setClick2Selected(boolean is) {
-        isClick2Selected = is;
-    }
-
     public final void addOnItemSwitchListener(OnItemSwitchListener listener) {
         if (listener != null) {
             listeners.add(listener);
@@ -260,18 +262,18 @@ public class SweetCircularView2 extends ViewGroup {
         }
     }
 
-    protected void onItemScrolled(int index, float offset) {
+    protected void notifyOnItemScrolled(int dataIndex, float offset) {
         if (listeners != null) {
             for (OnItemSwitchListener listener : listeners) {
-                listener.onItemScrolled(this, index, offset);
+                listener.onItemScrolled(this, dataIndex, offset);
             }
         }
     }
 
-    protected void onItemSelected(int index) {
+    protected void notifyOnItemSelected(int dataIndex) {
         if (listeners != null) {
             for (OnItemSwitchListener listener : listeners) {
-                listener.onItemSelected(this, index);
+                listener.onItemSelected(this, dataIndex);
             }
         }
     }
@@ -299,12 +301,9 @@ public class SweetCircularView2 extends ViewGroup {
      */
     private void resetItemsBounds(int centerLeft, int centerTop, int centerRight, int centerBottom, int space) {
         itemsBounds = new Rect[getRecycleItemSize()];
-
         final int centerIndex = itemsBounds.length / 2;
-
         int left, top, right, bottom;
         int m;
-
         for (int i = 0; i < itemsBounds.length; i++) {
             Rect rect = new Rect();
             m = centerIndex - i;
@@ -323,11 +322,11 @@ public class SweetCircularView2 extends ViewGroup {
         }
     }
 
-    private int getItemWidth() {
+    private int getItemMeasuredWidth() {
         return itemsBounds[0].width();
     }
 
-    private int getItemHeight() {
+    private int getItemMeasuredHeight() {
         return itemsBounds[0].height();
     }
 
@@ -353,7 +352,6 @@ public class SweetCircularView2 extends ViewGroup {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
         // 初始化基准位置
         resetItemsBounds(
                 getLeft() + leftIndent,
@@ -362,9 +360,9 @@ public class SweetCircularView2 extends ViewGroup {
                 (getBottom() - getTop()) - bottomIndent,
                 spaceBetweenItems);
 
-        int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(getItemWidth(), MeasureSpec.EXACTLY);
-        int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(getItemHeight(), MeasureSpec.EXACTLY);
-        int size = getChildCount();
+        int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(getItemMeasuredWidth(), MeasureSpec.EXACTLY);
+        int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(getItemMeasuredHeight(), MeasureSpec.EXACTLY);
+        final int size = getChildCount();
         for (int i = 0; i < size; i++) {
             getChildAt(i).measure(childWidthMeasureSpec, childHeightMeasureSpec);
         }
@@ -373,11 +371,7 @@ public class SweetCircularView2 extends ViewGroup {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         Log.e(TAG, "onLayout: changed:" + changed);
-        layoutItems();
-    }
 
-    private void layoutItems() {
-        // 布局试图位置
         int size = Math.min(itemsBounds.length, items.size());
         for (int i = 0; i < size; i++) {
             Rect bounds = itemsBounds[i];
@@ -470,10 +464,8 @@ public class SweetCircularView2 extends ViewGroup {
                     float absXDiff = Math.abs(xDiff);
                     float absYDiff = Math.abs(yDiff);
                     if (orientation == LinearLayout.HORIZONTAL && absXDiff > absYDiff) {
-                        // x
                         moveX(xDiff);
                     } else if (orientation == LinearLayout.VERTICAL && absYDiff > absXDiff) {
-                        // y
                         moveY(yDiff);
                     }
                 }
@@ -483,32 +475,7 @@ public class SweetCircularView2 extends ViewGroup {
             case MotionEvent.ACTION_CANCEL:
                 // touch release
                 if (isMoving) {
-                    if (getRecycleItemSize() == 0 || getChildCount() == 0) {
-                        isMoving = false;
-                        break;
-                    }
-
-//                    ItemWrapper item = items.get(currentItemIndex);
-//                    int changeIndex = 0;
-//                    float offset = 0;
-//                    float maxOffset = 0;
-//                    if (orientation == LinearLayout.HORIZONTAL) {
-//                        offset = item.getOffsetX();
-//                        maxOffset = item.getView().getMeasuredWidth() + spaceBetweenItems;
-//                    } else if (orientation == LinearLayout.VERTICAL) {
-//                        offset = item.getOffsetY();
-//                        maxOffset = item.getView().getMeasuredHeight() + spaceBetweenItems;
-//                    }
-//                    if (offset < -maxOffset * sensibility) {
-//                        changeIndex = 1;
-//                    } else if (offset > maxOffset * sensibility) {
-//                        changeIndex = -1;
-//                    }
-//                    if (changeIndex == 0) {
-//                        autoMove(-offset, durationOnTouchRelease, changeIndex, null);
-//                    } else {
-//                        autoMove((maxOffset - Math.abs(offset)) * -changeIndex, durationOnTouchRelease, changeIndex, null);
-//                    }
+                    autoPacking();
                 }
                 break;
             default:
@@ -521,7 +488,9 @@ public class SweetCircularView2 extends ViewGroup {
         isMoving = true;
 
         scrollBy((int) -offset, 0);
-        final int width = getItemWidth();
+        notifyOnItemScrolled(findItem(getRecycleItemSize() / 2).dataIndex, offset);
+
+        final int width = getItemMeasuredWidth();
         final int scrollX = getScrollX();
         if (Math.abs(scrollX) >= width) {
             if (scrollX > 0) {
@@ -542,8 +511,10 @@ public class SweetCircularView2 extends ViewGroup {
             for (ItemWrapper tmp : items) {
                 tmp.itemIndex = cycleItemIndex(tmp.itemIndex);
             }
+            // 重置滑动偏移
             scrollTo(0, 0);
-            layoutItems();
+            // 根据新的中心视图位置，重新设置视图的数据索引，并且更新视图
+            setCurrentIndex(findItem(getRecycleItemSize() / 2).dataIndex);
         }
     }
 
@@ -557,13 +528,10 @@ public class SweetCircularView2 extends ViewGroup {
 
     private ValueAnimator autoScroller = null;
 
-    private void autoMove(final float offset, final long duration, final int changeIndex, final Runnable callback) {
+    protected final void autoMove(final float offset, final long duration, final Runnable callback) {
         if (autoScroller != null && autoScroller.isStarted()) {
             autoScroller.cancel();
             autoScroller = null;
-        }
-        if (offset == 0) {
-            return;
         }
         autoScroller = ValueAnimator.ofFloat(0, offset);
         autoScroller.setDuration(duration);
@@ -585,6 +553,7 @@ public class SweetCircularView2 extends ViewGroup {
         autoScroller.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
+                isMoving = true;
                 interceptAutoCycle();
             }
 
@@ -592,13 +561,21 @@ public class SweetCircularView2 extends ViewGroup {
             public void onAnimationEnd(Animator animation) {
                 isMoving = false;
                 resumeAutoCycle();
-//                setCurrentDataIndex(cycleDataIndex(currentDataIndex + changeIndex));
                 if (null != callback) {
                     callback.run();
                 }
             }
         });
         autoScroller.start();
+    }
+
+    protected final void autoPacking() {
+        autoMove(getScrollX(), durationOnTouchRelease, new Runnable() {
+            @Override
+            public void run() {
+                notifyOnItemSelected(findItem(getRecycleItemSize() / 2).dataIndex);
+            }
+        });
     }
 
     /**
@@ -609,11 +586,17 @@ public class SweetCircularView2 extends ViewGroup {
         if (isMoving) {
             return;
         }
-        // TODO: 2016/12/8
-
+        // 添加一点偏移，避免刚刚到临界值
+        int offset = (getItemMeasuredWidth() + 30) * -changed;
+        autoMove(offset, durationOnAutoScroll, new Runnable() {
+            @Override
+            public void run() {
+                autoPacking();
+            }
+        });
     }
 
-    private int cycleDataIndex(int dataIndex) {
+    protected final int cycleDataIndex(int dataIndex) {
         if (adapter == null) {
             return -1;
         }
@@ -629,7 +612,7 @@ public class SweetCircularView2 extends ViewGroup {
         return dataIndex;
     }
 
-    private int cycleItemIndex(int itemIndex) {
+    protected final int cycleItemIndex(int itemIndex) {
         int count = items.size();
         if (count < 2) {
             return 0;
@@ -737,9 +720,9 @@ public class SweetCircularView2 extends ViewGroup {
      */
     public interface OnItemSwitchListener {
 
-        void onItemSelected(SweetCircularView2 v, int index);
+        void onItemSelected(SweetCircularView2 v, int dataIndex);
 
-        void onItemScrolled(SweetCircularView2 v, int index, float offset);
+        void onItemScrolled(SweetCircularView2 v, int dataIndex, float offset);
 
     }
 

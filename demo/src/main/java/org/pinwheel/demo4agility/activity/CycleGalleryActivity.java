@@ -86,6 +86,12 @@ public class CycleGalleryActivity extends AbsTesterActivity {
             txt.setText(String.valueOf(position));
             ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader(image, urls[position % urls.length]);
             convertView.setOnClickListener(v -> Toast.makeText(CycleGalleryActivity.this, position + "", Toast.LENGTH_SHORT).show());
+            convertView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    gallery.moveItems(position - gallery.getCurrentIndex());
+                }
+            });
             return convertView;
         }
     };
@@ -102,11 +108,10 @@ public class CycleGalleryActivity extends AbsTesterActivity {
         gallery = new SweetCircularView2(this);
         gallery.setAdapter(adapter);
 //        gallery.addOnItemSwitchListener(new SimpleCircularAnimator());
-        gallery.setClick2Selected(true);
         gallery.setMinimumHeight(600);
         gallery.setOrientation(LinearLayout.HORIZONTAL);
 //        gallery.setOrientation(LinearLayout.VERTICAL);
-        gallery.setIndent(200, 40, 200, 40);
+        gallery.setIndent(300, 40, 300, 40);
         gallery.setSensibility(0.2f);
 //        gallery.setAutoCycle(true, true);
         // test nested
@@ -160,7 +165,7 @@ public class CycleGalleryActivity extends AbsTesterActivity {
         Button func4 = new Button(this);
         func4.setText("reSize +2");
         Button func5 = new Button(this);
-        func5.setText("indent");
+        func5.setText("space");
         funcContainer.addView(func1);
         funcContainer.addView(func2);
         funcContainer.addView(func3);
@@ -200,20 +205,15 @@ public class CycleGalleryActivity extends AbsTesterActivity {
             gallery.setRecycleItemSize(size + 2);
         });
         func5.setOnClickListener(v -> {
-//            gallery.setSpaceBetweenItems(40);
-//            gallery.setIndent(
-//                    (int) (gallery.getLeftIndent() * 1.2),
-//                    (int) (gallery.getTopIndent() * 1.2),
-//                    (int) (gallery.getRightIndent() * 1.2),
-//                    (int) (gallery.getBottomIndent() * 1.2));
+            gallery.setSpaceBetweenItems(40);
         });
         leftBtn.setOnClickListener(v -> {
-            gallery.moveItems(-1);
-//            gallery.moveItems(-3);
+//            gallery.moveItems(-1);
+            gallery.moveItems(-3);
         });
         rightBtn.setOnClickListener(v -> {
-            gallery.moveItems(1);
-//            gallery.moveItems(3);
+//            gallery.moveItems(1);
+            gallery.moveItems(3);
         });
 
         // create pager warapper
@@ -225,18 +225,18 @@ public class CycleGalleryActivity extends AbsTesterActivity {
         simpleTestBtn.setText("Just test for pager");
         pagerAdapter.add(simpleTestBtn).add(container).notifyDataSetChanged();
 
-//        gallery.addOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
-//            @Override
-//            public void onItemSelected(SweetCircularView v, int dataIndex) {
-//                logout("Listener: onItemSelected(" + dataIndex + ")");
-//                indicatorView.setCurrentIndex(dataIndex);
-//            }
-//
-//            @Override
-//            public void onItemScrolled(SweetCircularView v, int dataIndex, float offset) {
-//                logout("Listener: onItemScrolled(" + dataIndex + ", " + offset + ")");
-//            }
-//        });
+        gallery.addOnItemSwitchListener(new SweetCircularView2.OnItemSwitchListener() {
+            @Override
+            public void onItemSelected(SweetCircularView2 v, int dataIndex) {
+//                logout("Listener: notifyOnItemSelected(" + dataIndex + ")");
+                indicatorView.setCurrentIndex(dataIndex);
+            }
+
+            @Override
+            public void onItemScrolled(SweetCircularView2 v, int dataIndex, float offset) {
+//                logout("Listener: notifyOnItemScrolled(" + dataIndex + ", " + offset + ")");
+            }
+        });
 
         return viewPager;
     }
