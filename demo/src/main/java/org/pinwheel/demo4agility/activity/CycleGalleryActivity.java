@@ -17,7 +17,7 @@ import android.widget.Toast;
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.util.BaseUtils;
-import org.pinwheel.agility.view.SweetCircularView2;
+import org.pinwheel.agility.view.SweetCircularView;
 import org.pinwheel.agility.view.SweetIndicatorView;
 import org.pinwheel.agility.view.SweetProgress;
 import org.pinwheel.agility.view.drag.DragListView;
@@ -72,7 +72,7 @@ public class CycleGalleryActivity extends AbsTesterActivity {
             "http://pics.sc.chinaz.com/Files/pic/icons128/5966/w3.png"
     };
 
-    private SweetCircularView2 gallery;
+    private SweetCircularView gallery;
 
     private SimpleArrayAdapter adapter = new SimpleArrayAdapter<Integer>() {
         @Override
@@ -86,12 +86,7 @@ public class CycleGalleryActivity extends AbsTesterActivity {
             txt.setText(String.valueOf(position));
             ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader(image, urls[position % urls.length]);
             convertView.setOnClickListener(v -> Toast.makeText(CycleGalleryActivity.this, position + "", Toast.LENGTH_SHORT).show());
-            convertView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    gallery.moveItems(position - gallery.getCurrentIndex());
-                }
-            });
+//            convertView.setOnClickListener(v -> gallery.moveItems(position - gallery.getCurrentIndex()));
             return convertView;
         }
     };
@@ -105,13 +100,14 @@ public class CycleGalleryActivity extends AbsTesterActivity {
     protected View getContentView() {
         final FrameLayout container = new FrameLayout(this);
 
-        gallery = new SweetCircularView2(this);
+        gallery = new SweetCircularView(this);
         gallery.setAdapter(adapter);
 //        gallery.addOnItemSwitchListener(new SimpleCircularAnimator());
-        gallery.setMinimumHeight(600);
+        gallery.setMinimumHeight(800);
         gallery.setOrientation(LinearLayout.HORIZONTAL);
 //        gallery.setOrientation(LinearLayout.VERTICAL);
-        gallery.setIndent(300, 40, 300, 40);
+        gallery.setIndent(250, 50, 250, 50);
+//        gallery.setIndent(50, 100, 50, 100);
         gallery.setSensibility(0.2f);
 //        gallery.setAutoCycle(true, true);
         // test nested
@@ -163,7 +159,7 @@ public class CycleGalleryActivity extends AbsTesterActivity {
         Button func3 = new Button(this);
         func3.setText("replace");
         Button func4 = new Button(this);
-        func4.setText("reSize +2");
+        func4.setText("-");
         Button func5 = new Button(this);
         func5.setText("space");
         funcContainer.addView(func1);
@@ -201,8 +197,8 @@ public class CycleGalleryActivity extends AbsTesterActivity {
             indicatorView.setCurrentIndex(0);
         });
         func4.setOnClickListener(v -> {
-            int size = gallery.getRecycleItemSize();
-            gallery.setRecycleItemSize(size + 2);
+//            int size = gallery.getRecycleItemSize();
+//            gallery.setRecycleItemSize(size + 2);
         });
         func5.setOnClickListener(v -> {
             gallery.setSpaceBetweenItems(40);
@@ -225,16 +221,16 @@ public class CycleGalleryActivity extends AbsTesterActivity {
         simpleTestBtn.setText("Just test for pager");
         pagerAdapter.add(simpleTestBtn).add(container).notifyDataSetChanged();
 
-        gallery.addOnItemSwitchListener(new SweetCircularView2.OnItemSwitchListener() {
+        gallery.addOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
             @Override
-            public void onItemSelected(SweetCircularView2 v, int dataIndex) {
-//                logout("Listener: notifyOnItemSelected(" + dataIndex + ")");
+            public void onItemSelected(SweetCircularView v, int dataIndex) {
+                logout("Listener: notifyOnItemSelected(" + dataIndex + ")");
                 indicatorView.setCurrentIndex(dataIndex);
             }
 
             @Override
-            public void onItemScrolled(SweetCircularView2 v, int dataIndex, float offset) {
-//                logout("Listener: notifyOnItemScrolled(" + dataIndex + ", " + offset + ")");
+            public void onItemScrolled(SweetCircularView v, int dataIndex, float offset) {
+                logout("Listener: notifyOnItemScrolled(" + dataIndex + ", " + offset + ")");
             }
         });
 

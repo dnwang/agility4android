@@ -6,6 +6,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -30,37 +31,61 @@ public class SweetCircularView extends ViewGroup {
 
     private static final int MOVE_SLOP = 10;
 
-    private static final int DEFAULT_ITEM_SIZE = 3;
+    private static final int DEFAULT_ITEM_SIZE = 7;
 
-    private boolean isClick2Selected = false;
-    private boolean isRecyclable = true;
+    /**
+     * 是否自动循环
+     */
     private boolean isAutoCycle = false;
+    /**
+     * 自动循环方向；true向后/false向前
+     */
     private boolean isAutoCycleToNext = true;
+    /**
+     * 自动循环时间间隔
+     */
     private long intervalOnAutoCycle = 4000;
+    /**
+     * 自动循环滑动耗时
+     */
     private long durationOnAutoScroll = 300;
+    /**
+     * 手动滑动释放之后自动归位耗时
+     */
     private long durationOnTouchRelease = 200;
+    /**
+     * 判断滑过一个视图的敏感度；默认0.5f滑动超过视图一半释放即自动滑过
+     */
     private float sensibility = 0.5f;
+    /**
+     * 布局方向
+     */
     private int orientation = LinearLayout.HORIZONTAL;
-    private ArrayList<OnItemSwitchListener> listeners = new ArrayList<>(2);
-
-    private int spaceBetweenItems;
+    /**
+     * 视图之间的间隔
+     */
+    private int spaceBetweenItems = 0;
+    /**
+     * 中心视图 相对与父控件的间隔；默认0铺满整个父控件
+     */
     private int leftIndent, topIndent, rightIndent, bottomIndent;
 
+    private ArrayList<OnItemSwitchListener> listeners = new ArrayList<>(2);
     private AdapterDataSetObserver dataSetObserver;
     private BaseAdapter adapter;
     private ArrayList<ItemWrapper> items = null;
-    private int currentDataIndex = 0;
-    private int currentItemIndex = 0;
 
-    private Runnable autoCycleRunnable = new Runnable() {
+    /**
+     * 基准位置，在任意试图滑动结束之后，重新排列的位置，
+     * 用centerItemIndex形成对应使用
+     */
+    private Rect[] itemsBounds = null;
+
+    private final Runnable autoCycleRunnable = new Runnable() {
         @Override
         public void run() {
             if (isShown() && adapter != null && adapter.getCount() > 0) {
-                if (isAutoCycleToNext) {
-                    moveNext();
-                } else {
-                    movePrevious();
-                }
+                moveItems(isAutoCycleToNext ? 1 : -1);
             }
             postDelayed(this, intervalOnAutoCycle);
         }
@@ -82,12 +107,7 @@ public class SweetCircularView extends ViewGroup {
     }
 
     private void init() {
-        currentDataIndex = 0;
-        currentItemIndex = 0;
-        items = new ArrayList<>(DEFAULT_ITEM_SIZE);
-        for (int i = 0; i < DEFAULT_ITEM_SIZE; i++) {
-            items.add(new ItemWrapper());
-        }
+        resetItems(DEFAULT_ITEM_SIZE);
     }
 
     @Override
@@ -106,32 +126,35 @@ public class SweetCircularView extends ViewGroup {
         interceptAutoCycle();
     }
 
-    public int getCurrentDataIndex() {
-        return currentDataIndex;
+    public final int getCurrentIndex() {
+        ItemWrapper centerItem = findItem(getRecycleItemSize() / 2);
+        return null != centerItem ? centerItem.dataIndex : -1;
     }
 
-    public int getCurrentItemIndex() {
-        return currentItemIndex;
-    }
-
-    /**
-     * @param dataIndex dataIndex
-     */
-    public void setCurrentDataIndex(int dataIndex) {
+    public final void setCurrentIndex(int dataIndex) {
         if (adapter == null || items.size() == 0 || dataIndex < 0) {
-            Log.i(TAG, "setCurrentDataIndex() params error");
             return;
         }
-        currentDataIndex = dataIndex;
-        currentItemIndex = alignAndRefreshItems(currentDataIndex);
-        layoutItems(currentItemIndex, getLeft(), getTop(), getRight(), getBottom());
-        // notify
-        onItemSelected(currentDataIndex);
+        final int centerIndex = getRecycleItemSize() / 2;
+        ItemWrapper item;
+        //center
+        item = findItem(centerIndex);
+        item.setDataIndex(dataIndex);
+        item.refreshView();
+        // left/top
+        for (int i = 1; i <= centerIndex; i++) {
+            item = findItem(centerIndex - i);
+            item.setDataIndex(cycleDataIndex(dataIndex - i));
+            item.refreshView();
+        }
+        // right/bottom
+        for (int i = 1; i <= centerIndex; i++) {
+            item = findItem(centerIndex + i);
+            item.setDataIndex(cycleDataIndex(dataIndex + i));
+            item.refreshView();
+        }
     }
 
-    /**
-     * @param cycleAdapter cycleAdapter
-     */
     public void setAdapter(BaseAdapter cycleAdapter) {
         if (adapter != null) {
             adapter.unregisterDataSetObserver(dataSetObserver);
@@ -147,9 +170,6 @@ public class SweetCircularView extends ViewGroup {
         return adapter;
     }
 
-    /**
-     * @param sensibility sensibility
-     */
     public void setSensibility(float sensibility) {
         this.sensibility = Math.max(0, Math.min(1.0f, sensibility));
     }
@@ -158,9 +178,6 @@ public class SweetCircularView extends ViewGroup {
         return this.sensibility;
     }
 
-    /**
-     * @param orientation orientation
-     */
     public void setOrientation(int orientation) {
         this.orientation = orientation == LinearLayout.VERTICAL ? orientation : LinearLayout.HORIZONTAL;
         requestLayout();
@@ -170,9 +187,6 @@ public class SweetCircularView extends ViewGroup {
         return orientation;
     }
 
-    /**
-     * @param duration duration
-     */
     public void setDurationOnTouchRelease(long duration) {
         durationOnTouchRelease = Math.max(0, duration);
     }
@@ -181,9 +195,6 @@ public class SweetCircularView extends ViewGroup {
         return durationOnTouchRelease;
     }
 
-    /**
-     * @param duration duration
-     */
     public void setDurationOnAutoScroll(long duration) {
         durationOnAutoScroll = Math.max(0, duration);
     }
@@ -192,9 +203,6 @@ public class SweetCircularView extends ViewGroup {
         return durationOnAutoScroll;
     }
 
-    /**
-     * @param interval duration
-     */
     public void setIntervalOnAutoCycle(long interval) {
         intervalOnAutoCycle = Math.max(0, interval);
     }
@@ -207,10 +215,6 @@ public class SweetCircularView extends ViewGroup {
         return isAutoCycle;
     }
 
-    /**
-     * @param is         enable
-     * @param moveToNext direction
-     */
     public void setAutoCycle(boolean is, boolean moveToNext) {
         isAutoCycle = is;
         isAutoCycleToNext = moveToNext;
@@ -224,28 +228,7 @@ public class SweetCircularView extends ViewGroup {
         }
     }
 
-    /**
-     * @param is is recyclable
-     */
-    public void setRecyclable(boolean is) {
-        isRecyclable = is;
-    }
-
-    public boolean isRecyclable() {
-        return isRecyclable;
-    }
-
-    /**
-     * @param left   the left padding in pixels
-     * @param top    the top padding in pixels
-     * @param right  the right padding in pixels
-     * @param bottom the bottom padding in pixels
-     */
     public void setIndent(int left, int top, int right, int bottom) {
-        if (left == leftIndent && top == topIndent && right == rightIndent && bottom == bottomIndent) {
-            Log.i(TAG, "setIndent() l,t,r,b have not changed");
-            return;
-        }
         leftIndent = left;
         topIndent = top;
         rightIndent = right;
@@ -253,83 +236,54 @@ public class SweetCircularView extends ViewGroup {
         requestLayout();
     }
 
-    public int getLeftIndent() {
-        return leftIndent;
-    }
-
-    public int getTopIndent() {
-        return topIndent;
-    }
-
-    public int getRightIndent() {
-        return rightIndent;
-    }
-
-    public int getBottomIndent() {
-        return bottomIndent;
-    }
-
-    /**
-     * @param space space between items
-     */
     public void setSpaceBetweenItems(int space) {
         spaceBetweenItems = space;
+        requestLayout();
     }
 
     public int getSpaceBetweenItems() {
         return spaceBetweenItems;
     }
 
-    /**
-     * This method will replace click listener on item view.
-     *
-     * @param is
-     */
-    public void setClick2Selected(boolean is) {
-        isClick2Selected = is;
-    }
-
-    /**
-     * @param itemIndex
-     */
-    public final View getView(int itemIndex) {
-        if (itemIndex < 0 || itemIndex >= items.size()) {
-            return null;
-        }
-        return items.get(itemIndex).getView();
-    }
-
-    /**
-     * @param listener listener
-     */
     public final void addOnItemSwitchListener(OnItemSwitchListener listener) {
         if (listener != null) {
             listeners.add(listener);
         }
     }
 
-    /**
-     * @param listener
-     */
     public final void removeOnItemSwitchListener(OnItemSwitchListener listener) {
         if (listener != null) {
             listeners.remove(listener);
         }
     }
 
-    protected void onItemScrolled(int dataIndex, float offset) {
-        if (listeners != null) {
+    protected void notifyOnItemScrolled(float offset) {
+        ItemWrapper centerItem = findItem(getRecycleItemSize() / 2);
+        if (null != listeners && null != centerItem) {
             for (OnItemSwitchListener listener : listeners) {
-                listener.onItemScrolled(this, dataIndex, offset);
+                listener.onItemScrolled(this, centerItem.dataIndex, offset);
             }
         }
     }
 
-    protected void onItemSelected(int dataIndex) {
-        if (listeners != null) {
-            for (OnItemSwitchListener listener : listeners) {
-                listener.onItemSelected(this, dataIndex);
+    /**
+     * 仅用于在回调时去重
+     */
+    private int lastCenterItemDataIndex = -1;
+
+    protected void notifyOnItemSelected() {
+        ItemWrapper centerItem = findItem(getRecycleItemSize() / 2);
+        if (null == centerItem) {
+            return;
+        }
+        int centerDataIndex = centerItem.dataIndex;
+        if (lastCenterItemDataIndex != centerDataIndex) {
+            if (null != listeners) {
+                for (OnItemSwitchListener listener : listeners) {
+                    listener.onItemSelected(this, centerDataIndex);
+                }
             }
+            lastCenterItemDataIndex = centerDataIndex;
         }
     }
 
@@ -344,10 +298,51 @@ public class SweetCircularView extends ViewGroup {
         removeCallbacks(autoCycleRunnable);
     }
 
+    protected final void resetItems(int size) {
+        items = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            items.add(new ItemWrapper(i));
+        }
+    }
+
     /**
-     * @param size 3,5,7,9 ...
+     * 平铺所有子试图，根据中心试图的left，top，right，bottom左右平均分布每个子试图
      */
-    public void setRecycleItemSize(int size) {
+    private void resetItemsBounds(int centerLeft, int centerTop, int centerRight, int centerBottom, int space) {
+        itemsBounds = new Rect[getRecycleItemSize()];
+        final int centerIndex = itemsBounds.length / 2;
+        int left, top, right, bottom;
+        int m;
+        for (int i = 0; i < itemsBounds.length; i++) {
+            Rect rect = new Rect();
+            m = centerIndex - i;
+            // 0,1,2, center, 4,5,6
+            if (orientation == LinearLayout.VERTICAL) {
+                left = centerLeft;
+                top = centerTop - m * (centerBottom - centerTop + space);
+                right = centerRight;
+                bottom = top + (centerBottom - centerTop);
+            } else { // LinearLayout.HORIZONTAL
+                left = centerLeft - m * (centerRight - centerLeft + space);
+                top = centerTop;
+                right = left + (centerRight - centerLeft);
+                bottom = centerBottom;
+            }
+            rect.set(left, top, right, bottom);
+            itemsBounds[i] = rect;
+        }
+    }
+
+    private int getItemMeasuredWidth() {
+        return itemsBounds[0].width();
+    }
+
+    private int getItemMeasuredHeight() {
+        return itemsBounds[0].height();
+    }
+
+    @Deprecated
+    public final void setRecycleItemSize(int size) {
         if (size < 3 || size % 2 == 0) {
             throw new IllegalStateException("setRecycleItemSize(): the size should be more than 3 of the odd number (3,5,7,9 ...) !");
         }
@@ -355,22 +350,40 @@ public class SweetCircularView extends ViewGroup {
             item.recycle();
         }
         items.clear();
-        for (int itemIndex = 0; itemIndex < size; itemIndex++) {
-            items.add(new ItemWrapper());
+        for (int i = 0; i < size; i++) {
+            items.add(new ItemWrapper(i));
         }
-        setCurrentDataIndex(0);
+        setCurrentIndex(0);
     }
 
-    public final int getRecycleItemSize() {
+    protected final int getRecycleItemSize() {
         return items.size();
+    }
+
+    protected final ItemWrapper findItem(int itemIndex) {
+        for (int i = 0; i < items.size(); i++) {
+            ItemWrapper item = items.get(i);
+            if (item.itemIndex == itemIndex) {
+                return item;
+            }
+        }
+        return null;
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(getMeasuredWidth() - leftIndent - rightIndent, MeasureSpec.EXACTLY);
-        int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(getMeasuredHeight() - topIndent - bottomIndent, MeasureSpec.EXACTLY);
-        int size = getChildCount();
+        // 初始化基准位置
+        resetItemsBounds(
+                getLeft() + leftIndent,
+                getTop() + topIndent,
+                (getRight() - getLeft()) - rightIndent,
+                (getBottom() - getTop()) - bottomIndent,
+                spaceBetweenItems);
+
+        int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(getItemMeasuredWidth(), MeasureSpec.EXACTLY);
+        int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(getItemMeasuredHeight(), MeasureSpec.EXACTLY);
+        final int size = getChildCount();
         for (int i = 0; i < size; i++) {
             getChildAt(i).measure(childWidthMeasureSpec, childHeightMeasureSpec);
         }
@@ -378,117 +391,14 @@ public class SweetCircularView extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        layoutItems(currentItemIndex, l, t, r, b);
-    }
-
-    public final int findItemIndex(int dataIndex) {
-        final int sizeOfItem = getRecycleItemSize();
-        for (int i = 0; i < sizeOfItem; i++) {
-            ItemWrapper item = items.get(i);
-            if (item.dataIndex == dataIndex) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private int alignAndRefreshItems(final int centerDataIndex) {
-        final int sizeOfItem = getRecycleItemSize();
-        if (sizeOfItem == 0) {
-            Log.i(TAG, "alignItemDataIndex() have no move item");
-            return -1;
-        }
-        final int sizeOfSideItem = sizeOfItem / 2; // 3,5,7,9 ...
-        final int centerItemIndex = cycleItemIndex(findItemIndex(centerDataIndex));
-
-        ItemWrapper item;
-        //center
-        item = items.get(centerItemIndex);
-        item.setDataIndex(centerDataIndex);
-        item.refreshView();
-        // left/top
-        for (int i = 1; i <= sizeOfSideItem; i++) {
-            item = items.get(cycleItemIndex(centerItemIndex - i));
-            item.setDataIndex(cycleDataIndex(centerDataIndex - i));
-            item.refreshView();
-        }
-        // right/bottom
-        for (int i = 1; i <= sizeOfSideItem; i++) {
-            item = items.get(cycleItemIndex(centerItemIndex + i));
-            item.setDataIndex(cycleDataIndex(centerDataIndex + i));
-            item.refreshView();
-        }
-        return centerItemIndex;
-    }
-
-    private void layoutItems(final int centerItemIndex, int l, int t, int r, int b) {
-        if (centerItemIndex < 0) {
-            Log.i(TAG, "layoutChildByDataIndex() params error");
-            return;
-        }
-        final int sizeOfItem = getRecycleItemSize();
-        if (sizeOfItem == 0) {
-            Log.i(TAG, "layoutChildByDataIndex() have no move item");
-            return;
-        }
-        // reset offset
-        for (ItemWrapper item : items) {
-            item.moveX(0.0f);
-            item.moveY(0.0f);
-        }
-
-        final int sizeOfSideItem = sizeOfItem / 2; // 3,5,7,9 ...
-
-        final int itemWidth = (r - rightIndent) - (l + leftIndent);
-        final int itemHeight = (b - bottomIndent) - (t + topIndent);
-        final int centerItemLeft = 0 + leftIndent;
-        final int centerItemTop = 0 + topIndent;
-        final int centerItemRight = (r - l) - rightIndent;
-        final int centerItemBottom = (b - t) - bottomIndent;
-
-        ItemWrapper item;
-        int left, top, right, bottom;
-        //center
-        item = items.get(centerItemIndex);
-        if (item.getView() != null) {
-            item.getView().layout(centerItemLeft, centerItemTop, centerItemRight, centerItemBottom);
-            item.setItemOffset(0);// center
-        }
-        // left/top
-        for (int i = 1; i <= sizeOfSideItem; i++) {
-            item = items.get(cycleItemIndex(centerItemIndex - i));
-            if (item.getView() != null) {
-                if (orientation == LinearLayout.HORIZONTAL) {
-                    // left
-                    left = centerItemLeft + (-i) * (itemWidth + spaceBetweenItems);
-                    item.getView().layout(left, centerItemTop, left + itemWidth, centerItemBottom);
-                } else if (orientation == LinearLayout.VERTICAL) {
-                    // top
-                    top = centerItemTop + (-i) * (itemHeight + spaceBetweenItems);
-                    item.getView().layout(centerItemLeft, top, centerItemRight, top + itemHeight);
-                }
-                item.setItemOffset(-i);
-            }
-        }
-        // right/bottom
-        for (int i = 1; i <= sizeOfSideItem; i++) {
-            item = items.get(cycleItemIndex(centerItemIndex + i));
-            if (item.getView() != null) {
-                if (orientation == LinearLayout.HORIZONTAL) {
-                    // right
-                    right = centerItemRight + (i) * (itemWidth + spaceBetweenItems);
-                    item.getView().layout(right - itemWidth, centerItemTop, right, centerItemBottom);
-                } else if (orientation == LinearLayout.VERTICAL) {
-                    // bottom
-                    bottom = centerItemBottom + (i) * (itemHeight + spaceBetweenItems);
-                    item.getView().layout(centerItemLeft, bottom - itemHeight, centerItemRight, bottom);
-                }
-                item.setItemOffset(i);
-            }
+        int size = Math.min(itemsBounds.length, items.size());
+        for (int i = 0; i < size; i++) {
+            Rect bounds = itemsBounds[i];
+            findItem(i).layout(bounds);
         }
     }
 
-    private PointF lastPoint = new PointF();
+    private final PointF lastPoint = new PointF();
     private boolean isMoving = false;
     private boolean needIntercept = false;
 
@@ -563,11 +473,9 @@ public class SweetCircularView extends ViewGroup {
                     float absXDiff = Math.abs(xDiff);
                     float absYDiff = Math.abs(yDiff);
                     if (orientation == LinearLayout.HORIZONTAL && absXDiff > absYDiff) {
-                        // x
-                        moveX(xDiff);
+                        move((int) -xDiff);
                     } else if (orientation == LinearLayout.VERTICAL && absYDiff > absXDiff) {
-                        // y
-                        moveY(yDiff);
+                        move((int) -yDiff);
                     }
                 }
                 lastPoint.set(event.getX(), event.getY());
@@ -576,34 +484,30 @@ public class SweetCircularView extends ViewGroup {
             case MotionEvent.ACTION_CANCEL:
                 // touch release
                 if (isMoving) {
-                    if (getRecycleItemSize() == 0 || getChildCount() == 0) {
-                        isMoving = false;
-                        break;
-                    }
-                    if (currentItemIndex < 0) {
-                        isMoving = false;
-                        break;
-                    }
-                    ItemWrapper item = items.get(currentItemIndex);
-                    int changeIndex = 0;
-                    float offset = 0;
-                    float maxOffset = 0;
-                    if (orientation == LinearLayout.HORIZONTAL) {
-                        offset = item.getOffsetX();
-                        maxOffset = item.getView().getMeasuredWidth() + spaceBetweenItems;
-                    } else if (orientation == LinearLayout.VERTICAL) {
-                        offset = item.getOffsetY();
-                        maxOffset = item.getView().getMeasuredHeight() + spaceBetweenItems;
-                    }
-                    if (offset < -maxOffset * sensibility) {
-                        changeIndex = 1;
-                    } else if (offset > maxOffset * sensibility) {
-                        changeIndex = -1;
-                    }
-                    if (changeIndex == 0) {
-                        autoMove(-offset, durationOnTouchRelease, changeIndex, null);
+                    int direction = 0;
+                    final int offset, maxOffset;
+                    if (orientation == LinearLayout.VERTICAL) {
+                        offset = getScrollY();
+                        maxOffset = getItemMeasuredHeight() + spaceBetweenItems;
                     } else {
-                        autoMove((maxOffset - Math.abs(offset)) * -changeIndex, durationOnTouchRelease, changeIndex, null);
+                        offset = getScrollX();
+                        maxOffset = getItemMeasuredWidth() + spaceBetweenItems;
+                    }
+
+                    if (offset < -maxOffset * sensibility) {
+                        direction = -1;
+                    } else if (offset > maxOffset * sensibility) {
+                        direction = 1;
+                    }
+                    if (direction == 0) {
+                        autoPacking();
+                    } else {
+                        autoMove((maxOffset - Math.abs(offset)) * direction, durationOnTouchRelease, new Runnable() {
+                            @Override
+                            public void run() {
+                                autoPacking();
+                            }
+                        });
                     }
                 }
                 break;
@@ -613,130 +517,148 @@ public class SweetCircularView extends ViewGroup {
         return true;
     }
 
-    private void moveX(float offset) {
+    protected final void move(final int offset) {
         isMoving = true;
-        for (ItemWrapper item : items) {
-            item.moveX(item.getOffsetX() + offset);
-        }
-        onItemScrolled(currentDataIndex, offset);
-    }
 
-    private void moveY(float offset) {
-        isMoving = true;
-        for (ItemWrapper item : items) {
-            item.moveY(item.getOffsetY() + offset);
+        int scrolled, maxOffset;
+        if (orientation == LinearLayout.VERTICAL) {
+            scrollBy(0, offset);
+            scrolled = getScrollY();
+            maxOffset = getItemMeasuredHeight() + spaceBetweenItems;
+        } else { // HORIZONTAL
+            scrollBy(offset, 0);
+            scrolled = getScrollX();
+            maxOffset = getItemMeasuredWidth() + spaceBetweenItems;
         }
-        onItemScrolled(currentDataIndex, offset);
+
+        notifyOnItemScrolled(offset);
+        // 判断视图切换
+        Log.d(TAG, "move: scrolled: " + scrolled + ", maxOffset: " + maxOffset);
+        if (Math.abs(scrolled) >= maxOffset) {
+            ItemWrapper item;
+            if (scrolled > 0) {
+                for (int i = 0; i < items.size(); i++) {
+                    item = findItem(i);
+                    item.itemIndex -= 1;
+                }
+            } else if (scrolled < 0) {
+                // 从大到小，避免findItem找到重复的index
+                for (int i = items.size() - 1; i >= 0; i--) {
+                    item = findItem(i);
+                    item.itemIndex += 1;
+                }
+            }
+            // 要先设置，在应用，否则由于是循环的下标findItem()会错乱
+            for (ItemWrapper tmp : items) {
+                tmp.itemIndex = cycleItemIndex(tmp.itemIndex);
+            }
+            // 重置滑动偏移
+            scrollTo(0, 0);
+            Log.e(TAG, "move: 归 0,0");
+            // 根据新的中心视图位置，重新设置视图的数据索引，并且更新视图
+            setCurrentIndex(findItem(getRecycleItemSize() / 2).dataIndex);
+        }
     }
 
     private ValueAnimator autoScroller = null;
 
-    private void autoMove(final float offset, final long duration, final int changeIndex, final Runnable callback) {
+    protected final void autoMove(final int offset, final long duration, final Runnable callback) {
         if (autoScroller != null && autoScroller.isStarted()) {
             autoScroller.cancel();
             autoScroller = null;
         }
-        if (offset == 0) {
-            return;
-        }
-        autoScroller = ValueAnimator.ofFloat(0, offset);
-        autoScroller.setDuration(duration);
-        autoScroller.setInterpolator(new DecelerateInterpolator());
-        autoScroller.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            private float lastValue;
+        if (Math.abs(offset) < 10) {
+            // 滑动距离过小，不需要动画
+            if (offset != 0) {
+                move(offset);
+            }
+            isMoving = false;
+            resumeAutoCycle();
+            if (null != callback) {
+                callback.run();
+            }
+            Log.e(TAG, "autoMove: 无动画 offset: " + offset);
+        } else {
+            Log.e(TAG, "autoMove: 创建动画 offset: " + offset);
+            autoScroller = ValueAnimator.ofInt(0, offset);
+            autoScroller.setDuration(duration);
+            autoScroller.setInterpolator(new DecelerateInterpolator());
+            autoScroller.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                private int lastValue;
 
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float currentValue = (Float) animation.getAnimatedValue();
-                if (orientation == LinearLayout.HORIZONTAL) {
-                    moveX(currentValue - lastValue);
-                } else if (orientation == LinearLayout.VERTICAL) {
-                    moveY(currentValue - lastValue);
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    int currentValue = (int) animation.getAnimatedValue();
+                    move(currentValue - lastValue);
+                    lastValue = currentValue;
                 }
-                lastValue = currentValue;
-            }
-        });
-        autoScroller.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                interceptAutoCycle();
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                isMoving = false;
-                resumeAutoCycle();
-                setCurrentDataIndex(cycleDataIndex(currentDataIndex + changeIndex));
-                if (null != callback) {
-                    callback.run();
+            });
+            autoScroller.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    isMoving = true;
+                    interceptAutoCycle();
                 }
-            }
-        });
-        autoScroller.start();
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    isMoving = false;
+                    resumeAutoCycle();
+                    if (null != callback) {
+                        callback.run();
+                    }
+                }
+            });
+            autoScroller.start();
+        }
     }
 
-    /**
-     * Auto scroll to next
-     */
-    public void moveNext() {
-        moveItems(1);
-    }
-
-    /**
-     * Auto scroll to previous
-     */
-    public void movePrevious() {
-        moveItems(-1);
-    }
-
-    /**
-     * <0 Previous;
-     * >0 Next
-     */
-    public void moveItems(final int changeIndex) {
-        if (isMoving) {
-            return;
+    protected final void autoPacking() {
+        int offset, maxOffset;
+        if (orientation == LinearLayout.VERTICAL) {
+            offset = getScrollY();
+            maxOffset = getItemMeasuredHeight() + spaceBetweenItems;
+        } else {
+            offset = getScrollX();
+            maxOffset = getItemMeasuredWidth() + spaceBetweenItems;
         }
-        if (0 == changeIndex) {
-            Log.i(TAG, "moveItems() no need move, because 'changeIndex' = 0");
-            return;
+        final int absOffset = Math.abs(offset);
+        if (absOffset >= maxOffset / 2) {
+            // 已经越过视图一半，此时不归位，同向继续滑动到下一个视图
+            offset = (maxOffset - absOffset) * (offset / absOffset);
+            Log.e(TAG, "autoPacking: 停靠 下一个 offset: " + offset);
+        } else {
+            // 未越过一半，归位
+            offset = -offset;
+            Log.e(TAG, "autoPacking: 停靠 归位   offset: " + offset);
         }
-        if (items.size() == 0) {
-            Log.i(TAG, "moveItems() have not move item");
-            return;
-        }
-        if (currentItemIndex < 0) {
-            Log.i(TAG, "moveItems() can not find centerDataIndex");
-            return;
-        }
-        View centerView = items.get(currentItemIndex).getView();
-        if (centerView == null) {
-            Log.i(TAG, "moveItems() can not find centerView");
-            return;
-        }
-        int offset = 0;
-        if (orientation == LinearLayout.HORIZONTAL) {
-            offset = centerView.getWidth() + spaceBetweenItems;
-        } else if (orientation == LinearLayout.VERTICAL) {
-            offset = centerView.getHeight() + spaceBetweenItems;
-        }
-
-        final int direction = changeIndex > 0 ? -offset : offset;
-        final Runnable callback = new Runnable() {
-            int temp = changeIndex;
-
+        autoMove(offset, durationOnTouchRelease, new Runnable() {
             @Override
             public void run() {
-                temp = (temp > 0) ? temp - 1 : temp + 1;
-                if (temp != 0) {
-                    autoMove(direction, durationOnAutoScroll, (temp > 0 ? 1 : -1), this);
-                }
+                notifyOnItemSelected();
             }
-        };
-        autoMove(direction, durationOnAutoScroll, (changeIndex > 0 ? 1 : -1), callback);
+        });
     }
 
-    public final int cycleDataIndex(int dataIndex) {
+    /**
+     * < 0 向前
+     * > 0 向后
+     */
+    public final void moveItems(final int changed) {
+        if (isMoving || 0 == changed) {
+            return;
+        }
+        int offset = (getItemMeasuredWidth() + spaceBetweenItems) * changed;
+        Log.e(TAG, "moveItems: 主动: offset:" + (offset));
+        autoMove(offset, durationOnAutoScroll, new Runnable() {
+            @Override
+            public void run() {
+                autoPacking();
+            }
+        });
+    }
+
+    protected final int cycleDataIndex(int dataIndex) {
         if (adapter == null) {
             return -1;
         }
@@ -752,7 +674,7 @@ public class SweetCircularView extends ViewGroup {
         return dataIndex;
     }
 
-    public final int cycleItemIndex(int itemIndex) {
+    protected final int cycleItemIndex(int itemIndex) {
         int count = items.size();
         if (count < 2) {
             return 0;
@@ -771,13 +693,13 @@ public class SweetCircularView extends ViewGroup {
             for (ItemWrapper item : items) {
                 item.recycle();
             }
+            setCurrentIndex(0);
             requestLayout();
-            setCurrentDataIndex(0);
         }
 
         @Override
         public void onInvalidated() {
-            invalidate();
+            onChanged();
         }
     }
 
@@ -790,57 +712,28 @@ public class SweetCircularView extends ViewGroup {
         private static final int USING = 0x01;
 
         private int state;
+
+        /**
+         * 视图索引
+         */
+        private int itemIndex;
+        /**
+         * 数据索引
+         */
         private int dataIndex;
         private View view;
 
-        /**
-         * >0; Right/Bottom
-         * <0; Left/Top
-         * =0; Center
-         */
-        private int itemOffset;
-
-        private final OnClickListener click2SelectedListener = new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (0 != itemOffset) {
-                    moveItems(itemOffset);
-                }
-            }
-        };
-
-        ItemWrapper() {
+        ItemWrapper(int itemIndex) {
             this.state = NONE;
+            this.itemIndex = itemIndex;
             this.dataIndex = -1;
             this.view = null;
         }
 
-        void moveX(float offset) {
-            if (view != null && getOffsetX() != offset) {
-                view.setTranslationX(offset);
+        void layout(Rect bounds) {
+            if (null != view) {
+                view.layout(bounds.left, bounds.top, bounds.right, bounds.bottom);
             }
-        }
-
-        void moveY(float offset) {
-            if (view != null && getOffsetY() != offset) {
-                view.setTranslationY(offset);
-            }
-        }
-
-        float getOffsetX() {
-            return view == null ? 0.0f : view.getTranslationX();
-        }
-
-        float getOffsetY() {
-            return view == null ? 0.0f : view.getTranslationY();
-        }
-
-        View getView() {
-            return view;
-        }
-
-        int getDataIndex() {
-            return dataIndex;
         }
 
         void setDataIndex(int index) {
@@ -848,15 +741,6 @@ public class SweetCircularView extends ViewGroup {
                 state = NONE;
             }
             this.dataIndex = index;
-        }
-
-        /**
-         * >0; Right/Bottom
-         * <0; Left/Top
-         * =0; Center
-         */
-        void setItemOffset(int offset) {
-            this.itemOffset = offset;
         }
 
         void refreshView() {
@@ -876,10 +760,6 @@ public class SweetCircularView extends ViewGroup {
                     }
                 }
                 view = convertView;
-                if (isClick2Selected && null != view) {
-                    // replace listener
-                    view.setOnClickListener(click2SelectedListener);
-                }
             }
         }
 

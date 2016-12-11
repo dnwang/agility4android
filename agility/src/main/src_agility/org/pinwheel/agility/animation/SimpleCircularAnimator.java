@@ -2,9 +2,9 @@ package org.pinwheel.agility.animation;
 
 import android.view.View;
 
-import org.pinwheel.agility.view.SweetCircularView;
+import org.pinwheel.agility.view.SweetCircularView2;
 
-public class SimpleCircularAnimator implements SweetCircularView.OnItemSwitchListener {
+public class SimpleCircularAnimator implements SweetCircularView2.OnItemSwitchListener {
 
     private float scale = 0.8f;
     private float alpha = 0.8f;
@@ -25,7 +25,7 @@ public class SimpleCircularAnimator implements SweetCircularView.OnItemSwitchLis
     }
 
     @Override
-    public void onItemSelected(SweetCircularView v, int dataIndex) {
+    public void onItemSelected(SweetCircularView2 v, int dataIndex) {
         allOffset = 0;
         final int currentItemIndex = v.getCurrentItemIndex();
         final int sizeOfSideItem = v.getRecycleItemSize() / 2;
@@ -51,7 +51,7 @@ public class SimpleCircularAnimator implements SweetCircularView.OnItemSwitchLis
     }
 
     @Override
-    public void onItemScrolled(SweetCircularView v, int dataIndex, float offset) {
+    public void onItemScrolled(SweetCircularView2 v, int dataIndex, float offset) {
         final float percent = getPercent(v.getMeasuredWidth() * 0.5f, offset);
 
         // center

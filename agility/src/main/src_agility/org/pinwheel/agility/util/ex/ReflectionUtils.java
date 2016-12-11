@@ -1,4 +1,4 @@
-package org.pinwheel.agility.view;
+package org.pinwheel.agility.util.ex;
 
 
 import java.lang.reflect.Constructor;
@@ -12,7 +12,11 @@ import java.lang.reflect.Method;
  * @author sulei Email:leisu@iflytek.com
  * @version 2015年6月2日 上午11:50:34
  */
-public final class Reflection {
+public final class ReflectionUtils {
+
+    private ReflectionUtils() {
+        throw new AssertionError();
+    }
 
     /**
      * 获取对象中的成员属性
@@ -221,7 +225,7 @@ public final class Reflection {
     /**
      * 执行类的静态方法
      *
-     * @param owner       需反射的对象
+     * @param className   需反射的对象
      * @param methodName  方法名
      * @param paramsClass 参数类型
      * @param params      参数
@@ -269,7 +273,7 @@ public final class Reflection {
     /**
      * 创建实例对象
      *
-     * @param methodName  构造参数名
+     * @param className   构造参数名
      * @param paramsClass 参数类型
      * @param params      参数
      * @return
