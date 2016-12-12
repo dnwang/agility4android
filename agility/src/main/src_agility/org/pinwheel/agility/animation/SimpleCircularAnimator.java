@@ -1,10 +1,13 @@
 package org.pinwheel.agility.animation;
 
+import android.util.Log;
 import android.view.View;
 
-import org.pinwheel.agility.view.SweetCircularView2;
+import org.pinwheel.agility.view.SweetCircularView;
 
-public class SimpleCircularAnimator implements SweetCircularView2.OnItemSwitchListener {
+public class SimpleCircularAnimator implements SweetCircularView.OnItemSwitchListener {
+
+    private static final String TAG = SimpleCircularAnimator.class.getSimpleName();
 
     private float scale = 0.8f;
     private float alpha = 0.8f;
@@ -25,11 +28,10 @@ public class SimpleCircularAnimator implements SweetCircularView2.OnItemSwitchLi
     }
 
     @Override
-    public void onItemSelected(SweetCircularView2 v, int dataIndex) {
+    public void onItemSelected(SweetCircularView v, int dataIndex) {
         allOffset = 0;
         final int currentItemIndex = v.getCurrentItemIndex();
         final int sizeOfSideItem = v.getRecycleItemSize() / 2;
-
         View item;
         // center
         item = v.getView(currentItemIndex);
@@ -50,12 +52,19 @@ public class SimpleCircularAnimator implements SweetCircularView2.OnItemSwitchLi
         }
     }
 
+    private int lastDataIndex;
+
     @Override
-    public void onItemScrolled(SweetCircularView2 v, int dataIndex, float offset) {
-        final float percent = getPercent(v.getMeasuredWidth() * 0.5f, offset);
+    public void onItemScrolled(SweetCircularView v, int dataIndex, float offset) {
+        if (dataIndex != lastDataIndex) {
+            allOffset = 0;
+        }
+        lastDataIndex = dataIndex;
+        final float percent = getPercent((v.getMeasuredWidth() - v.getLeftIndent() - v.getRightIndent()) * 0.5f, offset);
 
         // center
         final int currentItemIndex = v.getCurrentItemIndex();
+        Log.e(TAG, "onItemScrolled: percent:" + percent + ", currentItemIndex: " + currentItemIndex);
         View item;
         float scale;
         float alpha;
@@ -70,7 +79,7 @@ public class SimpleCircularAnimator implements SweetCircularView2.OnItemSwitchLi
         }
 
         float p = Math.abs(percent);
-        int itemIndex = percent > 0 ? currentItemIndex - 1 : currentItemIndex + 1;
+        int itemIndex = percent > 0 ? currentItemIndex + 1 : currentItemIndex - 1;
         item = v.getView(v.cycleItemIndex(itemIndex));
         if (item != null) {
             scale = this.scale + ((1 - this.scale) * p);

@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
+import org.pinwheel.agility.animation.SimpleCircularAnimator;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.view.SweetCircularView;
 import org.pinwheel.agility.view.SweetIndicatorView;
@@ -79,11 +80,16 @@ public class CycleGalleryActivity extends AbsTesterActivity {
         public View getView(final int position, View convertView, ViewGroup parent) {
             logout("Adapter: getView() position:" + position);
             if (convertView == null) {
-                convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_item, parent, false);
+//                convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_item, parent, false);
+
+                convertView = new ImageView(parent.getContext());
+
             }
-            ImageView image = BaseUtils.getViewByHolder(convertView, R.id.image);
-            TextView txt = BaseUtils.getViewByHolder(convertView, R.id.text);
-            txt.setText(String.valueOf(position));
+            ImageView image = (ImageView) convertView;
+
+//            ImageView image = BaseUtils.getViewByHolder(convertView, R.id.image);
+//            TextView txt = BaseUtils.getViewByHolder(convertView, R.id.text);
+//            txt.setText(String.valueOf(position));
             ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader(image, urls[position % urls.length]);
             convertView.setOnClickListener(v -> Toast.makeText(CycleGalleryActivity.this, position + "", Toast.LENGTH_SHORT).show());
 //            convertView.setOnClickListener(v -> gallery.moveItems(position - gallery.getCurrentIndex()));
@@ -102,7 +108,7 @@ public class CycleGalleryActivity extends AbsTesterActivity {
 
         gallery = new SweetCircularView(this);
         gallery.setAdapter(adapter);
-//        gallery.addOnItemSwitchListener(new SimpleCircularAnimator());
+        gallery.addOnItemSwitchListener(new SimpleCircularAnimator());
         gallery.setMinimumHeight(800);
         gallery.setOrientation(LinearLayout.HORIZONTAL);
 //        gallery.setOrientation(LinearLayout.VERTICAL);
