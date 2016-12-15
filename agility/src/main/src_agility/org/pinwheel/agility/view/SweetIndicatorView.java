@@ -20,7 +20,7 @@ import org.pinwheel.agility.util.UIUtils;
  *
  * @author dnwang
  */
-public class SweetIndicatorView extends View {
+public class SweetIndicatorView extends View implements IIndicator{
 
     private static final int FOREGROUND = 0x01;
     private static final int BACKGROUND = 0x00;
@@ -61,20 +61,24 @@ public class SweetIndicatorView extends View {
         setShadowLayer(3, 0, 0, Color.BLACK);
     }
 
+    @Override
     public int getPointerSize() {
         return pointerSize;
     }
 
+    @Override
     public void setPointerSize(int size) {
         pointerSize = Math.max(0, size);
         requestLayout();
         invalidate();
     }
 
+    @Override
     public int getCurrentIndex() {
         return currentIndex;
     }
 
+    @Override
     public void setCurrentIndex(int index) {
         currentIndex = index;
         invalidate();

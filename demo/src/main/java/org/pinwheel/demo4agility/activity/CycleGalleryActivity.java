@@ -17,19 +17,16 @@ import android.widget.Toast;
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.animation.SimpleCircularAnimator;
-import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.view.SweetCircularView;
 import org.pinwheel.agility.view.SweetIndicatorView;
-import org.pinwheel.agility.view.SweetProgress;
 import org.pinwheel.agility.view.drag.DragListView;
-import org.pinwheel.demo4agility.R;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
 
 
 public class CycleGalleryActivity extends AbsTesterActivity {
     private static final String TAG = CycleGalleryActivity.class.getSimpleName();
 
-    private final static String[] urls = {
+    private final static String[] URLS = {
             "http://fujian.86516.com/forum/201201/05/1442483og4p90y34494azq.jpg",
             "http://img4.duitang.com/uploads/item/201510/01/20151001133614_wLVtH.jpeg",
             "http://g.hiphotos.baidu.com/zhidao/pic/item/d1a20cf431adcbefe8b998a6aeaf2edda2cc9f85.jpg",
@@ -75,25 +72,17 @@ public class CycleGalleryActivity extends AbsTesterActivity {
 
     private SweetCircularView gallery;
 
-    private SimpleArrayAdapter adapter = new SimpleArrayAdapter<Integer>() {
+    private final SimpleArrayAdapter<Object> adapter = new SimpleArrayAdapter<Object>() {
         @Override
-        public View getView(final int position, View convertView, ViewGroup parent) {
-            logout("Adapter: getView() position:" + position);
-            if (convertView == null) {
-//                convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_item, parent, false);
-
-                convertView = new ImageView(parent.getContext());
-
+        public View getView(int i, View view, ViewGroup parent) {
+            if (view == null) {
+                ImageView imageView = new ImageView(parent.getContext());
+                imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+                view = imageView;
             }
-            ImageView image = (ImageView) convertView;
-
-//            ImageView image = BaseUtils.getViewByHolder(convertView, R.id.image);
-//            TextView txt = BaseUtils.getViewByHolder(convertView, R.id.text);
-//            txt.setText(String.valueOf(position));
-            ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader(image, urls[position % urls.length]);
-            convertView.setOnClickListener(v -> Toast.makeText(CycleGalleryActivity.this, position + "", Toast.LENGTH_SHORT).show());
-//            convertView.setOnClickListener(v -> gallery.moveItems(position - gallery.getCurrentIndex()));
-            return convertView;
+            ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader((ImageView) view, URLS[i % URLS.length]);
+            view.setOnClickListener(v -> Toast.makeText(CycleGalleryActivity.this, i + "", Toast.LENGTH_SHORT).show());
+            return view;
         }
     };
 
@@ -104,143 +93,69 @@ public class CycleGalleryActivity extends AbsTesterActivity {
 
     @Override
     protected View getContentView() {
-        final FrameLayout container = new FrameLayout(this);
-
         gallery = new SweetCircularView(this);
-        gallery.setAdapter(adapter);
-        gallery.addOnItemSwitchListener(new SimpleCircularAnimator());
-        gallery.setMinimumHeight(800);
-        gallery.setOrientation(LinearLayout.HORIZONTAL);
-//        gallery.setOrientation(LinearLayout.VERTICAL);
-        gallery.setIndent(250, 50, 250, 50);
-//        gallery.setIndent(50, 100, 50, 100);
-        gallery.setSensibility(0.2f);
-//        gallery.setAutoCycle(true, true);
-        // test nested
-        LinearLayout.LayoutParams gParams = new LinearLayout.LayoutParams(-1, -1);
-        gParams.setMargins(0, 60, 0, 0);
-        LinearLayout c1 = new LinearLayout(this);
-        LinearLayout c2 = new LinearLayout(this);
-        c2.addView(c1);
-        c1.addView(gallery, gParams);
-        ListView listView = new DragListView(this);
-        listView.addHeaderView(c2);
-
-        SimpleArrayAdapter dataAdapter = new SimpleArrayAdapter<Integer>() {
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                if (convertView == null) {
-                    convertView = new SweetProgress(parent.getContext());
-                }
-                return convertView;
-            }
-        };
-        for (int i = 0; i < 20; i++) {
-            dataAdapter.addItem(i);
-        }
-        listView.setAdapter(dataAdapter);
-        container.addView(listView);
-
-        FrameLayout.LayoutParams left = new FrameLayout.LayoutParams(-2, -2, Gravity.LEFT | Gravity.CENTER_VERTICAL);
-        Button leftBtn = new Button(this);
-        leftBtn.setText("<");
-        container.addView(leftBtn, left);
-
-        FrameLayout.LayoutParams right = new FrameLayout.LayoutParams(-2, -2, Gravity.RIGHT | Gravity.CENTER_VERTICAL);
-        Button rightBtn = new Button(this);
-        rightBtn.setText(">");
-        container.addView(rightBtn, right);
-
-        FrameLayout.LayoutParams indicator = new FrameLayout.LayoutParams(-2, -2, Gravity.CENTER);
-        final SweetIndicatorView indicatorView = new SweetIndicatorView(this);
-        container.addView(indicatorView, indicator);
-
-        HorizontalScrollView scrollView = new HorizontalScrollView(this);
-        LinearLayout funcContainer = new LinearLayout(this);
+        initGallery(gallery);
+        final LinearLayout funcContainer = new LinearLayout(this);
+        initTestFunctionGroup(funcContainer);
         funcContainer.setOrientation(LinearLayout.HORIZONTAL);
-        Button func1 = new Button(this);
-        func1.setText("add");
-        Button func2 = new Button(this);
-        func2.setText("remove");
-        Button func3 = new Button(this);
-        func3.setText("replace");
-        Button func4 = new Button(this);
-        func4.setText("-");
-        Button func5 = new Button(this);
-        func5.setText("space");
-        funcContainer.addView(func1);
-        funcContainer.addView(func2);
-        funcContainer.addView(func3);
-        funcContainer.addView(func4);
-        funcContainer.addView(func5);
+        final HorizontalScrollView scrollView = new HorizontalScrollView(this);
         scrollView.addView(funcContainer);
-        container.addView(scrollView, new FrameLayout.LayoutParams(-1, -2));
-
-        func1.setOnClickListener(v -> {
-            adapter.addItem(android.R.color.holo_red_dark);
-            adapter.addItem(android.R.color.holo_orange_dark);
-            adapter.addItem(android.R.color.holo_blue_dark);
-            adapter.addItem(android.R.color.holo_green_dark);
-            adapter.notifyDataSetChanged();
-
-            indicatorView.setPointerSize(adapter.getCount());
-            indicatorView.setCurrentIndex(0);
-        });
-        func2.setOnClickListener(v -> {
-            adapter.removeAll();
-            adapter.notifyDataSetChanged();
-
-            indicatorView.setPointerSize(adapter.getCount());
-            indicatorView.setCurrentIndex(0);
-        });
-        func3.setOnClickListener(v -> {
-            adapter.removeAll();
-            adapter.addItem(android.R.color.darker_gray);
-            adapter.addItem(android.R.color.holo_purple);
-            adapter.notifyDataSetChanged();
-
-            indicatorView.setPointerSize(adapter.getCount());
-            indicatorView.setCurrentIndex(0);
-        });
-        func4.setOnClickListener(v -> {
-//            int size = gallery.getRecycleItemSize();
-//            gallery.setRecycleItemSize(size + 2);
-        });
-        func5.setOnClickListener(v -> {
-            gallery.setSpaceBetweenItems(40);
-        });
-        leftBtn.setOnClickListener(v -> {
-//            gallery.moveItems(-1);
-            gallery.moveItems(-3);
-        });
-        rightBtn.setOnClickListener(v -> {
-//            gallery.moveItems(1);
-            gallery.moveItems(3);
-        });
-
-        // create pager warapper
+        final ListView list = new DragListView(this);
+        list.setAdapter(new SimpleArrayAdapter<Object>() {
+            @Override
+            public View getView(int i, View view, ViewGroup parent) {
+                if (null == view) {
+                    view = LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, null);
+                }
+                ((TextView) view).setText("测试竖向手势冲突");
+                return view;
+            }
+        }.addAll(new Object[10]));
+        final SweetIndicatorView indicatorView = new SweetIndicatorView(this);
+        gallery.setIndicator(indicatorView);
+        gallery.setMinimumHeight(600);
+        LinearLayout linearLayout = new LinearLayout(this);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        linearLayout.setGravity(Gravity.CENTER);
+        linearLayout.addView(gallery);
+        linearLayout.addView(indicatorView);
+        list.addHeaderView(linearLayout);
+        final FrameLayout content = new FrameLayout(this);
+        content.addView(list, new LinearLayout.LayoutParams(-1, -1));
+        content.addView(scrollView, new FrameLayout.LayoutParams(-1, -2, Gravity.TOP));
         final ViewPager viewPager = new ViewPager(this);
-        SimplePagerAdapter pagerAdapter = new SimplePagerAdapter();
-        viewPager.setAdapter(pagerAdapter);
-        Button simpleTestBtn = new Button(this);
+        final Button simpleTestBtn = new Button(this);
+        simpleTestBtn.setText("测试横向手势冲突");
         simpleTestBtn.setOnClickListener(v -> viewPager.setCurrentItem(1));
-        simpleTestBtn.setText("Just test for pager");
-        pagerAdapter.add(simpleTestBtn).add(container).notifyDataSetChanged();
-
-        gallery.addOnItemSwitchListener(new SweetCircularView.OnItemSwitchListener() {
-            @Override
-            public void onItemSelected(SweetCircularView v, int dataIndex) {
-                logout("Listener: notifyOnItemSelected(" + dataIndex + ")");
-                indicatorView.setCurrentIndex(dataIndex);
-            }
-
-            @Override
-            public void onItemScrolled(SweetCircularView v, int dataIndex, float offset) {
-                logout("Listener: notifyOnItemScrolled(" + dataIndex + ", " + offset + ")");
-            }
-        });
-
+        viewPager.setAdapter(new SimplePagerAdapter().add(simpleTestBtn).add(content));
         return viewPager;
+    }
+
+    private void initGallery(SweetCircularView gallery) {
+        gallery.setAdapter(adapter)
+                .setAnimationAdapter(new SimpleCircularAnimator())
+                .setOrientation(LinearLayout.HORIZONTAL)
+                .setIndent(250, 50, 250, 50)
+                .setSensibility(0.2f)
+                .setAutoCycle(true, true)
+                .setOnItemScrolledListener((v, dataIndex, offset) -> logout(TAG, "scrolled: [" + dataIndex + ", " + offset + "]"))
+                .setOnItemSelectedListener((v, dataIndex) -> logout(TAG, "selected: [" + dataIndex + "]"));
+    }
+
+    private void initTestFunctionGroup(ViewGroup parent) {
+        createFunctionBtn(parent, "<", v -> gallery.moveItems(-3));
+        createFunctionBtn(parent, ">", v -> gallery.moveItems(3));
+        createFunctionBtn(parent, "间距", v -> gallery.setSpaceBetweenItems(40));
+        createFunctionBtn(parent, "新增", v -> adapter.addAll(new Object[4]).notifyDataSetChanged());
+        createFunctionBtn(parent, "清空", v -> adapter.removeAll().notifyDataSetChanged());
+        createFunctionBtn(parent, "替换", v -> adapter.removeAll().addAll(new Object[2]).notifyDataSetChanged());
+    }
+
+    private void createFunctionBtn(ViewGroup parent, String txt, View.OnClickListener listener) {
+        Button btn = new Button(this);
+        btn.setText(txt);
+        btn.setOnClickListener(listener);
+        parent.addView(btn);
     }
 
     @Override
