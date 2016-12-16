@@ -12,14 +12,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.animation.SimpleCircularAnimator;
+import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.view.SweetCircularView;
 import org.pinwheel.agility.view.SweetIndicatorView;
 import org.pinwheel.agility.view.drag.DragListView;
+import org.pinwheel.demo4agility.R;
 import org.pinwheel.demo4agility.test.ImageLoaderManager;
 
 
@@ -75,13 +76,13 @@ public class CycleGalleryActivity extends AbsTesterActivity {
     private final SimpleArrayAdapter<Object> adapter = new SimpleArrayAdapter<Object>() {
         @Override
         public View getView(int i, View view, ViewGroup parent) {
-            if (view == null) {
-                ImageView imageView = new ImageView(parent.getContext());
-                imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-                view = imageView;
+            if (null == view) {
+                view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_item, null);
             }
-            ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader((ImageView) view, URLS[i % URLS.length]);
-            view.setOnClickListener(v -> Toast.makeText(CycleGalleryActivity.this, i + "", Toast.LENGTH_SHORT).show());
+            TextView text = BaseUtils.getViewByHolder(view, R.id.text);
+            ImageView image = BaseUtils.getViewByHolder(view, R.id.image);
+            ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader(image, URLS[i % URLS.length]);
+            text.setText(String.valueOf(i));
             return view;
         }
     };

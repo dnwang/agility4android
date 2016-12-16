@@ -920,24 +920,74 @@ public class SweetCircularView extends ViewGroup {
             return circularView;
         }
 
+        /**
+         * 根据中心视图索引，向左右两侧获取视图
+         *
+         * @param indexOffset 0:中心, <0:左(上)侧, >0:右(下)侧
+         */
         protected final View getView(int indexOffset) {
+            if (null == circularView) {
+                return null;
+            }
             final int centerIndex = circularView.getRecycleItemSize() / 2;
-            ItemWrapper targetItem = circularView.findItem(circularView.cycleItemIndex(centerIndex + indexOffset));
-            return null != targetItem ? targetItem.view : null;
+            ItemWrapper targetItem = circularView.findItem(cycleIndex(centerIndex + indexOffset));
+            return (null != targetItem) ? targetItem.view : null;
         }
 
+        /**
+         * 根据中心视图索引，获取两侧视图距离中心位置的偏移
+         *
+         * @param indexOffset 0:中心, <0:左(上)侧, >0:右(下)侧
+         */
         protected final int getOffset(int indexOffset) {
+            if (null == circularView) {
+                return 0;
+            }
             final View centerView = getView(0);
             final View targetView = getView(indexOffset);
             int offset = 0;
             if (null != centerView && null != targetView) {
                 if (LinearLayout.VERTICAL == circularView.getOrientation()) {
-                    offset = targetView.getTop() - centerView.getTop() + circularView.getScrollY();
-                } else {
-                    offset = targetView.getLeft() - centerView.getLeft() + circularView.getScrollX();
+                    offset = targetView.getTop() - centerView.getTop() - circularView.getScrollY();
+                } else { // HORIZONTAL
+                    offset = targetView.getLeft() - centerView.getLeft() - circularView.getScrollX();
                 }
             }
             return offset;
+        }
+
+        /**
+         * 根据中心视图索引，获取两侧视图距离中心位置的偏移百分比
+         * indexOffset=0 中心，即偏移 0%
+         *
+         * @param indexOffset 0:中心, <0:左(上)侧, >0:右(下)侧
+         * @return >0, 距离中心越远值越大
+         */
+        protected final float getOffsetPercent(int indexOffset) {
+            final int maxOffset = circularView.getMeasuredWidth() / 2;
+            int targetOffset = getOffset(indexOffset);
+            return Math.abs(targetOffset) * 1.0f / maxOffset;
+        }
+
+        /**
+         * 获取视图宽度
+         */
+        protected final int getItemWidth() {
+            if (null == circularView) {
+                return 0;
+            }
+            if (null != circularView.itemsBounds && circularView.itemsBounds.length > 0) {
+                return circularView.itemsBounds[0].width();
+            } else {
+                return 0;
+            }
+        }
+
+        protected final int cycleIndex(int indexOffset) {
+            if (null == circularView) {
+                return indexOffset;
+            }
+            return circularView.cycleItemIndex(indexOffset);
         }
 
         protected final int getSize() {

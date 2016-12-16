@@ -1,5 +1,6 @@
 package org.pinwheel.agility.animation;
 
+import android.util.Log;
 import android.view.View;
 
 import org.pinwheel.agility.view.SweetCircularView;
@@ -27,22 +28,21 @@ public class SimpleCircularAnimator extends SweetCircularView.AnimationAdapter {
     }
 
     @Override
-    protected void onScrolled(int offset) {
+    protected void onScrolled(final int offset) {
         final int size = getSize();
-        View center = getView(0);
-        final int width = center.getMeasuredWidth();
-        final int maxOffset = getCircularView().getMeasuredWidth() / 2;
-
+        float percent, scalePercent, alphaPercent;
         for (int i = 0; i < size; i++) {
-            int centerOffset = getOffset(i);
-            float percent = Math.abs(centerOffset) / maxOffset;
+            percent = getOffsetPercent(i);
+            Log.e(TAG, "[onScrolled] percent:" + i + " >> " + percent);
+            scalePercent = 1 - Math.min(percent, 1 - scale);
+            alphaPercent = 1 - Math.min(percent, 1 - alpha);
             View view = getView(i);
             if (null != view) {
-                view.setScaleX(1 - percent);
-                view.setScaleY(1 - percent);
+                view.setScaleX(scalePercent);
+                view.setScaleY(scalePercent);
+                view.setAlpha(alphaPercent);
             }
         }
-
     }
 
 }
