@@ -303,6 +303,8 @@ public class SweetCircularView extends ViewGroup {
         this.animationAdapter = animationAdapter;
         if (null != this.animationAdapter) {
             this.animationAdapter.circularView = this;
+            // 主动回调动画适配器，相当于初始化动画
+            this.animationAdapter.onScrolled(0);
         }
         return this;
     }

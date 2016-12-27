@@ -2,18 +2,18 @@ apply plugin: 'com.android.library'
 
 ext {
     bintrayRepo = 'maven'
-    bintrayName = 'agility'
+    bintrayName = rootProject.ext.projectName
 
-    publishedGroupId = 'org.pinwheel.agility'
-    libraryName = 'agility'
-    artifact = 'agility'
+    publishedGroupId = rootProject.ext.applicationId
+    libraryName = rootProject.ext.projectName
+    artifact = rootProject.ext.projectName
 
     libraryDescription = 'Android universal tools.'
 
     siteUrl = 'https://github.com/dnwang/'
     gitUrl = 'https://github.com/dnwang/android_agility_framework.git'
 
-    libraryVersion = '4.2.2'
+    libraryVersion = rootProject.ext.versionName
 
     developerId = 'dnwang'
     developerName = 'Denan.Wang'
@@ -25,13 +25,13 @@ ext {
 }
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '25'
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 15
-        versionCode 81
-        versionName '4.2.2'
+        minSdkVersion rootProject.ext.minSdkVersion
+        versionCode rootProject.ext.versionCode
+        versionName rootProject.ext.versionName
     }
 
     buildTypes {
@@ -52,11 +52,11 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:25.0.0'
-    compile 'com.google.code.gson:gson:2.4'
+    compile 'com.android.support:support-v4:' + rootProject.ext.supportVersion
+    compile 'com.android.support:recyclerview-v7:' + rootProject.ext.supportVersion
     compile 'eu.the4thfloor.volley:com.android.volley:2015.05.28'
+    compile 'com.google.code.gson:gson:2.8.0'
     compile 'com.squareup.okhttp:okhttp:2.7.5'
-    compile 'com.android.support:recyclerview-v7:25.0.0'
 }
 
 //apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'

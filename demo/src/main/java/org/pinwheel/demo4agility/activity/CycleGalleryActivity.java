@@ -134,7 +134,6 @@ public class CycleGalleryActivity extends AbsTesterActivity {
 
     private void initGallery(SweetCircularView gallery) {
         gallery.setAdapter(adapter)
-                .setAnimationAdapter(new SimpleCircularAnimator())
                 .setOrientation(LinearLayout.HORIZONTAL)
                 .setIndent(250, 50, 250, 50)
                 .setSensibility(0.2f)
@@ -146,10 +145,12 @@ public class CycleGalleryActivity extends AbsTesterActivity {
     private void initTestFunctionGroup(ViewGroup parent) {
         createFunctionBtn(parent, "<", v -> gallery.moveItems(-3));
         createFunctionBtn(parent, ">", v -> gallery.moveItems(3));
+        createFunctionBtn(parent, "置0", v -> gallery.setCurrentIndex(0));
         createFunctionBtn(parent, "间距", v -> gallery.setSpaceBetweenItems(40));
         createFunctionBtn(parent, "新增", v -> adapter.addAll(new Object[4]).notifyDataSetChanged());
         createFunctionBtn(parent, "清空", v -> adapter.removeAll().notifyDataSetChanged());
         createFunctionBtn(parent, "替换", v -> adapter.removeAll().addAll(new Object[2]).notifyDataSetChanged());
+        createFunctionBtn(parent, "动画", v -> gallery.setAnimationAdapter(new SimpleCircularAnimator()));
     }
 
     private void createFunctionBtn(ViewGroup parent, String txt, View.OnClickListener listener) {
