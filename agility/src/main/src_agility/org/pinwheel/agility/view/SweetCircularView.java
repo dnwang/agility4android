@@ -8,7 +8,6 @@ import android.database.DataSetObserver;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,15 +29,6 @@ import java.util.ArrayList;
  * @author dnwang
  */
 public class SweetCircularView extends ViewGroup {
-
-    private static final String TAG = SweetCircularView.class.getSimpleName();
-    protected static boolean debug = false;
-
-    protected static void log(String log) {
-        if (debug) {
-            Log.d(TAG, log);
-        }
-    }
 
     private static final int MOVE_SLOP = 10;
 
@@ -162,7 +152,7 @@ public class SweetCircularView extends ViewGroup {
      */
     public final SweetCircularView setRecycleItemSize(int size) {
         if (size < 3 || size % 2 == 0) {
-            throw new IllegalStateException(TAG + ".setRecycleItemSize(size): size 必须是奇数！");
+            throw new IllegalStateException("setRecycleItemSize(size): size 必须是奇数！");
         }
         resetItems(size);
         setCurrentIndex(0);
@@ -284,7 +274,6 @@ public class SweetCircularView extends ViewGroup {
     public final SweetCircularView moveItems(final int changed) {
         if (!isMoving && 0 != changed) {
             final int offset = ((orientation == LinearLayout.HORIZONTAL ? getItemWidth() : getItemHeight()) + spaceBetweenItems) * changed;
-            log("moveItems: 主动: offset:" + (offset));
             autoMove(offset, durationOnAutoScroll, new Runnable() {
                 @Override
                 public void run() {
@@ -355,7 +344,6 @@ public class SweetCircularView extends ViewGroup {
             return;
         }
         int centerDataIndex = centerItem.dataIndex;
-        log("选中: " + centerDataIndex);
         if (lastCenterItemDataIndex != centerDataIndex) {
             // 回调监听器
             if (null != onItemSelectedListener) {
@@ -646,7 +634,6 @@ public class SweetCircularView extends ViewGroup {
         // 回调滑动
         notifyOnItemScrolled(offset);
         // 判断视图切换
-        log("move: scrolled: " + scrolled + ", maxOffset: " + maxOffset);
         final int overOffset = Math.abs(scrolled) - maxOffset;
         if (overOffset >= 0) {
             final int size = getRecycleItemSize();
@@ -673,7 +660,6 @@ public class SweetCircularView extends ViewGroup {
             } else { // HORIZONTAL
                 scrollTo(scrolled > 0 ? overOffset : -overOffset, 0);
             }
-            log("move: 越中线 重置Scroll, overOffset:" + overOffset);
             // 根据新的中心视图位置，重新设置视图的数据索引，并且更新视图
             updateAllItemView(getCurrentIndex());
             // 重新排列布局
@@ -698,9 +684,7 @@ public class SweetCircularView extends ViewGroup {
             if (null != callback) {
                 callback.run();
             }
-            log("autoMove: 无动画 offset: " + offset);
         } else {
-            log("autoMove: 创建动画 offset: " + offset);
             autoScroller = ValueAnimator.ofInt(0, offset);
             autoScroller.setDuration(duration);
             autoScroller.setInterpolator(new DecelerateInterpolator());
@@ -748,11 +732,9 @@ public class SweetCircularView extends ViewGroup {
             if (absOffset >= maxOffset / 2) {
                 // 已经越过视图一半，此时不归位，同向继续滑动到下一个视图
                 offset = (maxOffset - absOffset) * (offset / absOffset);
-                log("autoPacking: 停靠 下一个 offset: " + offset);
             } else {
                 // 未越过一半，归位
                 offset = -offset;
-                log("autoPacking: 停靠 归位 offset: " + offset);
             }
         }
         autoMove(offset, durationOnTouchRelease, new Runnable() {
@@ -995,7 +977,12 @@ public class SweetCircularView extends ViewGroup {
          * @return >0, 距离中心越远值越大
          */
         protected final float getOffsetPercent(int indexOffset) {
-            final int maxOffset = circularView.getMeasuredWidth() / 2;
+            final int maxOffset;
+            if (LinearLayout.VERTICAL == circularView.getOrientation()) {
+                maxOffset = getItemHeight() + circularView.spaceBetweenItems;
+            } else { // HORIZONTAL
+                maxOffset = getItemWidth() + circularView.spaceBetweenItems;
+            }
             int targetOffset = getOffset(indexOffset);
             return Math.abs(targetOffset) * 1.0f / maxOffset;
         }

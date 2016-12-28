@@ -1,20 +1,10 @@
 package org.pinwheel.agility.animation;
 
-import android.util.Log;
 import android.view.View;
 
 import org.pinwheel.agility.view.SweetCircularView;
 
 public class SimpleCircularAnimator extends SweetCircularView.AnimationAdapter {
-
-    private static final String TAG = SimpleCircularAnimator.class.getSimpleName();
-    protected static boolean debug = false;
-
-    protected static void log(String log) {
-        if (debug) {
-            Log.d(TAG, log);
-        }
-    }
 
     private float scale = 0.8f;
     private float alpha = 0.8f;
@@ -45,10 +35,9 @@ public class SimpleCircularAnimator extends SweetCircularView.AnimationAdapter {
         final int size = getSize();
         float percent, scalePercent, alphaPercent;
         for (int i = 0; i < size; i++) {
-            percent = getOffsetPercent(i);
-            log("[onScrolled] percent:" + i + " >> " + percent);
-            scalePercent = 1 - Math.min(percent, 1 - scale);
-            alphaPercent = 1 - Math.min(percent, 1 - alpha);
+            percent = Math.min(1, getOffsetPercent(i));
+            scalePercent = 1 - (1 - scale) * percent;
+            alphaPercent = 1 - (1 - alpha) * percent;
             View view = getView(i);
             if (null != view) {
                 view.setScaleX(scalePercent);
