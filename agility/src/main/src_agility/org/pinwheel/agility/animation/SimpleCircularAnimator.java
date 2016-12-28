@@ -8,6 +8,13 @@ import org.pinwheel.agility.view.SweetCircularView;
 public class SimpleCircularAnimator extends SweetCircularView.AnimationAdapter {
 
     private static final String TAG = SimpleCircularAnimator.class.getSimpleName();
+    protected static boolean debug = false;
+
+    protected static void log(String log) {
+        if (debug) {
+            Log.d(TAG, log);
+        }
+    }
 
     private float scale = 0.8f;
     private float alpha = 0.8f;
@@ -28,12 +35,18 @@ public class SimpleCircularAnimator extends SweetCircularView.AnimationAdapter {
     }
 
     @Override
+    protected void onLayout(boolean changed) {
+        // 重置默认效果
+        onScrolled(0);
+    }
+
+    @Override
     protected void onScrolled(final int offset) {
         final int size = getSize();
         float percent, scalePercent, alphaPercent;
         for (int i = 0; i < size; i++) {
             percent = getOffsetPercent(i);
-            Log.e(TAG, "[onScrolled] percent:" + i + " >> " + percent);
+            log("[onScrolled] percent:" + i + " >> " + percent);
             scalePercent = 1 - Math.min(percent, 1 - scale);
             alphaPercent = 1 - Math.min(percent, 1 - alpha);
             View view = getView(i);
