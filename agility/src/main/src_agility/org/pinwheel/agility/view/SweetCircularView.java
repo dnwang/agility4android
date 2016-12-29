@@ -74,6 +74,11 @@ public class SweetCircularView extends ViewGroup {
      * 点击非选中视图，自动选中
      */
     private boolean isClick2Selected = true;
+    /**
+     * 根据Indent缩进，自动增加或减少复用视图个数
+     * 关闭之后也可使用setRecycleItemSize()主动设置
+     */
+    private boolean isAutoCheckRecycleItemSize = true;
 
     private OnItemScrolledListener onItemScrolledListener;
     private OnItemSelectedListener onItemSelectedListener;
@@ -116,7 +121,7 @@ public class SweetCircularView extends ViewGroup {
     }
 
     private void init() {
-        resetItems(MIN_RECYCLE_ITEM_SIZE);
+        setRecycleItemSize(MIN_RECYCLE_ITEM_SIZE);
     }
 
     @Override
@@ -142,21 +147,44 @@ public class SweetCircularView extends ViewGroup {
 
     public final SweetCircularView setCurrentIndex(int dataIndex) {
         updateAllItemView(dataIndex);
-        // notify
+        // 回调选中
         notifyOnItemSelected();
         return this;
     }
 
     /**
-     * 设置复用视图个数，必须是奇数
+     * 设置复用视图个数，非奇数会转换为奇数
      */
     public final SweetCircularView setRecycleItemSize(int size) {
-        if (size < 3 || size % 2 == 0) {
-            throw new IllegalStateException("setRecycleItemSize(size): size 必须是奇数！");
+        if (size < MIN_RECYCLE_ITEM_SIZE) {
+            return this;
         }
-        resetItems(size);
-        setCurrentIndex(0);
+        if (size % 2 == 0) {
+            size++;
+        }
+        if (getRecycleItemSize() == size) {
+            return this;
+        }
+        final int tmpIndex = getCurrentIndex();
+        // 初始化ItemWrapper
+        if (null != items) {
+            for (ItemWrapper item : items) {
+                item.recycle();
+            }
+            items.clear();
+        } else {
+            items = new ArrayList<>(size);
+        }
+        for (int i = 0; i < size; i++) {
+            items.add(new ItemWrapper(i));
+        }
+        // 保持中心数据索引不变
+        setCurrentIndex((tmpIndex >= 0 && tmpIndex < adapter.getCount()) ? tmpIndex : 0);
         return this;
+    }
+
+    public final int getRecycleItemSize() {
+        return null == items ? 0 : items.size();
     }
 
     public SweetCircularView setAdapter(BaseAdapter cycleAdapter) {
@@ -186,6 +214,7 @@ public class SweetCircularView extends ViewGroup {
 
     public SweetCircularView setOrientation(int orientation) {
         this.orientation = orientation == LinearLayout.VERTICAL ? orientation : LinearLayout.HORIZONTAL;
+        registerCheckRecycleItemSize();
         requestLayout();
         return this;
     }
@@ -244,12 +273,14 @@ public class SweetCircularView extends ViewGroup {
         topIndent = top;
         rightIndent = right;
         bottomIndent = bottom;
+        registerCheckRecycleItemSize();
         requestLayout();
         return this;
     }
 
     public SweetCircularView setSpaceBetweenItems(int space) {
         spaceBetweenItems = space;
+        registerCheckRecycleItemSize();
         requestLayout();
         return this;
     }
@@ -265,6 +296,19 @@ public class SweetCircularView extends ViewGroup {
 
     public boolean isClick2Selected() {
         return isClick2Selected;
+    }
+
+    /**
+     * 根据Indent缩进，自动增加或减少复用视图个数
+     * 关闭之后也可使用setRecycleItemSize()主动设置
+     */
+    public SweetCircularView setAutoCheckRecycleItemSize(boolean autoCheckRecycleItemSize) {
+        isAutoCheckRecycleItemSize = autoCheckRecycleItemSize;
+        return this;
+    }
+
+    public boolean isAutoCheckRecycleItemSize() {
+        return isAutoCheckRecycleItemSize;
     }
 
     /**
@@ -368,30 +412,12 @@ public class SweetCircularView extends ViewGroup {
         removeCallbacks(autoCycleRunnable);
     }
 
-    protected final void resetItems(int size) {
-        if (null != items) {
-            for (ItemWrapper item : items) {
-                item.recycle();
-            }
-            items.clear();
-        } else {
-            items = new ArrayList<>(size);
-        }
-        for (int i = 0; i < size; i++) {
-            items.add(new ItemWrapper(i));
-        }
-    }
-
     private int getItemWidth() {
-        return centerBounds.width();
+        return itemsBounds.length > 0 ? itemsBounds[0].width() : 0;
     }
 
     private int getItemHeight() {
-        return centerBounds.height();
-    }
-
-    protected final int getRecycleItemSize() {
-        return items.size();
+        return itemsBounds.length > 0 ? itemsBounds[0].height() : 0;
     }
 
     protected final ItemWrapper findItem(int itemIndex) {
@@ -404,18 +430,11 @@ public class SweetCircularView extends ViewGroup {
         return null;
     }
 
-    /**
-     * 中心试图边界，仅在onMeasure中被赋值
-     */
-    private final Rect centerBounds = new Rect();
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        // 中心视图边界
-        centerBounds.set(leftIndent, topIndent, (getRight() - getLeft()) - rightIndent, (getBottom() - getTop()) - bottomIndent);
         // 初始化所有视图基准位置
-        resetItemsBounds(centerBounds, spaceBetweenItems);
+        resetItemsBounds(leftIndent, topIndent, getMeasuredWidth() - rightIndent, getMeasuredHeight() - bottomIndent, spaceBetweenItems);
 
         int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(getItemWidth(), MeasureSpec.EXACTLY);
         int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(getItemHeight(), MeasureSpec.EXACTLY);
@@ -434,9 +453,39 @@ public class SweetCircularView extends ViewGroup {
     }
 
     /**
+     * 注册在onLayout()之前自动判断并重置复用视图个数
+     */
+    private void registerCheckRecycleItemSize() {
+        if (!isAutoCheckRecycleItemSize) {
+            return;
+        }
+        addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                removeOnLayoutChangeListener(this);
+                post(new Runnable() {// 必须post，不能在layout的过程中改变增加或删除视图
+                    @Override
+                    public void run() {
+                        final int d = (LinearLayout.VERTICAL == getOrientation() ? getItemHeight() : getItemWidth()) + spaceBetweenItems;
+                        if (d <= 0) {
+                            return;
+                        }
+                        final int m = ((LinearLayout.VERTICAL == getOrientation() ? getMeasuredHeight() : getMeasuredWidth()) / 2) / d + 1;
+                        if (m >= 2) {
+                            setRecycleItemSize(2 * m + 1);
+                        } else {
+                            setRecycleItemSize(MIN_RECYCLE_ITEM_SIZE);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    /**
      * 平铺所有子试图，根据中心试图的left，top，right，bottom左右平均分布每个子试图
      */
-    private void resetItemsBounds(final Rect center, int space) {
+    private void resetItemsBounds(int l, int t, int r, int b, int space) {
         itemsBounds = new Rect[getRecycleItemSize()];
         final int centerIndex = itemsBounds.length / 2;
         int left, top, right, bottom;
@@ -446,15 +495,15 @@ public class SweetCircularView extends ViewGroup {
             m = centerIndex - i;
             // 0,1,2, center, 4,5,6
             if (orientation == LinearLayout.VERTICAL) {
-                left = center.left;
-                top = center.top - m * (center.bottom - center.top + space);
-                right = center.right;
-                bottom = top + (center.bottom - center.top);
+                left = l;
+                top = t - m * (b - t + space);
+                right = r;
+                bottom = top + (b - t);
             } else { // LinearLayout.HORIZONTAL
-                left = center.left - m * (center.right - center.left + space);
-                top = center.top;
-                right = left + (center.right - center.left);
-                bottom = center.bottom;
+                left = l - m * (r - l + space);
+                top = t;
+                right = left + (r - l);
+                bottom = b;
             }
             rect.set(left, top, right, bottom);
             itemsBounds[i] = rect;
@@ -777,14 +826,18 @@ public class SweetCircularView extends ViewGroup {
     private final class AdapterDataSetObserver extends DataSetObserver {
         @Override
         public void onChanged() {
-            final int index = getCurrentIndex();
-            for (ItemWrapper item : items) {
-                item.recycle();
+            final int tmpIndex = getCurrentIndex();
+            if (null != items) {
+                for (ItemWrapper item : items) {
+                    item.recycle();
+                }
             }
             lastCenterItemDataIndex = -1;// 保证重新通知一次
-            final int newIndex = (index >= 0 && index < adapter.getCount()) ? index : 0;
+            // 保持中心数据索引不变
+            final int newIndex = (tmpIndex >= 0 && tmpIndex < adapter.getCount()) ? tmpIndex : 0;
             setCurrentIndex(newIndex);
             requestLayout();
+            // 回调指示器
             if (null != indicator) {
                 indicator.setPointerSize(adapter.getCount());
                 indicator.setCurrentIndex(newIndex);

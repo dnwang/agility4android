@@ -136,32 +136,31 @@ public class CycleGalleryActivity extends AbsTesterActivity {
 
     private void initGallery(SweetCircularView gallery) {
         gallery.setAdapter(adapter)
-                .setOrientation(LinearLayout.HORIZONTAL)
-                .setIndent(120, 120, 120, 10)
                 .setClick2Selected(false)
-                .setSensibility(0.2f)
-                .setAutoCycle(false, true)
                 .setOnItemScrolledListener((v, dataIndex, offset) -> logout(TAG, "scrolled: [" + dataIndex + ", " + offset + "]"))
                 .setOnItemSelectedListener((v, dataIndex) -> logout(TAG, "selected: [" + dataIndex + "]"));
     }
 
     private void initTestFunctionGroup(ViewGroup parent) {
+        createFunctionBtn(parent, "置0", v -> gallery.setCurrentIndex(0));
         createFunctionBtn(parent, "<", v -> gallery.moveItems(-3));
         createFunctionBtn(parent, ">", v -> gallery.moveItems(3));
-        createFunctionBtn(parent, "置0", v -> gallery.setCurrentIndex(0));
-        createFunctionBtn(parent, "新增", v -> adapter.addAll(new Object[4]).notifyDataSetChanged());
-        createFunctionBtn(parent, "清空", v -> adapter.removeAll().notifyDataSetChanged());
-        createFunctionBtn(parent, "替换", v -> adapter.removeAll().addAll(new Object[2]).notifyDataSetChanged());
-        createFunctionBtn(parent, "-间距", v -> gallery.setSpaceBetweenItems(-40));
-        createFunctionBtn(parent, "+间距", v -> gallery.setSpaceBetweenItems(40));
+        createFunctionBtn(parent, "新增数据", v -> adapter.addAll(new Object[4]).notifyDataSetChanged());
+        createFunctionBtn(parent, "清空数据", v -> adapter.removeAll().notifyDataSetChanged());
+        createFunctionBtn(parent, "替换数据", v -> adapter.removeAll().addAll(new Object[2]).notifyDataSetChanged());
+        createFunctionBtn(parent, "-间距", v -> gallery.setSpaceBetweenItems(gallery.getSpaceBetweenItems() - 20));
+        createFunctionBtn(parent, "+间距", v -> gallery.setSpaceBetweenItems(gallery.getSpaceBetweenItems() + 20));
         createFunctionBtn(parent, "动画", v -> gallery.setAnimationAdapter(new SimpleCircularAnimator()));
         createFunctionBtn(parent, "垂直", v -> gallery.setOrientation(LinearLayout.VERTICAL));
         createFunctionBtn(parent, "水平", v -> gallery.setOrientation(LinearLayout.HORIZONTAL));
         createFunctionBtn(parent, "+自动滑动", v -> gallery.setAutoCycle(true, true));
         createFunctionBtn(parent, "-自动滑动", v -> gallery.setAutoCycle(false, true));
         createFunctionBtn(parent, "点击切换", v -> gallery.setClick2Selected(true));
-        createFunctionBtn(parent, "缩小", v -> gallery.setIndent(320, 220, 320, 220));
-        createFunctionBtn(parent, "+视图", v -> gallery.setRecycleItemSize(11));
+        createFunctionBtn(parent, "-滑动敏感度", v -> gallery.setSensibility(0.2f));
+        createFunctionBtn(parent, "缩进", v -> gallery.setIndent(120, 120, 120, 10));
+        createFunctionBtn(parent, "缩进x2", v -> gallery.setIndent(320, 220, 320, 220));
+        createFunctionBtn(parent, "+视图", v -> gallery.setRecycleItemSize(gallery.getRecycleItemSize() + 2));
+        createFunctionBtn(parent, "-视图", v -> gallery.setRecycleItemSize(gallery.getRecycleItemSize() - 2));
     }
 
     private void createFunctionBtn(ViewGroup parent, String txt, View.OnClickListener listener) {
