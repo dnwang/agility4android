@@ -20,7 +20,7 @@ import org.pinwheel.agility.util.UIUtils;
  *
  * @author dnwang
  */
-public class SweetIndicatorView extends View implements IIndicator{
+public class SweetIndicatorView extends View implements IIndicator {
 
     private static final int FOREGROUND = 0x01;
     private static final int BACKGROUND = 0x00;

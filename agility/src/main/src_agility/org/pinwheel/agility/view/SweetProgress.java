@@ -35,6 +35,7 @@ public class SweetProgress extends View {
     private float currentOffset;
 
     private boolean isSpinMode;
+    private boolean isSpinModePause;
 
     private Point center;
     private Paint paint;
@@ -48,7 +49,7 @@ public class SweetProgress extends View {
     private final Runnable loop = new Runnable() {
         @Override
         public void run() {
-            if (isSpinMode && getVisibility() == VISIBLE) {
+            if (isSpinMode && !isSpinModePause && getVisibility() == VISIBLE) {
                 removeCallbacks(this);
                 postDelayed(this, INTERVAL);
             }
@@ -91,6 +92,7 @@ public class SweetProgress extends View {
         paint = new Paint();
         paint.setColor(Color.GRAY);
         isSpinMode = true;
+        isSpinModePause = false;
     }
 
     @Override
@@ -168,6 +170,7 @@ public class SweetProgress extends View {
 
     public void setProgress(float percent) {
         cancel();
+        isSpinMode = false;
         this.percent = Math.max(0.0f, Math.min(percent, 1.0f));
         int temp = showPointIndex;
         showPointIndex = (int) (this.percent * pointSize);
@@ -182,11 +185,12 @@ public class SweetProgress extends View {
             post(loop);
         }
         isSpinMode = true;
+        isSpinModePause = false;
     }
 
     public final void cancel() {
         removeCallbacks(loop);
-        isSpinMode = false;
+        isSpinModePause = true;
     }
 
     private RectF rectF = new RectF();

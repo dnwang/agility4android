@@ -30,8 +30,8 @@ import java.nio.channels.FileChannel;
  * A <code>BufferedRandomAccessFile</code> is like a
  * <code>RandomAccessFile</code>, but it uses a private buffer so that most
  * operations do not require a disk access.
- * <P>
- *
+ * <p>
+ * <p>
  * Note: The operations on this class are unmonitored. Also, the correct
  * functioning of the <code>RandomAccessFile</code> methods that are not
  * overridden here relies on the implementation of those methods in the
@@ -124,7 +124,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
 
     /**
      * If we are dirty, flush dirty contents to the operating system. Does not imply fsync().
-     *
+     * <p>
      * Currently, for implementation reasons, this also invalidates the buffer.
      */
     public void flush() throws IOException {

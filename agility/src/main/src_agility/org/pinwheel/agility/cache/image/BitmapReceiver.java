@@ -55,10 +55,10 @@ public abstract class BitmapReceiver {
         return tag != null ? tag.hashCode() : 0;
     }
 
-    public void dispatch(Bitmap bitmap){
-       if (null != action){
-           action.call(bitmap);
-       }
+    public void dispatch(Bitmap bitmap) {
+        if (null != action) {
+            action.call(bitmap);
+        }
     }
 
     /**
