@@ -137,6 +137,9 @@ public class CycleGalleryActivity extends AbsTesterActivity {
     private void initGallery(SweetCircularView gallery) {
         gallery.setAdapter(adapter)
                 .setClick2Selected(false)
+//                .setDurationOnInertial(1000)
+//                .setVelocityOnPacking(0.2f)
+                .setSensibility(0.2f)
                 .setOnItemScrolledListener((v, dataIndex, offset) -> logout(TAG, "scrolled: [" + dataIndex + ", " + offset + "]"))
                 .setOnItemSelectedListener((v, dataIndex) -> logout(TAG, "selected: [" + dataIndex + "]"));
     }
@@ -156,7 +159,7 @@ public class CycleGalleryActivity extends AbsTesterActivity {
         createFunctionBtn(parent, "+自动滑动", v -> gallery.setAutoCycle(true, true));
         createFunctionBtn(parent, "-自动滑动", v -> gallery.setAutoCycle(false, true));
         createFunctionBtn(parent, "点击切换", v -> gallery.setClick2Selected(true));
-        createFunctionBtn(parent, "-滑动敏感度", v -> gallery.setSensibility(0.2f));
+        createFunctionBtn(parent, "取消惯性", v -> gallery.setInertial(false));
         createFunctionBtn(parent, "缩进", v -> gallery.setIndent(120, 120, 120, 10));
         createFunctionBtn(parent, "缩进x2", v -> gallery.setIndent(320, 220, 320, 220));
         createFunctionBtn(parent, "+视图", v -> gallery.setRecycleItemSize(gallery.getRecycleItemSize() + 2));

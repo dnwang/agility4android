@@ -9,6 +9,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
@@ -45,15 +46,19 @@ public class SweetCircularView extends ViewGroup {
     /**
      * 自动循环时间间隔
      */
-    private long intervalOnAutoCycle = 4000;
+    private int intervalOnAutoCycle = 4000;
     /**
-     * 自动循环滑动耗时
+     * 主动滑动耗时（点击位移选中过度时间）
      */
-    private long durationOnAutoScroll = 300;
+    private int durationOnAutoScroll = 300;
     /**
-     * 手动滑动释放之后自动归位耗时
+     * 手势滑动释放之后惯性滑动耗时
      */
-    private long durationOnTouchRelease = 200;
+    private int durationOnInertial = 800;
+    /**
+     * 自动停靠速度 (px/ms)
+     */
+    private float velocityOnPacking = 0.4f;
     /**
      * 判断滑过一个视图的敏感度；默认0.5f滑动超过视图一半释放即自动滑过
      */
@@ -79,6 +84,10 @@ public class SweetCircularView extends ViewGroup {
      * 关闭之后也可使用setRecycleItemSize()主动设置
      */
     private boolean isAutoCheckRecycleItemSize = true;
+    /**
+     * 手势释放时是否惯性滑动
+     */
+    private boolean isInertial = true;
 
     private OnItemScrolledListener onItemScrolledListener;
     private OnItemSelectedListener onItemSelectedListener;
@@ -94,6 +103,10 @@ public class SweetCircularView extends ViewGroup {
      * 用centerItemIndex形成对应使用
      */
     private Rect[] itemsBounds = null;
+    /**
+     * 手势加速度控制器
+     */
+    private VelocityTracker velocityTracker = null;
 
     private final Runnable autoCycleRunnable = new Runnable() {
         @Override
@@ -127,6 +140,7 @@ public class SweetCircularView extends ViewGroup {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        velocityTracker = VelocityTracker.obtain();
         isAttachedToWindow = true;
         resumeAutoCycle();
     }
@@ -136,6 +150,9 @@ public class SweetCircularView extends ViewGroup {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        // 释放加速器
+        velocityTracker.clear();
+        velocityTracker.recycle();
         isAttachedToWindow = false;
         interceptAutoCycle();
     }
@@ -223,30 +240,39 @@ public class SweetCircularView extends ViewGroup {
         return orientation;
     }
 
-    public SweetCircularView setDurationOnTouchRelease(long duration) {
-        durationOnTouchRelease = Math.max(0, duration);
+    public SweetCircularView setVelocityOnPacking(float velocity) {
+        this.velocityOnPacking = velocity;
         return this;
     }
 
-    public long getDurationOnTouchRelease() {
-        return durationOnTouchRelease;
+    public float getVelocityOnPacking() {
+        return velocityOnPacking;
     }
 
-    public SweetCircularView setDurationOnAutoScroll(long duration) {
+    public SweetCircularView setDurationOnInertial(int duration) {
+        durationOnInertial = Math.max(0, duration);
+        return this;
+    }
+
+    public int getDurationOnInertial() {
+        return durationOnInertial;
+    }
+
+    public SweetCircularView setDurationOnAutoScroll(int duration) {
         durationOnAutoScroll = Math.max(0, duration);
         return this;
     }
 
-    public long getDurationOnAutoScroll() {
+    public int getDurationOnAutoScroll() {
         return durationOnAutoScroll;
     }
 
-    public SweetCircularView setIntervalOnAutoCycle(long interval) {
+    public SweetCircularView setIntervalOnAutoCycle(int interval) {
         intervalOnAutoCycle = Math.max(0, interval);
         return this;
     }
 
-    public long getIntervalOnAutoCycle() {
+    public int getIntervalOnAutoCycle() {
         return intervalOnAutoCycle;
     }
 
@@ -296,6 +322,15 @@ public class SweetCircularView extends ViewGroup {
 
     public boolean isClick2Selected() {
         return isClick2Selected;
+    }
+
+    public SweetCircularView setInertial(boolean is) {
+        isInertial = is;
+        return this;
+    }
+
+    public boolean isInertial() {
+        return isInertial;
     }
 
     /**
@@ -612,19 +647,24 @@ public class SweetCircularView extends ViewGroup {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         boolean superState = super.onTouchEvent(event);
+        velocityTracker.addMovement(event);
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 lastPoint.set(event.getX(), event.getY());
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (getRecycleItemSize() != 0 || getChildCount() != 0) {
+                    // 计算手势加速度
+                    velocityTracker.computeCurrentVelocity(1);
                     float xDiff = event.getX() - lastPoint.x;
                     float yDiff = event.getY() - lastPoint.y;
                     float absXDiff = Math.abs(xDiff);
                     float absYDiff = Math.abs(yDiff);
                     if (orientation == LinearLayout.HORIZONTAL && absXDiff > absYDiff) {
+                        velocityX = velocityTracker.getXVelocity();
                         move((int) -xDiff);
                     } else if (orientation == LinearLayout.VERTICAL && absYDiff > absXDiff) {
+                        velocityY = velocityTracker.getYVelocity();
                         move((int) -yDiff);
                     }
                 }
@@ -634,32 +674,22 @@ public class SweetCircularView extends ViewGroup {
             case MotionEvent.ACTION_CANCEL:
                 // touch release
                 if (isMoving) {
-                    int direction = 0;
-                    final int offset, maxOffset;
-                    if (orientation == LinearLayout.VERTICAL) {
-                        offset = getScrollY();
-                        maxOffset = getItemHeight() + spaceBetweenItems;
-                    } else {
-                        offset = getScrollX();
-                        maxOffset = getItemWidth() + spaceBetweenItems;
+                    int distance = 0;
+                    int duration = 0;
+                    if (isInertial) {
+                        // 通过手势加速度计算惯性距离
+                        float v = orientation == LinearLayout.HORIZONTAL ? velocityX : velocityY;
+                        distance = -(int) (v * durationOnInertial);
+                        duration = durationOnInertial;
                     }
-
-                    if (offset < -maxOffset * sensibility) {
-                        direction = -1;
-                    } else if (offset > maxOffset * sensibility) {
-                        direction = 1;
-                    }
-                    if (direction == 0) {
-                        autoPacking();
-                    } else {
-                        autoMove((maxOffset - Math.abs(offset)) * direction, durationOnTouchRelease, new Runnable() {
-                            @Override
-                            public void run() {
-                                autoPacking();
-                            }
-                        });
-                    }
+                    autoMove(distance, duration, new Runnable() {
+                        @Override
+                        public void run() {
+                            autoPacking();
+                        }
+                    });
                 }
+                velocityTracker.clear();
                 break;
             default:
                 return superState;
@@ -667,9 +697,10 @@ public class SweetCircularView extends ViewGroup {
         return true;
     }
 
+    private float velocityX, velocityY;
+
     protected final void move(final int offset) {
         isMoving = true;
-
         int scrolled, maxOffset;
         if (orientation == LinearLayout.VERTICAL) {
             scrollBy(0, offset);
@@ -718,12 +749,12 @@ public class SweetCircularView extends ViewGroup {
 
     private ValueAnimator autoScroller = null;
 
-    protected final void autoMove(final int offset, final long duration, final Runnable callback) {
+    protected final void autoMove(final int offset, final int duration, final Runnable callback) {
         if (autoScroller != null && autoScroller.isStarted()) {
             autoScroller.cancel();
             autoScroller = null;
         }
-        if (Math.abs(offset) < 10) {
+        if (Math.abs(offset) < 10 || duration <= 10) {
             // 滑动距离过小，不需要动画
             if (offset != 0) {
                 move(offset);
@@ -786,7 +817,9 @@ public class SweetCircularView extends ViewGroup {
                 offset = -offset;
             }
         }
-        autoMove(offset, durationOnTouchRelease, new Runnable() {
+        // 固定速率耗时
+        int duration = Math.max(80, Math.abs((int) (offset / velocityOnPacking)));
+        autoMove(offset, duration, new Runnable() {
             @Override
             public void run() {
                 notifyOnItemSelected();
