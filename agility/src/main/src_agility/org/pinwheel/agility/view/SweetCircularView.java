@@ -56,13 +56,13 @@ public class SweetCircularView extends ViewGroup {
      */
     private int durationOnInertial = 800;
     /**
-     * 自动停靠速度 (px/ms)
+     * 自动停靠耗时
      */
-    private float velocityOnPacking = 0.4f;
+    private int durationOnPacking = 300;
     /**
-     * 判断滑过一个视图的敏感度；默认0.5f滑动超过视图一半释放即自动滑过
+     * 判断滑过一个视图的系数；默认0.5f滑动超过视图一半释放即自动滑过
      */
-    private float sensibility = 0.5f;
+    private float overRatio = 0.5f;
     /**
      * 布局方向
      */
@@ -85,9 +85,9 @@ public class SweetCircularView extends ViewGroup {
      */
     private boolean isAutoCheckRecycleItemSize = true;
     /**
-     * 手势释放时是否惯性滑动
+     * 惯性滑动阻尼系数,0时无惯性效果
      */
-    private boolean isInertial = true;
+    private float inertialRatio = 0.5f;
 
     private OnItemScrolledListener onItemScrolledListener;
     private OnItemSelectedListener onItemSelectedListener;
@@ -220,13 +220,13 @@ public class SweetCircularView extends ViewGroup {
         return adapter;
     }
 
-    public SweetCircularView setSensibility(float sensibility) {
-        this.sensibility = Math.max(0, Math.min(1.0f, sensibility));
+    public SweetCircularView setOverRatio(float ratio) {
+        this.overRatio = Math.max(0, Math.min(1.0f, ratio));
         return this;
     }
 
-    public float getSensibility() {
-        return this.sensibility;
+    public float getOverRatio() {
+        return this.overRatio;
     }
 
     public SweetCircularView setOrientation(int orientation) {
@@ -240,13 +240,13 @@ public class SweetCircularView extends ViewGroup {
         return orientation;
     }
 
-    public SweetCircularView setVelocityOnPacking(float velocity) {
-        this.velocityOnPacking = velocity;
+    public SweetCircularView setDurationOnPacking(int duration) {
+        this.durationOnPacking = Math.max(0, duration);
         return this;
     }
 
-    public float getVelocityOnPacking() {
-        return velocityOnPacking;
+    public int getDurationOnPacking() {
+        return durationOnPacking;
     }
 
     public SweetCircularView setDurationOnInertial(int duration) {
@@ -324,13 +324,13 @@ public class SweetCircularView extends ViewGroup {
         return isClick2Selected;
     }
 
-    public SweetCircularView setInertial(boolean is) {
-        isInertial = is;
+    public SweetCircularView setInertialRatio(float ratio) {
+        this.inertialRatio = Math.max(0.0f, ratio);
         return this;
     }
 
-    public boolean isInertial() {
-        return isInertial;
+    public float getInertialRatio() {
+        return inertialRatio;
     }
 
     /**
@@ -672,17 +672,10 @@ public class SweetCircularView extends ViewGroup {
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                // touch release
                 if (isMoving) {
-                    int distance = 0;
-                    int duration = 0;
-                    if (isInertial) {
-                        // 通过手势加速度计算惯性距离
-                        float v = orientation == LinearLayout.HORIZONTAL ? velocityX : velocityY;
-                        distance = -(int) (v * durationOnInertial);
-                        duration = durationOnInertial;
-                    }
-                    autoMove(distance, duration, new Runnable() {
+                    final float velocity = LinearLayout.HORIZONTAL == orientation ? velocityX : velocityY;
+                    int distance = -(int) (velocity * durationOnInertial * inertialRatio);// 系数
+                    autoMove(distance, durationOnInertial, new Runnable() {
                         @Override
                         public void run() {
                             autoPacking();
@@ -809,17 +802,15 @@ public class SweetCircularView extends ViewGroup {
         }
         if (0 != offset) {
             final int absOffset = Math.abs(offset);
-            if (absOffset >= maxOffset / 2) {
-                // 已经越过视图一半，此时不归位，同向继续滑动到下一个视图
+            if (absOffset >= maxOffset * overRatio) {
+                // 已经越过视图，此时不归位，同向继续滑动到下一个视图
                 offset = (maxOffset - absOffset) * (offset / absOffset);
             } else {
-                // 未越过一半，归位
+                // 未越过，归位
                 offset = -offset;
             }
         }
-        // 固定速率耗时
-        int duration = Math.max(80, Math.abs((int) (offset / velocityOnPacking)));
-        autoMove(offset, duration, new Runnable() {
+        autoMove(offset, durationOnPacking, new Runnable() {
             @Override
             public void run() {
                 notifyOnItemSelected();
