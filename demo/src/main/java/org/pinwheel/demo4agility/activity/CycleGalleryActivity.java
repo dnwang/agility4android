@@ -136,10 +136,11 @@ public class CycleGalleryActivity extends AbsTesterActivity {
 
     private void initGallery(SweetCircularView gallery) {
         gallery.setAdapter(adapter)
-                .setClick2Selected(false)
+//                .setClick2Selected(false)//点击切换
 //                .setDurationOnInertial(1000)
 //                .setDurationOnPacking(500)
-                .setOverRatio(0.2f)//越界系数
+//                .setOverRatio(0.2f)//越界系数
+//                .setInertialRatio(0.01f)
                 .setOnItemScrolledListener((v, dataIndex, offset) -> logout(TAG, "scrolled: [" + dataIndex + ", " + offset + "]"))
                 .setOnItemSelectedListener((v, dataIndex) -> logout(TAG, "selected: [" + dataIndex + "]"));
     }

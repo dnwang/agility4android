@@ -661,10 +661,8 @@ public class SweetCircularView extends ViewGroup {
                     float absXDiff = Math.abs(xDiff);
                     float absYDiff = Math.abs(yDiff);
                     if (orientation == LinearLayout.HORIZONTAL && absXDiff > absYDiff) {
-                        velocityX = velocityTracker.getXVelocity();
                         move((int) -xDiff);
                     } else if (orientation == LinearLayout.VERTICAL && absYDiff > absXDiff) {
-                        velocityY = velocityTracker.getYVelocity();
                         move((int) -yDiff);
                     }
                 }
@@ -673,9 +671,21 @@ public class SweetCircularView extends ViewGroup {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 if (isMoving) {
-                    final float velocity = LinearLayout.HORIZONTAL == orientation ? velocityX : velocityY;
-                    int distance = -(int) (velocity * durationOnInertial * inertialRatio);// 系数
-                    autoMove(distance, durationOnInertial, new Runnable() {
+                    final int maxOffset = getItemWidth() + spaceBetweenItems;
+                    final int offset;
+                    final float velocity;
+                    if (LinearLayout.HORIZONTAL == orientation) {
+                        offset = getScrollX();
+                        velocity = velocityTracker.getXVelocity();
+                    } else {
+                        offset = getScrollY();
+                        velocity = velocityTracker.getYVelocity();
+                    }
+                    int inertialDis = -(int) (velocity * durationOnInertial * inertialRatio);// 系数
+                    if (Math.abs(inertialDis) + Math.abs(offset) <= maxOffset) {
+                        inertialDis = 0;// 复位
+                    }
+                    autoMove(inertialDis, durationOnInertial, new Runnable() {
                         @Override
                         public void run() {
                             autoPacking();
@@ -689,8 +699,6 @@ public class SweetCircularView extends ViewGroup {
         }
         return true;
     }
-
-    private float velocityX, velocityY;
 
     protected final void move(final int offset) {
         isMoving = true;
@@ -747,7 +755,7 @@ public class SweetCircularView extends ViewGroup {
             autoScroller.cancel();
             autoScroller = null;
         }
-        if (Math.abs(offset) < 10 || duration <= 10) {
+        if (Math.abs(offset) < 10 || duration < 10) {
             // 滑动距离过小，不需要动画
             if (offset != 0) {
                 move(offset);
@@ -758,8 +766,7 @@ public class SweetCircularView extends ViewGroup {
                 callback.run();
             }
         } else {
-            autoScroller = ValueAnimator.ofInt(0, offset);
-            autoScroller.setDuration(duration);
+            autoScroller = ValueAnimator.ofInt(0, offset).setDuration(duration);
             autoScroller.setInterpolator(new DecelerateInterpolator());
             autoScroller.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 private int lastValue;
