@@ -154,7 +154,7 @@ public class CycleGalleryActivity extends AbsTesterActivity {
         createFunctionBtn(parent, "替换数据", v -> adapter.removeAll().addAll(new Object[2]).notifyDataSetChanged());
         createFunctionBtn(parent, "-间距", v -> gallery.setSpaceBetweenItems(gallery.getSpaceBetweenItems() - 20));
         createFunctionBtn(parent, "+间距", v -> gallery.setSpaceBetweenItems(gallery.getSpaceBetweenItems() + 20));
-        createFunctionBtn(parent, "动画", v -> gallery.setAnimationAdapter(new SimpleCircularAnimator()));
+        createFunctionBtn(parent, "动画", v -> gallery.setAnimationAdapter(new SimpleCircularAnimator().setRotation(20)));
         createFunctionBtn(parent, "垂直", v -> gallery.setOrientation(LinearLayout.VERTICAL));
         createFunctionBtn(parent, "水平", v -> gallery.setOrientation(LinearLayout.HORIZONTAL));
         createFunctionBtn(parent, "+自动滑动", v -> gallery.setAutoCycle(true, true));
