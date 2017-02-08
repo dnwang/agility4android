@@ -276,4 +276,12 @@ public final class BaseUtils {
         return false;
     }
 
+    private static int getOptionsSampleSize(int optionsOutMaxSlide, int targetMaxSlide) {
+        int sampleSize = 1;
+        while (optionsOutMaxSlide / sampleSize > targetMaxSlide) {
+            sampleSize = sampleSize << 1;
+        }
+        return sampleSize;
+    }
+
 }

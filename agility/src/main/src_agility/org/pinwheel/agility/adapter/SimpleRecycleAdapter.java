@@ -1,7 +1,6 @@
 package org.pinwheel.agility.adapter;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +16,7 @@ import java.util.List;
  *
  * @author dnwang
  */
-public abstract class SimpleRecycleAdapter<T> extends RecyclerView.Adapter<SimpleRecycleAdapter.ViewHolder> {
+public abstract class SimpleRecycleAdapter<T> extends RecyclerView.Adapter<SimpleRecycleAdapter.RecyclerViewItemHolder> {
 
     private List<T> data;
 
@@ -102,9 +101,9 @@ public abstract class SimpleRecycleAdapter<T> extends RecyclerView.Adapter<Simpl
     public abstract int getItemLayout();
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerViewItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View contentView = LayoutInflater.from(parent.getContext()).inflate(getItemLayout(), null);
-        return new ViewHolder(contentView);
+        return new RecyclerViewItemHolder(contentView);
     }
 
     @Override
@@ -115,21 +114,16 @@ public abstract class SimpleRecycleAdapter<T> extends RecyclerView.Adapter<Simpl
     /**
      * ViewHolder
      */
-    public static final class ViewHolder extends RecyclerView.ViewHolder {
-        private SparseArray<View> holder;
+    public static final class RecyclerViewItemHolder extends RecyclerView.ViewHolder {
+        private org.pinwheel.agility.util.ViewHolder holder;
 
-        public ViewHolder(View itemView) {
+        public RecyclerViewItemHolder(View itemView) {
             super(itemView);
-            holder = new SparseArray<>();
+            holder = new org.pinwheel.agility.util.ViewHolder(itemView);
         }
 
         public <K extends View> K getView(int id) {
-            View view = holder.get(id);
-            if (view == null) {
-                view = itemView.findViewById(id);
-                holder.put(id, view);
-            }
-            return (K) view;
+            return holder.getView(id);
         }
 
         public void setOnClickListener(View.OnClickListener listener) {
