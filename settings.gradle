@@ -1,1 +1,1 @@
-include ':demo', ':agility'
+include ':sample', ':agility'
