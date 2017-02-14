@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility.activity;
+package org.pinwheel.sample.activity;
 
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -10,7 +10,7 @@ import android.widget.TextView;
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.view.swiperefresh.SwipeEventHelper;
 import org.pinwheel.agility.view.swiperefresh.SwipeGridView;
-import org.pinwheel.sample4agility.R;
+import org.pinwheel.sample.R;
 
 public class RefreshListActivity extends AbsTesterActivity implements AdapterView.OnItemClickListener {
 

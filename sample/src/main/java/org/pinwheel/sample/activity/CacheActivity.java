@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility.activity;
+package org.pinwheel.sample.activity;
 
 import android.graphics.Color;
 import android.view.Gravity;
@@ -13,7 +13,7 @@ import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.cache.DataCacheManager;
 import org.pinwheel.agility.cache.image.ViewReceiver;
 import org.pinwheel.agility.util.UIUtils;
-import org.pinwheel.sample4agility.test.ImageLoaderManager;
+import org.pinwheel.sample.test.ImageLoaderManager;
 
 import java.io.Serializable;
 import java.util.HashMap;

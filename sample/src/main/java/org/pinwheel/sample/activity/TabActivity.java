@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility.activity;
+package org.pinwheel.sample.activity;
 
 import android.graphics.Color;
 import android.support.v4.view.ViewPager;
@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import org.pinwheel.agility.view.TabSelectorView;
 import org.pinwheel.agility.view.controller.TabController;
-import org.pinwheel.sample4agility.R;
+import org.pinwheel.sample.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,14 +61,14 @@ public class TabActivity extends AbsTesterActivity {
 
     private void init() {
 
-        TabController.TabInfo tab1 = new TabController.TabInfo(org.pinwheel.sample4agility.R.layout.item_checkbox, createTestPage1());
+        TabController.TabInfo tab1 = new TabController.TabInfo(org.pinwheel.sample.R.layout.item_checkbox, createTestPage1());
         tab1.setItemText("Top");
         tab1.setItemCompoundDrawable(android.R.drawable.ic_dialog_info, "top");
         tab1.setItemBackgroundResource(android.R.drawable.ic_dialog_info);
-        TabController.TabInfo tab3 = new TabController.TabInfo(org.pinwheel.sample4agility.R.layout.item_checkbox, createTestPage3());
+        TabController.TabInfo tab3 = new TabController.TabInfo(org.pinwheel.sample.R.layout.item_checkbox, createTestPage3());
         tab3.setItemText("Bottom");
         tab3.setItemCompoundDrawable(android.R.drawable.ic_dialog_info, "right");
-        TabController.TabInfo tab2 = new TabController.TabInfo(org.pinwheel.sample4agility.R.layout.item_checkbox, createTestPage2());
+        TabController.TabInfo tab2 = new TabController.TabInfo(org.pinwheel.sample.R.layout.item_checkbox, createTestPage2());
         tab2.setItemText("FlowLayout");
         tab2.setItemCompoundDrawable(android.R.drawable.ic_dialog_info, "bottom");
         controller.addTabs(tab1, tab3, tab2);
@@ -78,7 +78,7 @@ public class TabActivity extends AbsTesterActivity {
             TextView page = new TextView(this);
             page.setText("page " + i);
             page.setBackgroundColor(colors[(int) (Math.random() * colors.length)]);
-            TabController.TabInfo testTab = new TabController.TabInfo(org.pinwheel.sample4agility.R.layout.item_checkbox, page);
+            TabController.TabInfo testTab = new TabController.TabInfo(org.pinwheel.sample.R.layout.item_checkbox, page);
             testTab.setItemText("item " + i);
 //            controller.addTabs(testTab);
             tabInfos0.add(testTab);
@@ -157,7 +157,7 @@ public class TabActivity extends AbsTesterActivity {
             TextView page = new TextView(this);
             page.setText("page " + i);
             page.setBackgroundColor(colors[(int) (Math.random() * colors.length)]);
-            TabController.TabInfo testTab = new TabController.TabInfo(org.pinwheel.sample4agility.R.layout.item_checkbox, page);
+            TabController.TabInfo testTab = new TabController.TabInfo(org.pinwheel.sample.R.layout.item_checkbox, page);
             testTab.setItemText("item " + i);
 //            page1_controller.addTabs(testTab);
             tabInfos1.add(testTab);
@@ -170,12 +170,12 @@ public class TabActivity extends AbsTesterActivity {
     }
 
     public View createTestPage2() {
-        View contentLayout = LayoutInflater.from(this).inflate(org.pinwheel.sample4agility.R.layout.view_tab_top, null, false);
+        View contentLayout = LayoutInflater.from(this).inflate(org.pinwheel.sample.R.layout.view_tab_top, null, false);
 
         TabController page2_controller = new TabController(
-                (ViewGroup) contentLayout.findViewById(org.pinwheel.sample4agility.R.id.item_group),
-                (ViewPager) contentLayout.findViewById(org.pinwheel.sample4agility.R.id.pager),
-                (TabController.ISelectable) contentLayout.findViewById(org.pinwheel.sample4agility.R.id.selector));
+                (ViewGroup) contentLayout.findViewById(org.pinwheel.sample.R.id.item_group),
+                (ViewPager) contentLayout.findViewById(org.pinwheel.sample.R.id.pager),
+                (TabController.ISelectable) contentLayout.findViewById(org.pinwheel.sample.R.id.selector));
 
 //        page2_controller.setSelector(org.pinwheel.demo.R.drawable.ic_sex_man);
 
@@ -185,7 +185,7 @@ public class TabActivity extends AbsTesterActivity {
             page.setText("page " + i);
             page.setGravity(Gravity.CENTER);
             page.setBackgroundColor(colors[(int) (Math.random() * colors.length)]);
-            TabController.TabInfo testTab = new TabController.TabInfo(org.pinwheel.sample4agility.R.layout.item_checkbox, page);
+            TabController.TabInfo testTab = new TabController.TabInfo(org.pinwheel.sample.R.layout.item_checkbox, page);
             testTab.setItemText("item " + i);
 //            page2_controller.addTabs(testTab);
             tabInfos2.add(testTab);
@@ -222,7 +222,7 @@ public class TabActivity extends AbsTesterActivity {
             TextView page = new TextView(this);
             page.setText("page " + i);
             page.setBackgroundColor(colors[(int) (Math.random() * colors.length)]);
-            TabController.TabInfo testTab = new TabController.TabInfo(org.pinwheel.sample4agility.R.layout.item_checkbox, page);
+            TabController.TabInfo testTab = new TabController.TabInfo(org.pinwheel.sample.R.layout.item_checkbox, page);
             if (i % 2 == 0) {
                 testTab.setItemText("itemitem " + i);
             } else {

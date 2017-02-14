@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility.activity;
+package org.pinwheel.sample.activity;
 
 import android.content.Context;
 import android.content.Intent;

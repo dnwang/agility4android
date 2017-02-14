@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility.activity;
+package org.pinwheel.sample.activity;
 
 import android.support.v4.view.ViewPager;
 import android.view.Gravity;
@@ -20,8 +20,8 @@ import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.view.SweetCircularView;
 import org.pinwheel.agility.view.SweetIndicatorView;
 import org.pinwheel.agility.view.drag.DragListView;
-import org.pinwheel.sample4agility.R;
-import org.pinwheel.sample4agility.test.ImageLoaderManager;
+import org.pinwheel.sample.R;
+import org.pinwheel.sample.test.ImageLoaderManager;
 
 
 public class CycleGalleryActivity extends AbsTesterActivity {

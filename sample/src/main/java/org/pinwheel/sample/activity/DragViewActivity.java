@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility.activity;
+package org.pinwheel.sample.activity;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -23,8 +23,8 @@ import org.pinwheel.agility.util.UIUtils;
 import org.pinwheel.agility.view.drag.BaseDragIndicator;
 import org.pinwheel.agility.view.drag.DragRefreshWrapper;
 import org.pinwheel.agility.view.drag.Draggable;
-import org.pinwheel.sample4agility.R;
-import org.pinwheel.sample4agility.test.CustomProgress;
+import org.pinwheel.sample.R;
+import org.pinwheel.sample.test.CustomProgress;
 
 import java.util.ArrayList;
 

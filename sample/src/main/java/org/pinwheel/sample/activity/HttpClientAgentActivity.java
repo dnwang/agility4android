@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility.activity;
+package org.pinwheel.sample.activity;
 
 import android.Manifest;
 import android.graphics.Bitmap;
@@ -13,7 +13,7 @@ import org.pinwheel.agility.net.parser.FileParser;
 import org.pinwheel.agility.net.parser.GsonParser;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.util.Downloader;
-import org.pinwheel.sample4agility.entity.WeatherEntity;
+import org.pinwheel.sample.entity.WeatherEntity;
 
 import java.io.File;
 

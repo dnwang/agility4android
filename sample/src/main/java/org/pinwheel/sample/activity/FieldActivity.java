@@ -1,12 +1,12 @@
-package org.pinwheel.sample4agility.activity;
+package org.pinwheel.sample.activity;
 
 import android.view.View;
 
 import org.pinwheel.agility.net.Request;
 import org.pinwheel.agility.net.VolleyRequestHelper;
 import org.pinwheel.agility.util.FieldUtils;
-import org.pinwheel.sample4agility.entity.field.DemoEntity;
-import org.pinwheel.sample4agility.entity.field.InjectStruct;
+import org.pinwheel.sample.entity.field.DemoEntity;
+import org.pinwheel.sample.entity.field.InjectStruct;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;

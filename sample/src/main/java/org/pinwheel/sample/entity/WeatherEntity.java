@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility.entity;
+package org.pinwheel.sample.entity;
 
 import java.io.Serializable;
 import java.util.ArrayList;

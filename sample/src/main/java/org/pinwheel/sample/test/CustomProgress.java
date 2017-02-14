@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility.test;
+package org.pinwheel.sample.test;
 
 import android.content.Context;
 import android.graphics.Canvas;

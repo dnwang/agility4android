@@ -1,10 +1,10 @@
-package org.pinwheel.sample4agility.activity;
+package org.pinwheel.sample.activity;
 
 import android.view.View;
 
 import com.google.gson.Gson;
 
-import org.pinwheel.sample4agility.entity.AutoJsonStruct;
+import org.pinwheel.sample.entity.AutoJsonStruct;
 import org.pinwheel.tools.json.Json2Class;
 
 /**

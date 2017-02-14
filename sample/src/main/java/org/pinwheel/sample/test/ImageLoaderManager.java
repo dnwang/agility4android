@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility.test;
+package org.pinwheel.sample.test;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,7 +14,7 @@ import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
 import org.pinwheel.agility.cache.image.ImageLoader;
 import org.pinwheel.agility.cache.image.ViewReceiver;
 import org.pinwheel.agility.net.VolleyImageLoader;
-import org.pinwheel.sample4agility.R;
+import org.pinwheel.sample.R;
 
 /**
  * Copyright (C), 2015 <br>

@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility;
+package org.pinwheel.sample;
 
 import android.app.Application;
 

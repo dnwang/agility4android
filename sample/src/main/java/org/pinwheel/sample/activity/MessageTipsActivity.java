@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility.activity;
+package org.pinwheel.sample.activity;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -10,7 +10,7 @@ import android.widget.EditText;
 import org.pinwheel.agility.util.BaseUtils;
 import org.pinwheel.agility.view.MessageTipView;
 import org.pinwheel.agility.view.controller.MessageTipController;
-import org.pinwheel.sample4agility.R;
+import org.pinwheel.sample.R;
 
 import java.util.HashSet;
 import java.util.Set;

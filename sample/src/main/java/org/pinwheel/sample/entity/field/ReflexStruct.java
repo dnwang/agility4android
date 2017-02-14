@@ -1,4 +1,4 @@
-package org.pinwheel.sample4agility.entity.field;
+package org.pinwheel.sample.entity.field;
 
 import org.pinwheel.agility.util.FieldUtils;
 

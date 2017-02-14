@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.pinwheel.sample4agility">
+    package="org.pinwheel.sample">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -8,11 +8,11 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
-        android:name="org.pinwheel.sample4agility.App"
+        android:name="org.pinwheel.sample.App"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name">
         <activity
-            android:name="org.pinwheel.sample4agility.activity.LauncherActivity"
+            android:name="org.pinwheel.sample.activity.LauncherActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,41 +21,41 @@
         </activity>
 
         <activity
-            android:name="org.pinwheel.sample4agility.activity.DragViewActivity"
+            android:name="org.pinwheel.sample.activity.DragViewActivity"
             android:label="拖动刷新系列控件" />
         <activity
-            android:name="org.pinwheel.sample4agility.activity.RefreshListActivity"
+            android:name="org.pinwheel.sample.activity.RefreshListActivity"
             android:label="下拉刷新" />
         <activity
-            android:name="org.pinwheel.sample4agility.activity.CacheActivity"
+            android:name="org.pinwheel.sample.activity.CacheActivity"
             android:label="图片缓存 ImageLoader" />
         <activity
-            android:name="org.pinwheel.sample4agility.activity.CycleGalleryActivity"
+            android:name="org.pinwheel.sample.activity.CycleGalleryActivity"
             android:label="SweetCircularView/支持嵌套手势事件" />
         <activity
-            android:name="org.pinwheel.sample4agility.activity.TabActivity"
+            android:name="org.pinwheel.sample.activity.TabActivity"
             android:label="TabController嵌套" />
         <activity
-            android:name="org.pinwheel.sample4agility.activity.HttpClientAgentActivity"
+            android:name="org.pinwheel.sample.activity.HttpClientAgentActivity"
             android:label="网络数据请求/下载" />
         <activity
-            android:name="org.pinwheel.sample4agility.activity.InternalListActivity"
+            android:name="org.pinwheel.sample.activity.InternalListActivity"
             android:label="ScrollView 嵌套 ListView" />
         <activity
-            android:name="org.pinwheel.sample4agility.activity.BouncyEditAndTextActivity"
+            android:name="org.pinwheel.sample.activity.BouncyEditAndTextActivity"
             android:configChanges="orientation|keyboard"
             android:label="弹性Edit/放缩Text" />
         <activity
-            android:name="org.pinwheel.sample4agility.activity.FieldActivity"
+            android:name="org.pinwheel.sample.activity.FieldActivity"
             android:label="反射/注入" />
         <activity
-            android:name="org.pinwheel.sample4agility.activity.Json2ClassActivity"
+            android:name="org.pinwheel.sample.activity.Json2ClassActivity"
             android:label="Json反射生成Class" />
         <activity
-            android:name="org.pinwheel.sample4agility.activity.MessageTipsActivity"
+            android:name="org.pinwheel.sample.activity.MessageTipsActivity"
             android:label="拖动消失树形消息气泡" />
         <activity
-            android:name="org.pinwheel.sample4agility.activity.TestActivity"
+            android:name="org.pinwheel.sample.activity.TestActivity"
             android:label="Test" />
     </application>
 </manifest>
