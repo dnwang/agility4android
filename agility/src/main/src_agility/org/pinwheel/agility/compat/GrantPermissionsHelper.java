@@ -3,8 +3,6 @@ package org.pinwheel.agility.compat;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
 import org.pinwheel.agility.util.DigestUtils;
@@ -49,7 +47,7 @@ public final class GrantPermissionsHelper {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//Build.VERSION_CODES.M
             final List<String> needGrantList = new ArrayList<>(permissions.length);
             for (String permission : permissions) {
-                int result = ContextCompat.checkSelfPermission(activity.getApplicationContext(), permission);
+                int result = activity.checkSelfPermission(permission);
                 if (result != PackageManager.PERMISSION_GRANTED) {
                     needGrantList.add(permission);
                 }
@@ -61,7 +59,7 @@ public final class GrantPermissionsHelper {
                     appendCallback(permissionsKey, callback);
                 } else {
                     bindCallback(permissionsKey, callback);
-                    ActivityCompat.requestPermissions(activity, permissions, REQ_CODE);
+                    activity.requestPermissions(permissions, REQ_CODE);
                 }
             } else {
                 dispatchResult(callback, true);

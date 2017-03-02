@@ -7,14 +7,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -25,6 +23,7 @@ import com.google.gson.Gson;
 
 import org.pinwheel.agility.adapter.SimpleArrayAdapter;
 import org.pinwheel.agility.compat.GrantPermissionsHelper;
+import org.pinwheel.agility.util.ViewHolder;
 import org.pinwheel.agility.util.callback.Action1;
 
 import java.text.DateFormat;
@@ -59,7 +58,7 @@ abstract class AbsTesterActivity extends Activity {
         super.onCreate(savedInstanceState);
         beforeInitView();
         holder = new ViewHolder(initView());
-        setContentView(holder.contentView);
+        setContentView(holder.getContentView());
         showLogger(false);
         afterInitView();
 
@@ -297,50 +296,6 @@ abstract class AbsTesterActivity extends Activity {
         @Override
         public int hashCode() {
             return id != null ? id.hashCode() : 0;
-        }
-    }
-
-    /**
-     * View references helper
-     */
-    public static final class ViewHolder {
-        private SparseArray<View> holder;
-        private View contentView;
-
-        public ViewHolder(View root) {
-            this.contentView = root;
-        }
-
-        public <T extends View> T getView(int id) {
-            if (holder == null) {
-                holder = new SparseArray<>();
-            }
-            View view = holder.get(id);
-            if (view == null && contentView != null) {
-                view = contentView.findViewById(id);
-                holder.put(id, view);
-            }
-            return (T) view;
-        }
-
-        public TextView getTextView(int id) {
-            return getView(id);
-        }
-
-        public Button getButton(int id) {
-            return getView(id);
-        }
-
-        public ImageView getImageView(int id) {
-            return getView(id);
-        }
-
-        public ViewGroup getViewGroup(int id) {
-            return getView(id);
-        }
-
-        public ListView getListView(int id) {
-            return getView(id);
         }
     }
 
