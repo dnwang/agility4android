@@ -73,8 +73,8 @@ public class CustomProgress extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        canvasWidth = COLORS.length * (RADIUS * 2 + MARGIN);
-        canvasHeight = RADIUS * 2;
+        canvasWidth = COLORS.length * (RADIUS * 2 + MARGIN) + MARGIN;
+        canvasHeight = RADIUS * 4; //RADIUS * 2
 
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
