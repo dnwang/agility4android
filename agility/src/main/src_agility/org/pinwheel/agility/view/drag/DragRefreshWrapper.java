@@ -40,11 +40,54 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
     private void init() {
         resetFooterIndicator(new SimpleFooterIndicator(getContext()));
         resetHeaderIndicator(new SimpleHeaderIndicator(getContext()));
+        syncDraggable();
     }
 
-    private void initDraggable() {
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        syncDraggable();// xml加载完成时
+    }
+
+    @Override
+    public void addView(View child, int index, ViewGroup.LayoutParams params) {
+        super.addView(child, index, params);
+        syncDraggable();// 有视图被添加时
+    }
+
+    @Override
+    public void removeView(View view) {
+        super.removeView(view);
+        syncDraggable();
+    }
+
+    @Override
+    public void removeViewAt(int index) {
+        super.removeViewAt(index);
+        syncDraggable();
+    }
+
+    @Override
+    public void removeViewInLayout(View view) {
+        super.removeViewInLayout(view);
+        syncDraggable();
+    }
+
+    @Override
+    public void removeAllViews() {
+        super.removeAllViews();
+        syncDraggable();
+    }
+
+    private void syncDraggable() {
         Draggable tmp = findDraggable(this);
         if (tmp != draggable) {
+            // 先解绑
+            if (null != draggable) {
+                draggable.removeOnDragListener(this);
+                headerIndicator.bindDraggable(null);
+                footerIndicator.bindDraggable(null);
+            }
             draggable = tmp;
             if (draggable == null) {
                 throw new IllegalStateException(getClass().getSimpleName() + " must contains draggable view.");
@@ -57,7 +100,6 @@ public class DragRefreshWrapper extends FrameLayout implements Draggable.OnDragL
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        initDraggable();
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (draggable != null) {
             int topHold = headerIndicator.getVisibility() == VISIBLE ? headerIndicator.getMeasuredHeight() : 0;

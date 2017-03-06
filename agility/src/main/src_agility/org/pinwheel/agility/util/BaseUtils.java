@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
@@ -19,7 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.pinwheel.agility.util.callback.Action1;
+import org.pinwheel.agility.util.callback.Function1;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -345,7 +346,7 @@ public final class BaseUtils {
         return null;
     }
 
-    public static String getText(View view) {
+    public static String getStringByText(View view) {
         if (view instanceof TextView) {
             TextView text = (TextView) view;
             Object obj = text.getText();
@@ -355,26 +356,33 @@ public final class BaseUtils {
         }
     }
 
-    public static String getTextByTag(View view) {
+    public static String getStringByTag(View view) {
         Object tag = view.getTag();
         return (null == tag ? "" : String.valueOf(tag));
     }
 
     /**
      * 递归遍历所有视图
+     *
+     * @return 是否继续遍历
      */
-    public static void foreachViews(final View root, final Action1<View> callback) {
-        if (null == root || null == callback) {
-            return;
+    public static boolean foreachViews(final View root, final Function1<Boolean, View> function1) {
+        if (null == root || null == function1) {
+            return false;
         }
-        callback.call(root);
-        if (root instanceof ViewGroup) {
-            ViewGroup group = (ViewGroup) root;
-            int size = group.getChildCount();
-            for (int i = 0; i < size; i++) {
-                foreachViews(group.getChildAt(i), callback);
+        boolean isContinue = function1.call(root);
+        if (isContinue) {
+            if (root instanceof ViewGroup) {
+                ViewGroup group = (ViewGroup) root;
+                int size = group.getChildCount();
+                for (int i = 0; i < size; i++) {
+                    if (!foreachViews(group.getChildAt(i), function1)) {
+                        break;
+                    }
+                }
             }
         }
+        return isContinue;
     }
 
     /**
@@ -400,6 +408,17 @@ public final class BaseUtils {
         } else {
             return mobiles.matches(telRegex);
         }
+    }
+
+    public static Drawable getCompoundDrawables(Context context, int id) {
+        if (id > 0) {
+            Drawable drawable = context.getResources().getDrawable(id);
+            if (null != drawable) {
+                drawable.setBounds(0, 0, drawable.getMinimumWidth(), drawable.getMinimumHeight());
+            }
+            return drawable;
+        }
+        return null;
     }
 
 }
