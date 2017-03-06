@@ -5,6 +5,7 @@ import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -83,6 +84,46 @@ public final class ViewHolder {
         return getView(id);
     }
 
+    public CheckBox getCheckBox(int id) {
+        return getView(id);
+    }
+
+    public CheckBox getSpinner(int id) {
+        return getView(id);
+    }
+
+    public CheckBox getProgressBar(int id) {
+        return getView(id);
+    }
+
+    public CheckBox getSeekBar(int id) {
+        return getView(id);
+    }
+
+    public CheckBox getRadioButton(int id) {
+        return getView(id);
+    }
+
+    public CheckBox getToggleButton(int id) {
+        return getView(id);
+    }
+
+    public CheckBox getSwitch(int id) {
+        return getView(id);
+    }
+
+    public CheckBox getWebView(int id) {
+        return getView(id);
+    }
+
+    public CheckBox getScrollView(int id) {
+        return getView(id);
+    }
+
+    public CheckBox getImageButton(int id) {
+        return getView(id);
+    }
+
     public ViewGroup getViewGroup(int id) {
         return getView(id);
     }
@@ -93,6 +134,14 @@ public final class ViewHolder {
 
     public GridView getGridView(int id) {
         return getView(id);
+    }
+
+    public String getTextByTag(int id) {
+        return BaseUtils.getTextByTag(getView(id));
+    }
+
+    public String getText(int id) {
+        return BaseUtils.getText(getView(id));
     }
 
 }

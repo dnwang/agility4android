@@ -1,6 +1,7 @@
 package org.pinwheel.agility.util;
 
 import android.content.Context;
+import android.content.res.Resources;
 
 public final class UIUtils {
 
@@ -34,6 +35,14 @@ public final class UIUtils {
 
     public static int getDisplayHeight(Context context) {
         return context.getResources().getDisplayMetrics().heightPixels;
+    }
+
+    /**
+     * 获取状态栏高度
+     */
+    public static int getStatusBarHeight() {
+        Resources resources = Resources.getSystem();
+        return resources.getDimensionPixelSize(resources.getIdentifier("status_bar_height", "dimen", "android"));
     }
 
 }

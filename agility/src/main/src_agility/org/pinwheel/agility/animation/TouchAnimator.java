@@ -17,6 +17,7 @@ import org.pinwheel.agility.util.UIUtils;
  *
  * @author dnwang
  */
+@Deprecated
 public final class TouchAnimator {
 
     private static final long ANIM_DURATION = 200l;

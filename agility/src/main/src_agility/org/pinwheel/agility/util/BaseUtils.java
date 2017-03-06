@@ -1,5 +1,6 @@
 package org.pinwheel.agility.util;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -11,19 +12,26 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.os.StatFs;
+import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import org.pinwheel.agility.util.callback.Action1;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Copyright (C), 2015 <br>
@@ -211,28 +219,54 @@ public final class BaseUtils {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static <T extends View> T getViewByHolder(View view, int id) {
-        SparseArray<View> viewHolder = (SparseArray<View>) view.getTag();
-        if (viewHolder == null) {
-            viewHolder = new SparseArray<View>();
-            view.setTag(viewHolder);
+//        SparseArray<View> viewHolder = (SparseArray<View>) view.getTag();
+//        if (viewHolder == null) {
+//            viewHolder = new SparseArray<View>();
+//            view.setTag(viewHolder);
+//        }
+//        View childView = viewHolder.get(id);
+//        if (childView == null) {
+//            childView = view.findViewById(id);
+//            viewHolder.put(id, childView);
+//        }
+        Object tag = view.getTag();
+        ViewHolder holder = null;
+        if (null == tag) {
+            holder = new ViewHolder(view);
+            view.setTag(holder);
+        } else if (tag instanceof ViewHolder) {
+            holder = (ViewHolder) tag;
         }
-        View childView = viewHolder.get(id);
-        if (childView == null) {
-            childView = view.findViewById(id);
-            viewHolder.put(id, childView);
+        return (T) holder.getView(id);
+    }
+
+    public static float string2Float(String string, float defaultValue) {
+        try {
+            return Float.valueOf(string);
+        } catch (Exception e) {
+            return defaultValue;
         }
-        return (T) childView;
     }
 
     public static int string2Int(String string, int defaultValue) {
-        int result = defaultValue;
         try {
-            result = Integer.parseInt(string);
+            return (int) (Float.valueOf(string).floatValue());
         } catch (Exception e) {
+            return defaultValue;
         }
-        return result;
+    }
+
+    public static double string2Double(String string, double defaultValue) {
+        try {
+            return Double.valueOf(string);
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
+    public static boolean string2Boolean(String string) {
+        return Boolean.valueOf(string);
     }
 
     public static <T> T getMapValue(Map<? extends Object, T> args, Object key, T defaultValue) {
@@ -282,6 +316,90 @@ public final class BaseUtils {
             sampleSize = sampleSize << 1;
         }
         return sampleSize;
+    }
+
+    /**
+     * 获取栈顶Activity
+     */
+    public static Activity getTopActivity() {
+        Class activityThreadClass = null;
+        try {
+            activityThreadClass = Class.forName("android.app.ActivityThread");
+            Object activityThread = activityThreadClass.getMethod("currentActivityThread").invoke(null);
+            Field activitiesField = activityThreadClass.getDeclaredField("mActivities");
+            activitiesField.setAccessible(true);
+            Map activities = (Map) activitiesField.get(activityThread);
+            for (Object activityRecord : activities.values()) {
+                Class activityRecordClass = activityRecord.getClass();
+                Field pausedField = activityRecordClass.getDeclaredField("paused");
+                pausedField.setAccessible(true);
+                if (!pausedField.getBoolean(activityRecord)) {
+                    Field activityField = activityRecordClass.getDeclaredField("activity");
+                    activityField.setAccessible(true);
+                    return (Activity) activityField.get(activityRecord);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String getText(View view) {
+        if (view instanceof TextView) {
+            TextView text = (TextView) view;
+            Object obj = text.getText();
+            return (obj == null ? "" : obj.toString().trim());
+        } else {
+            return "";
+        }
+    }
+
+    public static String getTextByTag(View view) {
+        Object tag = view.getTag();
+        return (null == tag ? "" : String.valueOf(tag));
+    }
+
+    /**
+     * 递归遍历所有视图
+     */
+    public static void foreachViews(final View root, final Action1<View> callback) {
+        if (null == root || null == callback) {
+            return;
+        }
+        callback.call(root);
+        if (root instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) root;
+            int size = group.getChildCount();
+            for (int i = 0; i < size; i++) {
+                foreachViews(group.getChildAt(i), callback);
+            }
+        }
+    }
+
+    /**
+     * 是否邮箱
+     */
+    public static boolean isEmail(String email) {
+        if (TextUtils.isEmpty(email)) {
+            return false;
+        }
+        String str = "^([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)$";
+        Pattern p = Pattern.compile(str);
+        Matcher m = p.matcher(email);
+        return m.matches();
+    }
+
+    /**
+     * 是否手机号
+     */
+    public static boolean isPhoneNumber(String mobiles) {
+        String telRegex = "[1][3578]\\d{9}";
+        if (TextUtils.isEmpty(mobiles)) {
+            return false;
+        } else {
+            return mobiles.matches(telRegex);
+        }
     }
 
 }
