@@ -29,11 +29,16 @@ public final class FieldUtils {
      */
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
-    public static @interface Ignore {
+    public @interface Ignore {
+    }
+
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface Mark {
     }
 
     private FieldUtils() {
-
+        throw new AssertionError();
     }
 
     public static Map<String, String> obj2Map(Object obj) {
@@ -46,7 +51,7 @@ public final class FieldUtils {
             try {
                 field.setAccessible(true);
                 Object v = field.get(obj);
-                values.put(field.getName(), (v == null ? "" : v.toString()));
+                values.put(field.getName(), (v == null ? "" : String.valueOf(v)));
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -61,6 +66,70 @@ public final class FieldUtils {
         Type genType = obj.getClass().getGenericSuperclass();
         Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
         return (Class) params[0];
+    }
+
+    public static Map<String, String> getPropertiesWithoutIgnore(Object obj) {
+        if (null == obj) {
+            return null;
+        }
+        return getPropertiesWithoutIgnore((Class) obj.getClass(), obj);
+    }
+
+    public static <T> Map<String, String> getPropertiesWithoutIgnore(Class<T> cls, T obj) {
+        if (null == obj || null == cls) {
+            return null;
+        }
+        Map<String, String> superParams = getPropertiesWithoutIgnore(cls.getSuperclass(), obj);
+        Map<String, String> params = new HashMap<>();
+        Field[] fields = cls.getDeclaredFields();
+        for (Field field : fields) {
+            if (!field.isAnnotationPresent(FieldUtils.Ignore.class)) {
+                try {
+                    field.setAccessible(true);
+                    Object v = field.get(obj);
+                    params.put(field.getName(), v == null ? "" : String.valueOf(v));
+                } catch (IllegalAccessException ignore) {
+                }
+            }
+        }
+        if (null != superParams) {
+            superParams.putAll(params);
+            return superParams;
+        } else {
+            return params;
+        }
+    }
+
+    public static Map<String, String> getPropertiesWithMark(Object obj) {
+        if (null == obj) {
+            return null;
+        }
+        return getPropertiesWithMark((Class) obj.getClass(), obj);
+    }
+
+    public static <T> Map<String, String> getPropertiesWithMark(Class<T> cls, T obj) {
+        if (null == obj || null == cls) {
+            return null;
+        }
+        Map<String, String> superParams = getPropertiesWithMark(cls.getSuperclass(), obj);
+        Map<String, String> params = new HashMap<>();
+        Field[] fields = cls.getDeclaredFields();
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(FieldUtils.Mark.class)) {
+                try {
+                    field.setAccessible(true);
+                    Object v = field.get(obj);
+                    params.put(field.getName(), v == null ? "" : String.valueOf(v));
+                } catch (IllegalAccessException ignore) {
+                }
+            }
+        }
+        if (null != superParams) {
+            superParams.putAll(params);
+            return superParams;
+        } else {
+            return params;
+        }
     }
 
 }

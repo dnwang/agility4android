@@ -29,8 +29,8 @@ ext {
     buildToolsVersion = '25.0.2'
     minSdkVersion = 15
     targetSdkVersion = 25
-    versionCode = 88
-    versionName = '4.2.8'
+    versionCode = 89
+    versionName = '4.2.9'
 
     supportVersion = '25.1.0'
 }
