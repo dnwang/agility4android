@@ -1,13 +1,17 @@
 package org.pinwheel.agility.util;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.v4.view.ViewPager;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.webkit.WebView;
 import android.widget.AbsListView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -53,40 +57,6 @@ public final class ViewHolder {
         setContentView(root);
     }
 
-    public ViewHolder foreach(Function1<Boolean, View> function1) {
-        if (null != contentView && null != function1) {
-            BaseUtils.foreachViews(contentView, function1);
-        }
-        return this;
-    }
-
-    public ViewHolder setOnGlobalLayoutListener(final Action0 action0) {
-        if (null != contentView && null != action0) {
-            contentView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    contentView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                    action0.call();
-                }
-            });
-        }
-        return this;
-    }
-
-    public ViewHolder postDelay(Runnable runnable, int delay) {
-        if (null != contentView && null != runnable) {
-            contentView.postDelayed(runnable, delay);
-        }
-        return this;
-    }
-
-    public ViewHolder post(Runnable runnable) {
-        if (null != contentView && null != runnable) {
-            contentView.post(runnable);
-        }
-        return this;
-    }
-
     public ViewHolder setContentView(View root) {
         if (contentView != root && null != holder) {
             holder.clear();
@@ -99,10 +69,7 @@ public final class ViewHolder {
         return contentView;
     }
 
-    public Context getContext() {
-        return (null != contentView) ? contentView.getContext() : null;
-    }
-
+    /******************** getter */
     public <T extends View> T getView(int id) {
         if (holder == null) {
             holder = new SparseArray<>();
@@ -114,16 +81,6 @@ public final class ViewHolder {
             holder.put(id, new SoftReference<>(view));
         }
         return (T) view;
-    }
-
-    public ViewHolder setTag(int id, Object obj) {
-        getView(id).setTag(obj);
-        return this;
-    }
-
-    public <T extends View> T getTag(int id) {
-        Object tag = getView(id).getTag();
-        return (null == tag ? null : (T) tag);
     }
 
     public TextView getTextView(int id) {
@@ -190,9 +147,15 @@ public final class ViewHolder {
         return getView(id);
     }
 
+    public ViewPager getViewPager(int id) {
+        return getView(id);
+    }
+
     public DragRefreshWrapper getDragRefreshWrapper(int id) {
         return getView(id);
     }
+
+    /******************* function */
 
     public String getStringByTag(int id) {
         Object tag = getTag(id);
@@ -203,107 +166,253 @@ public final class ViewHolder {
         return BaseUtils.getStringByText(getView(id));
     }
 
-    public ViewHolder setCompoundDrawables(int id, int left, int top, int right, int bottom) {
-        View v = getView(id);
-        if (v instanceof TextView) {
-            Context ctx = v.getContext();
-            Drawable leftImg = BaseUtils.getCompoundDrawables(ctx, left);
-            Drawable topImg = BaseUtils.getCompoundDrawables(ctx, top);
-            Drawable rightImg = BaseUtils.getCompoundDrawables(ctx, right);
-            Drawable bottomImg = BaseUtils.getCompoundDrawables(ctx, bottom);
-            ((TextView) v).setCompoundDrawables(leftImg, topImg, rightImg, bottomImg);
+    public <T> T getTag(int id) {
+        Object tag = getView(id).getTag();
+        return null == tag ? null : (T) tag;
+    }
+
+    public ViewHolder foreach(Function1<Boolean, View> function1) {
+        if (null != contentView && null != function1) {
+            BaseUtils.foreachViews(contentView, function1);
         }
         return this;
     }
 
-    public ViewHolder setOnClickListener(int id, View.OnClickListener listener) {
-        getView(id).setOnClickListener(listener);
+    public ViewHolder setOnGlobalLayoutListener(final Action0 action0) {
+        if (null != contentView && null != action0) {
+            contentView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    contentView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    action0.call();
+                }
+            });
+        }
         return this;
     }
 
-    public ViewHolder setOnLongClickListener(int id, View.OnLongClickListener listener) {
-        getView(id).setOnLongClickListener(listener);
+    public ViewHolder postDelayed(Runnable runnable, long delay) {
+        if (null != contentView && null != runnable) {
+            contentView.postDelayed(runnable, delay);
+        }
         return this;
     }
 
-    public ViewHolder setOnTouchListener(int id, View.OnTouchListener listener) {
-        getView(id).setOnTouchListener(listener);
+    public ViewHolder post(Runnable runnable) {
+        if (null != contentView && null != runnable) {
+            contentView.post(runnable);
+        }
         return this;
     }
 
-    public ViewHolder setOnScrollListener(int id, AbsListView.OnScrollListener listener) {
-        ((AbsListView) getView(id)).setOnScrollListener(listener);
-        return this;
+    public Context getContext() {
+        return (null != contentView) ? contentView.getContext() : null;
     }
 
-    public ViewHolder setOnItemSelectedListener(int id, AbsListView.OnItemSelectedListener listener) {
-        ((AbsListView) getView(id)).setOnItemSelectedListener(listener);
-        return this;
+    public Setter select(int id) {
+        return new Setter(getView(id));
     }
 
-    public ViewHolder setOnItemClickListener(int id, AbsListView.OnItemClickListener listener) {
-        ((AbsListView) getView(id)).setOnItemClickListener(listener);
-        return this;
-    }
+    /**
+     * view properties setter
+     */
+    public static final class Setter {
 
-    public ViewHolder setOnItemLongClickListener(int id, AbsListView.OnItemLongClickListener listener) {
-        ((AbsListView) getView(id)).setOnItemLongClickListener(listener);
-        return this;
-    }
+        private View target;
 
-    public ViewHolder setVisibility(int id, int visibility) {
-        getView(id).setVisibility(visibility);
-        return this;
-    }
+        public Setter(View target) {
+            if (null == target) {
+                throw new NullPointerException("target view is null");
+            }
+            this.target = target;
+        }
 
-    public ViewHolder setText(int id, int txt) {
-        getTextView(id).setText(txt);
-        return this;
-    }
+        public View getTarget() {
+            return target;
+        }
 
-    public ViewHolder setText(int id, CharSequence txt) {
-        getTextView(id).setText(txt);
-        return this;
-    }
+        public Setter setCompoundDrawables(int left, int top, int right, int bottom) {
+            if (target instanceof TextView) {
+                Context ctx = target.getContext();
+                Drawable leftImg = BaseUtils.getCompoundDrawables(ctx, left);
+                Drawable topImg = BaseUtils.getCompoundDrawables(ctx, top);
+                Drawable rightImg = BaseUtils.getCompoundDrawables(ctx, right);
+                Drawable bottomImg = BaseUtils.getCompoundDrawables(ctx, bottom);
+                ((TextView) target).setCompoundDrawables(leftImg, topImg, rightImg, bottomImg);
+            }
+            return this;
+        }
 
-    public ViewHolder setTextColor(int id, int color) {
-        getTextView(id).setTextColor(color);
-        return this;
-    }
+        public Setter setTag(Object obj) {
+            target.setTag(obj);
+            return this;
+        }
 
-    public ViewHolder setHint(int id, int txt) {
-        getTextView(id).setHint(txt);
-        return this;
-    }
+        public Setter setId(int id) {
+            target.setId(id);
+            return this;
+        }
 
-    public ViewHolder setHint(int id, CharSequence txt) {
-        getTextView(id).setHint(txt);
-        return this;
-    }
+        public Setter setBackgroundResource(int img) {
+            target.setBackgroundResource(img);
+            return this;
+        }
 
-    public ViewHolder setImageResource(int id, int resId) {
-        getImageView(id).setImageResource(resId);
-        return this;
-    }
+        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+        public Setter setBackground(Drawable drawable) {
+            target.setBackground(drawable);
+            return this;
+        }
 
-    public ViewHolder setEnabled(int id, boolean isEnable) {
-        getView(id).setEnabled(isEnable);
-        return this;
-    }
+        public Setter setBackgroundColor(int color) {
+            target.setBackgroundColor(color);
+            return this;
+        }
 
-    public ViewHolder setChecked(int id, boolean isChecked) {
-        ((CompoundButton) getView(id)).setChecked(isChecked);
-        return this;
-    }
+        public Setter setFocusable(boolean focusable) {
+            target.setFocusable(focusable);
+            return this;
+        }
 
-    public ViewHolder setSelected(int id, boolean selected) {
-        getView(id).setSelected(selected);
-        return this;
-    }
+        public Setter setVisibility(int visibility) {
+            target.setVisibility(visibility);
+            return this;
+        }
 
-    public ViewHolder setClickable(int id, boolean selected) {
-        getView(id).setClickable(selected);
-        return this;
+        public Setter setText(int txt) {
+            if (target instanceof TextView) {
+                ((TextView) target).setText(txt);
+            }
+            return this;
+        }
+
+        public Setter setText(CharSequence txt) {
+            if (target instanceof TextView) {
+                ((TextView) target).setText(txt);
+            }
+            return this;
+        }
+
+        public Setter setTextColor(int color) {
+            if (target instanceof TextView) {
+                ((TextView) target).setTextColor(color);
+            }
+            return this;
+        }
+
+        public Setter setHint(int txt) {
+            if (target instanceof TextView) {
+                ((TextView) target).setHint(txt);
+            }
+            return this;
+        }
+
+        public Setter setHint(CharSequence txt) {
+            if (target instanceof TextView) {
+                ((TextView) target).setHint(txt);
+            }
+            return this;
+        }
+
+        public Setter setImageResource(int img) {
+            if (target instanceof ImageView) {
+                ((ImageView) target).setImageResource(img);
+            }
+            return this;
+        }
+
+        public Setter setImageDrawable(Drawable drawable) {
+            if (target instanceof ImageView) {
+                ((ImageView) target).setImageDrawable(drawable);
+            }
+            return this;
+        }
+
+        public Setter setEnabled(boolean isEnable) {
+            target.setEnabled(isEnable);
+            return this;
+        }
+
+        public Setter setChecked(boolean isChecked) {
+            if (target instanceof CompoundButton) {
+                ((CompoundButton) target).setChecked(isChecked);
+            }
+            return this;
+        }
+
+        public Setter setSelected(boolean selected) {
+            target.setSelected(selected);
+            return this;
+        }
+
+        public Setter setClickable(boolean selected) {
+            target.setClickable(selected);
+            return this;
+        }
+
+        public Setter setOnClickListener(View.OnClickListener listener) {
+            target.setOnClickListener(listener);
+            return this;
+        }
+
+        public Setter setOnLongClickListener(View.OnLongClickListener listener) {
+            target.setOnLongClickListener(listener);
+            return this;
+        }
+
+        public Setter setOnTouchListener(View.OnTouchListener listener) {
+            target.setOnTouchListener(listener);
+            return this;
+        }
+
+        public Setter setOnScrollListener(AbsListView.OnScrollListener listener) {
+            if (target instanceof AbsListView) {
+                ((AbsListView) target).setOnScrollListener(listener);
+            }
+            return this;
+        }
+
+        public Setter setOnItemSelectedListener(AbsListView.OnItemSelectedListener listener) {
+            if (target instanceof AbsListView) {
+                ((AbsListView) target).setOnItemSelectedListener(listener);
+            }
+            return this;
+        }
+
+        public Setter setOnItemClickListener(AbsListView.OnItemClickListener listener) {
+            if (target instanceof AbsListView) {
+                ((AbsListView) target).setOnItemClickListener(listener);
+            }
+            return this;
+        }
+
+        public Setter setOnItemLongClickListener(AbsListView.OnItemLongClickListener listener) {
+            if (target instanceof AbsListView) {
+                ((AbsListView) target).setOnItemLongClickListener(listener);
+            }
+            return this;
+        }
+
+        public Setter setAdapter(BaseAdapter adapter) {
+            if (target instanceof AbsListView) {
+                ((AbsListView) target).setAdapter(adapter);
+            }
+            return this;
+        }
+
+        public Setter setOnPageChangeListener(ViewPager.OnPageChangeListener listener) {
+            if (target instanceof ViewPager) {
+                ((ViewPager) target).setOnPageChangeListener(listener);
+            }
+            return this;
+        }
+
+        public Setter setOnRefreshListener(DragRefreshWrapper.OnRefreshListener listener) {
+            if (target instanceof DragRefreshWrapper) {
+                ((DragRefreshWrapper) target).setOnRefreshListener(listener);
+            }
+            return this;
+        }
     }
 
 }
