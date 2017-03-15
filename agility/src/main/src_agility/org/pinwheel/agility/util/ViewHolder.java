@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.SparseArray;
 import android.view.View;
@@ -11,7 +12,8 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.webkit.WebView;
 import android.widget.AbsListView;
-import android.widget.BaseAdapter;
+import android.widget.Adapter;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -28,8 +30,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import org.pinwheel.agility.adapter.SimpleArrayAdapter;
+import org.pinwheel.agility.adapter.SimplePagerAdapter;
 import org.pinwheel.agility.util.callback.Action0;
 import org.pinwheel.agility.util.callback.Function1;
+import org.pinwheel.agility.view.drag.BaseDragIndicator;
 import org.pinwheel.agility.view.drag.DragRefreshWrapper;
 
 import java.lang.ref.SoftReference;
@@ -84,6 +89,10 @@ public final class ViewHolder {
     }
 
     public TextView getTextView(int id) {
+        return getView(id);
+    }
+
+    public TextView getEditText(int id) {
         return getView(id);
     }
 
@@ -164,6 +173,33 @@ public final class ViewHolder {
 
     public String getStringByText(int id) {
         return BaseUtils.getStringByText(getView(id));
+    }
+
+    public Adapter getAdapter(int id) {
+        View view = getView(id);
+        if (view instanceof AdapterView) {
+            return ((AdapterView) view).getAdapter();
+        }
+        return null;
+    }
+
+    public <T> SimpleArrayAdapter<T> getSimpleArrayAdapter(int id) {
+        Adapter adapter = getAdapter(id);
+        if (null != adapter) {
+            return (SimpleArrayAdapter<T>) adapter;
+        }
+        return null;
+    }
+
+    public SimplePagerAdapter getSimplePagerAdapter(int id) {
+        ViewPager viewPager = getViewPager(id);
+        if (null != viewPager) {
+            PagerAdapter adapter = viewPager.getAdapter();
+            if (null != adapter) {
+                return (SimplePagerAdapter) adapter;
+            }
+        }
+        return null;
     }
 
     public <T> T getTag(int id) {
@@ -350,6 +386,20 @@ public final class ViewHolder {
             return this;
         }
 
+        public Setter setInputType(int type) {
+            if (target instanceof TextView) {
+                ((TextView) target).setInputType(type);
+            }
+            return this;
+        }
+
+        public Setter setNumColumns(int numColumns) {
+            if (target instanceof GridView) {
+                ((GridView) target).setNumColumns(numColumns);
+            }
+            return this;
+        }
+
         public Setter setOnClickListener(View.OnClickListener listener) {
             target.setOnClickListener(listener);
             return this;
@@ -393,9 +443,9 @@ public final class ViewHolder {
             return this;
         }
 
-        public Setter setAdapter(BaseAdapter adapter) {
-            if (target instanceof AbsListView) {
-                ((AbsListView) target).setAdapter(adapter);
+        public Setter setAdapter(Adapter adapter) {
+            if (target instanceof AdapterView) {
+                ((AdapterView) target).setAdapter(adapter);
             }
             return this;
         }
@@ -413,6 +463,35 @@ public final class ViewHolder {
             }
             return this;
         }
+
+        public Setter setHeaderIndicator(BaseDragIndicator indicator) {
+            if (target instanceof DragRefreshWrapper) {
+                ((DragRefreshWrapper) target).setHeaderIndicator(indicator);
+            }
+            return this;
+        }
+
+        public Setter setFooterIndicator(BaseDragIndicator indicator) {
+            if (target instanceof DragRefreshWrapper) {
+                ((DragRefreshWrapper) target).setFooterIndicator(indicator);
+            }
+            return this;
+        }
+
+        public Setter setHeaderVisibility(boolean isVisible) {
+            if (target instanceof DragRefreshWrapper) {
+                ((DragRefreshWrapper) target).setHeaderVisibility(isVisible);
+            }
+            return this;
+        }
+
+        public Setter setFooterVisibility(boolean isVisible) {
+            if (target instanceof DragRefreshWrapper) {
+                ((DragRefreshWrapper) target).setFooterVisibility(isVisible);
+            }
+            return this;
+        }
+
     }
 
 }
