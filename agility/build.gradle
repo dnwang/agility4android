@@ -64,7 +64,8 @@ dependencies {
 }
 
 task exportJar(type: Copy) {
-    from('build/intermediates/bundles/release/')
+//    from('build/intermediates/bundles/release/')
+    from('build/intermediates/bundles/default/')
     into('version_out/')
     include('classes.jar')
     rename('classes.jar', rootProject.ext.projectName + '-v' + rootProject.ext.versionName + '.jar')

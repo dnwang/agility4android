@@ -8,7 +8,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Copyright (C), 2015 <br>
@@ -19,14 +18,6 @@ import java.util.Map;
  */
 public final class FieldUtils {
 
-    /**
-     * Copyright (C), 2015 <br>
-     * <br>
-     * All rights reserved <br>
-     * <br>
-     *
-     * @author dnwang
-     */
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Ignore {
@@ -41,19 +32,16 @@ public final class FieldUtils {
         throw new AssertionError();
     }
 
-    public static Map<String, String> obj2Map(Object obj) {
-        Map<String, String> values = new HashMap<>();
+    public static HashMap<String, Object> obj2Map(Object obj) {
+        HashMap<String, Object> values = new HashMap<>();
         Class cls = obj.getClass();
         for (Field field : cls.getDeclaredFields()) {
-            if (field.isAnnotationPresent(Ignore.class)) {
-                continue;
-            }
-            try {
-                field.setAccessible(true);
-                Object v = field.get(obj);
-                values.put(field.getName(), (v == null ? "" : String.valueOf(v)));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
+            if (!field.isAnnotationPresent(Ignore.class)) {
+                try {
+                    field.setAccessible(true);
+                    values.put(field.getName(), field.get(obj));
+                } catch (IllegalAccessException ignore) {
+                }
             }
         }
         return values;
@@ -68,26 +56,25 @@ public final class FieldUtils {
         return (Class) params[0];
     }
 
-    public static Map<String, String> getPropertiesWithoutIgnore(Object obj) {
+    public static HashMap<String, Object> getPropertiesWithoutIgnore(Object obj) {
         if (null == obj) {
             return null;
         }
         return getPropertiesWithoutIgnore((Class) obj.getClass(), obj);
     }
 
-    public static <T> Map<String, String> getPropertiesWithoutIgnore(Class<T> cls, T obj) {
+    public static <T> HashMap<String, Object> getPropertiesWithoutIgnore(Class<T> cls, T obj) {
         if (null == obj || null == cls) {
             return null;
         }
-        Map<String, String> superParams = getPropertiesWithoutIgnore(cls.getSuperclass(), obj);
-        Map<String, String> params = new HashMap<>();
+        HashMap<String, Object> superParams = getPropertiesWithoutIgnore(cls.getSuperclass(), obj);
+        HashMap<String, Object> params = new HashMap<>();
         Field[] fields = cls.getDeclaredFields();
         for (Field field : fields) {
-            if (!field.isAnnotationPresent(FieldUtils.Ignore.class)) {
+            if (!field.isAnnotationPresent(Ignore.class)) {
                 try {
                     field.setAccessible(true);
-                    Object v = field.get(obj);
-                    params.put(field.getName(), v == null ? "" : String.valueOf(v));
+                    params.put(field.getName(), field.get(obj));
                 } catch (IllegalAccessException ignore) {
                 }
             }
@@ -100,26 +87,25 @@ public final class FieldUtils {
         }
     }
 
-    public static Map<String, String> getPropertiesWithMark(Object obj) {
+    public static HashMap<String, Object> getPropertiesWithMark(Object obj) {
         if (null == obj) {
             return null;
         }
         return getPropertiesWithMark((Class) obj.getClass(), obj);
     }
 
-    public static <T> Map<String, String> getPropertiesWithMark(Class<T> cls, T obj) {
+    public static <T> HashMap<String, Object> getPropertiesWithMark(Class<T> cls, T obj) {
         if (null == obj || null == cls) {
             return null;
         }
-        Map<String, String> superParams = getPropertiesWithMark(cls.getSuperclass(), obj);
-        Map<String, String> params = new HashMap<>();
+        HashMap<String, Object> superParams = getPropertiesWithMark(cls.getSuperclass(), obj);
+        HashMap<String, Object> params = new HashMap<>();
         Field[] fields = cls.getDeclaredFields();
         for (Field field : fields) {
-            if (field.isAnnotationPresent(FieldUtils.Mark.class)) {
+            if (field.isAnnotationPresent(Mark.class)) {
                 try {
                     field.setAccessible(true);
-                    Object v = field.get(obj);
-                    params.put(field.getName(), v == null ? "" : String.valueOf(v));
+                    params.put(field.getName(), field.get(obj));
                 } catch (IllegalAccessException ignore) {
                 }
             }
