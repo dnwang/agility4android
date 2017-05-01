@@ -2,6 +2,7 @@ package org.pinwheel.agility.compat;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -106,7 +107,7 @@ public final class PhotoPicker {
             case CODE_PICK_PHOTO: {
                 if (data != null) {
                     String path = "";
-                    Uri uri = data.getData();
+                    Uri uri = getUri(data);
                     try {
                         // 先从数据库中获取URI对应的路径
                         String[] filePathColumns = {MediaStore.Images.Media.DATA};
@@ -212,6 +213,38 @@ public final class PhotoPicker {
         if (null != listener) {
             listener.call(imgFile, null);
         }
+    }
+
+    private Uri getUri(Intent intent) {
+        Uri uri = intent.getData();
+        String type = intent.getType();
+        if (uri.getScheme().equals("file") && (type.contains("image/"))) {
+            String path = uri.getEncodedPath();
+            if (path != null) {
+                path = Uri.decode(path);
+                ContentResolver contentResolver = activity.getContentResolver();
+                StringBuffer buff = new StringBuffer();
+                buff.append("(").append(MediaStore.Images.ImageColumns.DATA).append("=").append("'" + path + "'").append(")");
+                Cursor cur = contentResolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        new String[]{MediaStore.Images.ImageColumns._ID},
+                        buff.toString(), null, null);
+                int index = 0;
+                for (cur.moveToFirst(); !cur.isAfterLast(); cur.moveToNext()) {
+                    index = cur.getColumnIndex(MediaStore.Images.ImageColumns._ID);
+                    // set _id value
+                    index = cur.getInt(index);
+                }
+                if (index == 0) {
+                    // do nothing
+                } else {
+                    Uri uri_temp = Uri.parse("content://media/external/images/media/" + index);
+                    if (uri_temp != null) {
+                        uri = uri_temp;
+                    }
+                }
+            }
+        }
+        return uri;
     }
 
 }
