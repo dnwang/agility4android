@@ -149,7 +149,7 @@ public class CycleGalleryActivity extends AbsTesterActivity {
         createFunctionBtn(parent, "置0", v -> gallery.setCurrentIndex(0));
         createFunctionBtn(parent, "<", v -> gallery.moveItems(-3));
         createFunctionBtn(parent, ">", v -> gallery.moveItems(3));
-        createFunctionBtn(parent, "新增数据", v -> adapter.addAll(new Object[4]).notifyDataSetChanged());
+        createFunctionBtn(parent, "新增数据", v -> adapter.addAll(new Object[1]).notifyDataSetChanged());
         createFunctionBtn(parent, "清空数据", v -> adapter.removeAll().notifyDataSetChanged());
         createFunctionBtn(parent, "替换数据", v -> adapter.removeAll().addAll(new Object[2]).notifyDataSetChanged());
         createFunctionBtn(parent, "-间距", v -> gallery.setSpaceBetweenItems(gallery.getSpaceBetweenItems() - 20));

@@ -13,6 +13,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -53,11 +54,15 @@ public class FieldActivity extends AbsTesterActivity {
         logout("└ }");
 
         // add method test 201506029
-        Map<String, String> values = FieldUtils.obj2Map(new DemoEntity());
+        Map<String, Object> values = FieldUtils.obj2Map(new DemoEntity());
         logout(values);
         VolleyRequestHelper.init(this);
         VolleyRequestHelper.debug = true;
-        Request api = new Request.Builder().url("http://www.baidu.com").addParams(values).create();
+        Map<String, String> convertedValues = new HashMap<>(values.size());
+        for (Map.Entry<String, Object> tmp : values.entrySet()) {
+            convertedValues.put(tmp.getKey(), String.valueOf(tmp.getValue()));
+        }
+        Request api = new Request.Builder().url("http://www.baidu.com").addParams(convertedValues).create();
         VolleyRequestHelper.doGet(api, null);
     }
 
