@@ -3,6 +3,9 @@ package org.pinwheel.agility.util;
 import android.os.Handler;
 import android.os.Looper;
 
+import org.pinwheel.agility.util.callback.Action1;
+import org.pinwheel.agility.util.callback.Action2;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,25 +36,6 @@ import java.util.concurrent.Future;
  */
 public final class Downloader {
 
-    /**
-     * Function callback
-     *
-     * @param <V>
-     */
-    public interface Callback<V> {
-        void call(V arg0);
-    }
-
-    /**
-     * Function callback
-     *
-     * @param <V>
-     * @param <K>
-     */
-    public interface Callback2<V, K> {
-        void call(V arg0, K arg1);
-    }
-
     public enum CallbackMode {
         /**
          * callback just when value changed.
@@ -67,13 +51,13 @@ public final class Downloader {
     private ExecutorService executor;
     private CopyOnWriteArraySet<DownloadWorker> workers;
     private CancelableRunner monitor;
-    private int maxThreadSize = 2;// default thread size
+    private int maxThreadSize = 1;// default thread size
     private int monitorPeriod = 999;// default value
 
     private DownloadInfo downloadInfo;
 
-    private Callback<Boolean> completeCallback;
-    private Callback2<Long, Long> progressCallback;
+    private Action1<Boolean> completeCallback;
+    private Action2<Long, Long> progressCallback;
 
     public Downloader() {
         this.mainHandler = new Handler(Looper.getMainLooper());
@@ -81,12 +65,12 @@ public final class Downloader {
         this.executor = Executors.newCachedThreadPool();
     }
 
-    public Downloader onProcess(Callback2<Long, Long> callable) {
+    public Downloader onProcess(Action2<Long, Long> callable) {
         progressCallback = callable;
         return this;
     }
 
-    public Downloader onComplete(Callback<Boolean> callable) {
+    public Downloader onComplete(Action1<Boolean> callable) {
         completeCallback = callable;
         return this;
     }
@@ -223,7 +207,7 @@ public final class Downloader {
                     if (mergeWorkerProgress() && checkWorkerState()) {
                         try {
                             Thread.sleep(monitorPeriod);
-                        } catch (InterruptedException e) {
+                        } catch (InterruptedException ignore) {
                         }
                     } else {
                         reset();
@@ -251,7 +235,7 @@ public final class Downloader {
     }
 
     private List<Block> reSplitBlock(List<Block> spaceBlocks) {
-        if (downloadInfo.contentLength < 1024) {// > 1M
+        if (1 == maxThreadSize || downloadInfo.contentLength < 1024) {// > 1M
             return spaceBlocks;
         }
         List<Block> tmp = new ArrayList<>();

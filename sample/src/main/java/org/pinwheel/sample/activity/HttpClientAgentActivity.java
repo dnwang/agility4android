@@ -141,7 +141,7 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
     public void bigFileRequest() {
         final long startTime = System.currentTimeMillis();
 
-        String url = "https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_android.apk";
+        String url = "http://yf-runningpig.oss-cn-hangzhou.aliyuncs.com/runningpig_v0.0.2_2.apk";
         final String tag = "bigFileRequest";
         DataParserAdapter parser = new FileParser(new File(Environment.getExternalStorageDirectory(), "file.apk"));
         parser.setOnParseListener(new DataParserAdapter.OnParseListener() {
@@ -187,13 +187,11 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
     @TestMethod(title = "多线程断点下载")
     public void continueDownload() {
         if (downloader == null) {
-            downloader = new Downloader()
-                    .setMaxThreadSize(3)
-                    .onComplete(arg0 -> logout(arg0 ? "success" : "error"))
+            downloader = new Downloader().onComplete(arg0 -> logout(arg0 ? "success" : "error"))
                     .onProcess((arg0, arg1) -> logout("percent: " + (arg0 * 100 / arg1) + "% [" + BaseUtils.longSizeToStr(arg0) + "/" + BaseUtils.longSizeToStr(arg1) + "]"));
         }
-        final String url = "https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_android.apk";
-        final File file = new File(Environment.getExternalStorageDirectory(), "QQMobile.apk");
+        final String url = "http://yf-runningpig.oss-cn-hangzhou.aliyuncs.com/runningpig_v0.0.2_2.apk";
+        final File file = new File(Environment.getExternalStorageDirectory(), "upgrade.apk");
         // request running permissions in android M
         requestPermissions((isSuccess) -> {
             downloader.open(file, url);
