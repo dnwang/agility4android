@@ -5,7 +5,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.pinwheel.agility.util.ViewHolder;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -34,7 +37,7 @@ public abstract class SimpleRecycleAdapter<T> extends RecyclerView.Adapter<Simpl
         addAll(list);
     }
 
-    public List<T> getAll() {
+    public List<T> getDatas() {
         return data;
     }
 
@@ -69,8 +72,12 @@ public abstract class SimpleRecycleAdapter<T> extends RecyclerView.Adapter<Simpl
     public SimpleRecycleAdapter<T> addAll(T... list) {
         if (list != null && list.length > 0) {
             for (T t : list) {
-                if (t instanceof List) {
-                    addAll((List<T>) t);
+                if (t instanceof Collection) {
+                    if (t instanceof List) {
+                        addAll((List<T>) t);
+                    } else {
+                        throw new ClassCastException("SimpleRecycleAdapter addAll(T...)");
+                    }
                 } else {
                     data.add(t);
                 }
@@ -98,13 +105,16 @@ public abstract class SimpleRecycleAdapter<T> extends RecyclerView.Adapter<Simpl
         return this;
     }
 
-    public abstract int getItemLayout();
-
     @Override
     public RecyclerViewItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View contentView = LayoutInflater.from(parent.getContext()).inflate(getItemLayout(), null);
+        View contentView = onCreateView(LayoutInflater.from(parent.getContext()), parent, viewType);
+        if (null == contentView) {
+            throw new NullPointerException("SimpleRecycleAdapter onCreateView can't get null !");
+        }
         return new RecyclerViewItemHolder(contentView);
     }
+
+    public abstract View onCreateView(LayoutInflater inflater, ViewGroup parent, int viewType);
 
     @Override
     public int getItemCount() {
@@ -124,6 +134,10 @@ public abstract class SimpleRecycleAdapter<T> extends RecyclerView.Adapter<Simpl
 
         public <K extends View> K getView(int id) {
             return holder.getView(id);
+        }
+
+        public ViewHolder getViewHolder() {
+            return holder;
         }
 
         public void setOnClickListener(View.OnClickListener listener) {

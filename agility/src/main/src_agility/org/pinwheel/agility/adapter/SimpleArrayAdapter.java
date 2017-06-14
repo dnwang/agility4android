@@ -16,16 +16,21 @@ import java.util.List;
  */
 public abstract class SimpleArrayAdapter<T> extends BaseAdapter {
 
-    protected ArrayList<T> data;
+    private ArrayList<T> data;
 
-    protected SimpleArrayAdapter() {
+    public SimpleArrayAdapter() {
         super();
         data = new ArrayList<>(0);
     }
 
-    protected SimpleArrayAdapter(List<T> datas) {
+    public SimpleArrayAdapter(List<T> list) {
         super();
-        data = new ArrayList<>(datas);
+        data = new ArrayList<>(list);
+    }
+
+    public SimpleArrayAdapter(T... list) {
+        this();
+        addAll(list);
     }
 
     @Override
@@ -72,16 +77,16 @@ public abstract class SimpleArrayAdapter<T> extends BaseAdapter {
         return this;
     }
 
-    public SimpleArrayAdapter<T> addAll(List<T> datas) {
-        if (datas != null && datas.size() > 0) {
-            data.addAll(datas);
+    public SimpleArrayAdapter<T> addAll(List<T> list) {
+        if (list != null && list.size() > 0) {
+            data.addAll(list);
         }
         return this;
     }
 
-    public SimpleArrayAdapter<T> addAll(T... datas) {
-        if (datas != null && datas.length > 0) {
-            for (T t : datas) {
+    public SimpleArrayAdapter<T> addAll(T... list) {
+        if (list != null && list.length > 0) {
+            for (T t : list) {
                 if (t instanceof Collection) {
                     if (t instanceof List) {
                         addAll((List<T>) t);
@@ -108,8 +113,8 @@ public abstract class SimpleArrayAdapter<T> extends BaseAdapter {
         return this;
     }
 
-    public SimpleArrayAdapter<T> removeAll(List<T> datas) {
-        this.data.removeAll(datas);
+    public SimpleArrayAdapter<T> removeAll(List<T> list) {
+        this.data.removeAll(list);
         return this;
     }
 
