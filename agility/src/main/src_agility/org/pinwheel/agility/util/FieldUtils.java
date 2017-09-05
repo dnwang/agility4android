@@ -47,13 +47,13 @@ public final class FieldUtils {
         return values;
     }
 
-    public static Class getGenericClass(Object obj) {
+    public static Type getGenericClass(Object obj) {
         if (obj == null) {
             return null;
         }
         Type genType = obj.getClass().getGenericSuperclass();
         Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
-        return (Class) params[0];
+        return params[0];
     }
 
     public static HashMap<String, Object> getPropertiesWithoutIgnore(Object obj) {

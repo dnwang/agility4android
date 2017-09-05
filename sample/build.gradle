@@ -46,7 +46,6 @@ dependencies {
     compile 'io.reactivex:rxandroid:1.2.1'
     compile 'com.google.guava:guava:20.0'
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
-    compile 'eu.the4thfloor.volley:com.android.volley:2015.05.28'
     compile 'com.google.code.gson:gson:2.8.0'
     compile 'com.squareup.okhttp:okhttp:2.7.5'
 
