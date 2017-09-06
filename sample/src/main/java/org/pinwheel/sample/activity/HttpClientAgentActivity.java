@@ -26,7 +26,6 @@ public class HttpClientAgentActivity extends AbsMethodListActivity {
     protected void beforeInitView() {
         httpClientAgent = new OkHttp2Agent(6);
 //        httpClientAgent = new HttpConnectionAgent(6);
-//        httpClientAgent = new VolleyAgent(getApplicationContext());
     }
 
     @Override

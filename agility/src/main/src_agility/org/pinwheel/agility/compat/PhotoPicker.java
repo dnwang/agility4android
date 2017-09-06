@@ -7,9 +7,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 
 import org.pinwheel.agility.util.callback.Action2;
@@ -28,11 +30,6 @@ public final class PhotoPicker {
     private static final int CODE_TAKE_PHOTO = 3728;
     private static final int CODE_PICK_PHOTO = 3729;
 
-    private static final String TAKE_PHOTO_NAME = "temp4Picker.jpg";
-    private static final String IMAGE_TYPE = "image/*";
-
-    private static File PATH = null;
-
     public enum Type {
         TAKE_PHOTO, PICK_PHOTO
     }
@@ -41,14 +38,26 @@ public final class PhotoPicker {
         NO_TAKE, NO_PICK, TAKE_PATH_ERR, PICK_PATH_ERR, UNKNOWN
     }
 
-    private Activity activity;
+    private final Activity activity;
+    private final File path;
+    private final String fileProviderAuthorities;
     private Action2<File, Error> listener;
 
     public PhotoPicker(Activity activity) {
+        // default path: /Android/data/packageName/cache/picker
+        // default authorities: packageName.fileprovider
+        this(activity, new File(activity.getExternalCacheDir(), "picker"), activity.getPackageName() + ".fileprovider");
+    }
+
+    public PhotoPicker(Activity activity, String fileProviderAuthorities) {
+        // default path: /Android/data/packageName/cache/picker
+        this(activity, new File(activity.getExternalCacheDir(), "picker"), fileProviderAuthorities);
+    }
+
+    public PhotoPicker(Activity activity, File path, String fileProviderAuthorities) {
         this.activity = activity;
-        if (null == PATH) {
-            PATH = new File(activity.getExternalCacheDir(), "Pictures");
-        }
+        this.path = path;
+        this.fileProviderAuthorities = fileProviderAuthorities;
     }
 
     public PhotoPicker setOnPickListener(Action2<File, Error> listener) {
@@ -64,21 +73,36 @@ public final class PhotoPicker {
         }
     }
 
+    private void pickPhoto() {
+        Intent getAlbum = new Intent(Intent.ACTION_GET_CONTENT);
+        getAlbum.setType("image/*");
+        activity.startActivityForResult(getAlbum, CODE_PICK_PHOTO);
+    }
+
     private void takePhoto() {
-        String status = Environment.getExternalStorageState();
+        final String status = Environment.getExternalStorageState();
         if (status.equals(Environment.MEDIA_MOUNTED)) {
             try {
-                if (!PATH.exists()) {
-                    PATH.mkdirs();
+                if (!path.exists()) {
+                    path.mkdirs();
                 }
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                File outFile = new File(PATH, TAKE_PHOTO_NAME);
+                File outFile = new File(path, String.valueOf(System.nanoTime()) + ".png");
                 if (outFile.exists()) {
                     outFile.delete();
                 }
+                // 适配 N
+                final Uri uri;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    uri = FileProvider.getUriForFile(activity.getApplicationContext(), fileProviderAuthorities, outFile);
+                } else {
+                    uri = Uri.fromFile(outFile);
+                }
                 // intent中指定路径，否则随intent中返回的数据是被压缩过后的
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(outFile));
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
                 activity.startActivityForResult(intent, CODE_TAKE_PHOTO);
+                tmpFile = outFile;
             } catch (ActivityNotFoundException e) {
                 notifyError(Error.TAKE_PATH_ERR);
             }
@@ -87,27 +111,24 @@ public final class PhotoPicker {
         }
     }
 
-    private void pickPhoto() {
-        Intent getAlbum = new Intent(Intent.ACTION_GET_CONTENT);
-        getAlbum.setType(IMAGE_TYPE);
-        activity.startActivityForResult(getAlbum, CODE_PICK_PHOTO);
-    }
+    private File tmpFile = null;
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         switch (requestCode) {
             case CODE_TAKE_PHOTO: {
-                File outFile = new File(PATH, TAKE_PHOTO_NAME);
-                if (Activity.RESULT_OK == resultCode && outFile.exists() && outFile.canRead()) {
+                final File outFile = tmpFile;
+                if (Activity.RESULT_OK == resultCode && null != outFile && outFile.exists() && outFile.canRead()) {
                     notifySuccess(outFile);
                 } else {
                     notifyError(Error.NO_TAKE);
                 }
+                tmpFile = null;
             }
             break;
             case CODE_PICK_PHOTO: {
                 if (data != null) {
                     String path = "";
-                    Uri uri = getUri(data);
+                    Uri uri = getUri(activity, data);
                     try {
                         // 先从数据库中获取URI对应的路径
                         String[] filePathColumns = {MediaStore.Images.Media.DATA};
@@ -158,7 +179,19 @@ public final class PhotoPicker {
         }
     }
 
-    public static boolean isExternalStorageDocument(Uri uri) {
+    private void notifyError(Error error) {
+        if (null != listener) {
+            listener.call(null, error);
+        }
+    }
+
+    private void notifySuccess(File imgFile) {
+        if (null != listener) {
+            listener.call(imgFile, null);
+        }
+    }
+
+    private static boolean isExternalStorageDocument(Uri uri) {
         return "com.android.externalstorage.documents".equals(uri.getAuthority());
     }
 
@@ -166,7 +199,7 @@ public final class PhotoPicker {
      * @param uri The Uri to check.
      * @return Whether the Uri authority is DownloadsProvider.
      */
-    public static boolean isDownloadsDocument(Uri uri) {
+    private static boolean isDownloadsDocument(Uri uri) {
         return "com.android.providers.downloads.documents".equals(uri.getAuthority());
     }
 
@@ -174,7 +207,7 @@ public final class PhotoPicker {
      * @param uri The Uri to check.
      * @return Whether the Uri authority is MediaProvider.
      */
-    public static boolean isMediaDocument(Uri uri) {
+    private static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
@@ -182,11 +215,11 @@ public final class PhotoPicker {
      * @param uri The Uri to check.
      * @return Whether the Uri authority is Google Photos.
      */
-    public static boolean isGooglePhotosUri(Uri uri) {
+    private static boolean isGooglePhotosUri(Uri uri) {
         return "com.google.android.apps.photos.content".equals(uri.getAuthority());
     }
 
-    public static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
+    private static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
         Cursor cursor = null;
         final String column = "_data";
         final String[] projection = {column};
@@ -203,26 +236,17 @@ public final class PhotoPicker {
         return null;
     }
 
-    private void notifyError(Error error) {
-        if (null != listener) {
-            listener.call(null, error);
-        }
-    }
-
-    private void notifySuccess(File imgFile) {
-        if (null != listener) {
-            listener.call(imgFile, null);
-        }
-    }
-
-    private Uri getUri(Intent intent) {
+    /**
+     * 兼容小米手机
+     */
+    private static Uri getUri(Context context, Intent intent) {
         Uri uri = intent.getData();
         String type = intent.getType();
         if (uri.getScheme().equals("file") && (type.contains("image/"))) {
             String path = uri.getEncodedPath();
             if (path != null) {
                 path = Uri.decode(path);
-                ContentResolver contentResolver = activity.getContentResolver();
+                ContentResolver contentResolver = context.getContentResolver();
                 StringBuffer buff = new StringBuffer();
                 buff.append("(").append(MediaStore.Images.ImageColumns.DATA).append("=").append("'" + path + "'").append(")");
                 Cursor cur = contentResolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,

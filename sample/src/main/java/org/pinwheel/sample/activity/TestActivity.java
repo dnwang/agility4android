@@ -1,11 +1,14 @@
 package org.pinwheel.sample.activity;
 
+import android.Manifest;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.Toast;
 
-import org.pinwheel.sample.R;
-import org.pinwheel.sample.test.RandomScrollerView;
-
-import java.util.Random;
+import org.pinwheel.agility.compat.PhotoPicker;
 
 /**
  * Copyright (C), 2016 <br>
@@ -17,42 +20,45 @@ import java.util.Random;
  */
 public class TestActivity extends AbsTesterActivity {
 
-    RandomScrollerView[] customView;
+    private PhotoPicker picker;
+    private ImageView imageView;
 
     @Override
     protected View getContentView() {
-        return inflate(R.layout.activity_test);
+        imageView = new ImageView(this);
+        return imageView;
     }
 
     @Override
     protected void beforeInitView() {
+        picker = new PhotoPicker(this);
+        picker.setOnPickListener((file, err) -> {
+            if (null != file) {
+                Toast.makeText(this, file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+                imageView.setImageBitmap(bitmap);
+            } else {
+                Toast.makeText(this, "error", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
     protected void afterInitView() {
-        customView = new RandomScrollerView[4];
-        customView[0] = holder.getView(R.id.view0);
-        customView[1] = holder.getView(R.id.view1);
-        customView[2] = holder.getView(R.id.view2);
-        customView[3] = holder.getView(R.id.view3);
-        holder.select(R.id.btn_start).setOnClickListener(v -> {
-            holder.select(R.id.btn_stop).setText("stop");
-            for (int i = 0; i < customView.length; i++) {
-                final int index = i;
-                postDelayed(() -> customView[index].start(), i * 726);
-            }
-        });
+        requestPermissions((isSuccess) -> {
+            imageView.setOnClickListener(v -> {
+                picker.show(PhotoPicker.Type.PICK_PHOTO);
+            });
+            imageView.setOnLongClickListener(view -> {
+                picker.show(PhotoPicker.Type.TAKE_PHOTO);
+                return false;
+            });
+        }, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    }
 
-        holder.select(R.id.btn_stop).setOnClickListener(v -> {
-            final Random random = new Random();
-            String txt = "";
-            for (int i = 0; i < customView.length; i++) {
-                final int index = i;
-                final int target = random.nextInt(10);
-                txt += String.valueOf(target);
-                postDelayed(() -> customView[index].stop(target), i * 536);
-            }
-            holder.select(R.id.btn_stop).setText(txt);
-        });
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        picker.onActivityResult(requestCode, resultCode, data);
     }
 }

@@ -81,7 +81,7 @@ public class CycleGalleryActivity extends AbsTesterActivity {
             }
             TextView text = BaseUtils.getViewByHolder(view, R.id.text);
             ImageView image = BaseUtils.getViewByHolder(view, R.id.image);
-            ImageLoaderManager.getInstance(parent.getContext()).setImageByImageLoader(image, URLS[i % URLS.length]);
+            ImageLoaderManager.getInstance(parent.getContext()).setImageByAgility(image, URLS[i % URLS.length]);
             text.setText(String.valueOf(i));
             // 测试内外部onClickListener事件传递
             view.setOnClickListener(v -> logout(TAG, "onClick: [" + i + "]"));
