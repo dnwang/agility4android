@@ -228,7 +228,7 @@ public final class Downloader {
         final int workerSize = Math.min(maxThreadSize, sizeOfBlock);
         for (int i = 0; i < workerSize; i++) {
             Block block = spaceBlocks.get(i);
-            DownloadWorker worker = new DownloadWorker(downloadInfo.url, downloadInfo.file, block);
+            DownloadWorker worker = new DownloadWorker(downloadInfo, block);
             worker.submitIn(executor);
             workers.add(worker);
         }
@@ -387,10 +387,14 @@ final class DownloadWorker extends CancelableRunner {
     private File file;
     private Block block;
 
-    DownloadWorker(String url, File file, Block block) {
-        this.url = url;
-        this.file = file;
+    private boolean fullLength = false;
+
+    DownloadWorker(DownloadInfo downloadInfo, Block block) {
+        this.url = downloadInfo.url;
+        this.file = downloadInfo.file;
         this.block = block;
+
+        this.fullLength = block.getLength() >= downloadInfo.contentLength;
     }
 
     @Override
@@ -405,8 +409,10 @@ final class DownloadWorker extends CancelableRunner {
             conn = (HttpURLConnection) new URL(url).openConnection();
             conn.setConnectTimeout(TIME_OUT);
             conn.setReadTimeout(TIME_OUT);
-            conn.setRequestProperty("Accept-Encoding", "identity");
-            conn.setRequestProperty("Range", "bytes=" + block.begin + "-" + block.end);
+            if (!fullLength) {
+                conn.setRequestProperty("Accept-Encoding", "identity");
+                conn.setRequestProperty("Range", "bytes=" + block.begin + "-" + block.end);
+            }
             conn.connect();
             inStream = conn.getInputStream();
             byte[] buf = new byte[1024];
